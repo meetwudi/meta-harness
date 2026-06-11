@@ -8,6 +8,8 @@ Accepted
 
 This repository should use a harness-driven approach: the project is guided by spec-as-code documents before implementation details are chosen.
 
+This repository is the Meta Harness project: [meetwudi/meta-harness](https://github.com/meetwudi/meta-harness).
+
 The harness must also be reconstructable in future repositories by pointing an agent or human at a small number of source files.
 
 ## Decision
@@ -27,6 +29,8 @@ The root `AGENTS.md` is the harness entry point. It must state that AI agents ar
 
 Every harness document should be discoverable from the root by following links through `AGENTS.md` files. The harness design decisions live under `harness/harness-design/*.md`.
 
+Meta Harness itself does not keep a harness migration sequence marker. Target repositories that apply this harness may keep their own sequence marker so they can track which harness decisions or migrations have been applied.
+
 ## Reconstruction
 
 To add the same initial harness to another repository:
@@ -37,6 +41,7 @@ To add the same initial harness to another repository:
 4. Create `harness/AGENTS.md` as the harness index.
 5. Create `harness/harness-design/AGENTS.md` as the design-decision index.
 6. Record harness design decisions in `harness/harness-design/*.md`.
+7. In a target repository, optionally add a sequence marker that records applied harness decisions or migrations.
 
 ## Consequences
 
