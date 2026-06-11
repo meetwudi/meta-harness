@@ -1,20 +1,20 @@
 # Harness Design
 
-## Context
+## Principles
 
-Meta Harness defines a harness-driven approach: a managed project is guided by spec-as-code documents before implementation details are chosen.
+Meta Harness defines how a managed project uses spec-as-code harness docs.
 
-This repository is the Meta Harness project: [meetwudi/meta-harness](https://github.com/meetwudi/meta-harness).
+A managed project is a repository that carries `.meta-harness.json` and follows this design.
 
-Meta Harness is self-managed: this repository applies the same marker and management structure that it provides to managed projects.
+Meta Harness is self-managed: this repository uses the same marker and management layer that it provides to managed projects.
 
-The harness must be reconstructable in future repositories by pointing an agent or human at a small number of source files.
+`meta-harness/` is the copied management layer. `harness/` is the project-specific harness layer.
 
-Throughout Meta Harness, a "managed project" means a repository that carries `.meta-harness.json` and follows the Meta Harness structure.
+Harness docs use progressive disclosure through `AGENTS.md` files. A harness doc should be reachable from the root by following the `AGENTS.md` chain.
 
-## Structure
+The root `AGENTS.md` is protected: AI agents may change it only when a human explicitly asks to change `AGENTS.md`.
 
-Use `AGENTS.md` files as the progressive disclosure chain:
+## Managed Project Shape
 
 ```text
 .meta-harness.json
@@ -33,79 +33,34 @@ harness/
     AGENTS.md
 ```
 
-The root `AGENTS.md` is the harness entry point. It must state that AI agents are forbidden to change that file unless a human explicitly asks to change `AGENTS.md`.
+`.meta-harness.json` records the Meta Harness source. Managed projects compare that source ref against Meta Harness to understand what changed.
 
-Every harness document should be discoverable from the root by following links through `AGENTS.md` files.
+`meta-harness/AGENTS.md` indexes Meta Harness docs. `harness/AGENTS.md` indexes project-specific harness docs.
 
-Managed repositories have a root `.meta-harness.json` marker that records the Meta Harness source. Meta Harness itself has this marker too.
+## Product Harness
 
-## Layers
+Each managed project records product context in `harness/product/CONTEXT.md`: what the product is, who it is for, and what outcomes matter.
 
-`meta-harness/` is the management layer copied from Meta Harness. It defines how the harness is discovered, updated, and interpreted.
+Product decisions are recorded sequentially in `harness/product/decisions/`. Use this for decision history.
 
-`harness/` is the project-specific harness layer. It belongs to the managed project and should not conflict with the Meta Harness management layer.
-
-Meta Harness changes are tracked by Git. Managed projects can compare their `.meta-harness.json` source ref against the Meta Harness repository to understand what changed.
-
-## Managed Project Harness
-
-Each managed project should use `harness/` for project-specific rules and specs.
-
-`harness/product/CONTEXT.md` records the product context: what the product is, who it is for, and what outcomes matter.
-
-`harness/product/decisions/` records product decisions sequentially. Use this for decision history, not consolidated requirements.
-
-`harness/product/requirements/` records modular product requirements. Each requirement must include acceptance tests that can actually be tested.
-
-`harness/engineering/` records project-level engineering practices. It may start empty except for `AGENTS.md`.
+Product requirements are recorded modularly in `harness/product/requirements/`. Each requirement must include acceptance tests that can actually be tested.
 
 ## AI Policy
 
 AI agents must stay concise.
 
-AI agents must not invent material product facts, requirements, decisions, or engineering practices. Material content should trace to human input, an existing harness doc, or observed project evidence.
+AI agents must not invent material product facts, requirements, decisions, or engineering practices.
 
-When the source is unclear, record uncertainty or ask the human instead of filling gaps with plausible-sounding text.
+Material content must trace to human input, harness docs, or observed project evidence. When the source is unclear, ask or mark the gap as unknown.
 
 ## Engineering Practices
 
-Meta Harness defines the separation between Meta Harness rules and project engineering practices.
-
 Project-specific engineering practices belong under `harness/engineering/` in the managed project.
 
-Meta Harness does not impose default engineering practices yet.
-
-## Reconstruction
-
-To add the same initial harness to another repository:
-
-1. Create a root `AGENTS.md`.
-2. Create a root `.meta-harness.json` marker.
-3. Add the AI-change guardrail to the root `AGENTS.md`.
-4. Link from the root `AGENTS.md` to `meta-harness/AGENTS.md`.
-5. Create `meta-harness/AGENTS.md` as the management-layer index.
-6. Create `meta-harness/HARNESS-DESIGN.md` as the consolidated harness design.
-7. Create `harness/AGENTS.md` for project-specific harness docs.
-8. Create `harness/product/CONTEXT.md`.
-9. Create `harness/product/decisions/` for sequential product decisions.
-10. Create `harness/product/requirements/` for modular requirements with acceptance tests.
-11. Create `harness/engineering/AGENTS.md` for project-level engineering practices.
-
-## Consequences
-
-The harness has a stable entry point and a repeatable discovery pattern.
-
-The root `.meta-harness.json` marker gives tools a cheap way to identify a managed repository before walking the `AGENTS.md` discovery chain.
-
-Meta Harness and project harness docs have separate locations, so management rules do not collide with project-specific rules.
-
-Future harness docs should not be hidden in unlinked folders. If a new harness area is added, it should be linked through the nearest `AGENTS.md` so the root discovery chain remains complete.
-
-Product decisions and product requirements have separate locations, so history does not blur into the current consolidated requirement set.
+Meta Harness does not impose default engineering practices.
 
 ## Changelog
 
-- Consolidated the initial harness structure into `meta-harness/HARNESS-DESIGN.md`.
-- Separated the Meta Harness management layer from the project-specific `harness/` layer.
-- Simplified `.meta-harness.json` so Git refs and diffs, rather than local migration counters, describe Meta Harness changes.
-- Added managed-project terminology, product context, sequential product decisions, modular requirements with acceptance tests, concise AI policy, and project engineering practice placement.
+- Consolidated Meta Harness into `meta-harness/HARNESS-DESIGN.md`.
+- Separated `meta-harness/` management docs from project-specific `harness/` docs.
+- Defined managed project product context, product decisions, modular requirements with acceptance tests, AI policy, and engineering practice placement.
