@@ -38,7 +38,15 @@ harness/
     AGENTS.md
 ```
 
-`.meta-harness.json` records the Meta Harness source. Managed projects compare that source ref against Meta Harness to understand what changed.
+`.meta-harness.json` records the Meta Harness source.
+
+To understand management-layer changes, managed projects compare source refs directly with `git diff` in the Meta Harness source repository:
+
+```text
+git diff <old-source-ref>..<new-source-ref> -- meta-harness/
+```
+
+Managed projects should use that diff as the change record instead of relying on an in-tree changelog.
 
 `meta-harness/AGENTS.md` indexes Meta Harness docs. `harness/AGENTS.md` indexes project-specific harness docs.
 
@@ -81,12 +89,3 @@ Meta-Harness-Checklist: path=<path-to-CHECKLIST.md>; status=<status>
 `<status>` is `pass`, `blocked`, or `na`. Use one attestation line per applicable checklist.
 
 PR enforcement belongs to Meta Harness. Managed projects should install the GitHub workflow template from `meta-harness/github/workflows/`; local hooks may mirror it but are not authoritative.
-
-## Changelog
-
-- Consolidated Meta Harness into `meta-harness/HARNESS-DESIGN.md`.
-- Separated `meta-harness/` management docs from project-specific `harness/` docs.
-- Clarified that managed projects must not directly modify the copied `meta-harness/` management layer.
-- Defined managed project product context, product decisions, modular requirements with acceptance tests, AI policy, and engineering practice placement.
-- Added `CHECKLIST.md` enforcement and parseable commit-message attestation for changed files.
-- Added Meta Harness PR enforcement tooling and GitHub workflow template placement.
