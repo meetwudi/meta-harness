@@ -59,8 +59,23 @@ Project-specific engineering practices belong under `harness/engineering/` in th
 
 Meta Harness does not impose default engineering practices.
 
+## Checklist Attestation
+
+Any folder may define `CHECKLIST.md`.
+
+For each PR, changed files must be checked against every `CHECKLIST.md` in their directory ancestry.
+
+AI agents must read each applicable checklist, complete every relevant item, and leave a parseable commit-message attestation:
+
+```text
+Meta-Harness-Checklist: path=<path-to-CHECKLIST.md>; status=<status>
+```
+
+`<status>` is `pass`, `blocked`, or `na`. Use one attestation line per applicable checklist.
+
 ## Changelog
 
 - Consolidated Meta Harness into `meta-harness/HARNESS-DESIGN.md`.
 - Separated `meta-harness/` management docs from project-specific `harness/` docs.
 - Defined managed project product context, product decisions, modular requirements with acceptance tests, AI policy, and engineering practice placement.
+- Added `CHECKLIST.md` enforcement and parseable commit-message attestation for changed files.
