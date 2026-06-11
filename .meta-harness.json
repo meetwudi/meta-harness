@@ -2,10 +2,7 @@
   "schema": 1,
   "source": {
     "type": "git",
-    "url": "https://github.com/meetwudi/meta-harness.git"
-  },
-  "current": "0001-initial-harness-structure",
-  "applied": [
-    "0001-initial-harness-structure"
-  ]
+    "url": "https://github.com/meetwudi/meta-harness.git",
+    "ref": "self"
+  }
 }
