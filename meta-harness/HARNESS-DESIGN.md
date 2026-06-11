@@ -24,11 +24,14 @@ AGENTS.md
 meta-harness/
   AGENTS.md
   HARNESS-DESIGN.md
+  AI-POLICY.md
+  templates/
   tools/
   github/
     workflows/
 harness/
   AGENTS.md
+  CHECKLIST.md
   product/
     AGENTS.md
     CONTEXT.md
@@ -58,15 +61,13 @@ Each managed project records product context in `harness/product/CONTEXT.md`: wh
 
 Product decisions are recorded sequentially in `harness/product/decisions/`. Use this for decision history.
 
-Product requirements are recorded modularly in `harness/product/requirements/`. Each requirement must include acceptance tests that can actually be tested.
+Product requirements are recorded modularly in `harness/product/requirements/`. Each requirement must include sourced acceptance tests that can actually be tested, or explicitly mark acceptance tests as an unknown source gap.
 
 ## AI Policy
 
-AI agents must stay concise.
+AI behavior policy is defined in [AI-POLICY.md](AI-POLICY.md).
 
-AI agents must not invent material product facts, requirements, decisions, or engineering practices.
-
-Material content must trace to human input, harness docs, or observed project evidence. When the source is unclear, ask or mark the gap as unknown.
+Managed projects should operationalize that policy for PR review with `harness/CHECKLIST.md` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
 
 ## Engineering Practices
 
