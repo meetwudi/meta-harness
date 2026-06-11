@@ -10,7 +10,7 @@ Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)
 
 ## Layers
 
-- `meta-harness/`: The management layer copied from Meta Harness.
+- `meta-harness/`: The management layer copied from Meta Harness. Managed projects must not modify this layer directly; update it only from the Meta Harness source.
 - `harness/`: The project-specific harness layer. It may be created by a project when project rules, specs, or workflows need their own progressive disclosure chain.
 - `meta-harness/tools/`: Portable enforcement tools.
 - `meta-harness/github/workflows/`: GitHub Actions workflow templates for managed projects.

@@ -8,7 +8,9 @@ A managed project is a repository that carries `.meta-harness.json` and follows 
 
 Meta Harness is self-managed: this repository uses the same marker and management layer that it provides to managed projects.
 
-`meta-harness/` is the copied management layer. `harness/` is the project-specific harness layer.
+`meta-harness/` is the copied management layer. Managed projects must not modify files under `meta-harness/` directly; that layer should change only when updating from the Meta Harness source.
+
+`harness/` is the project-specific harness layer. Project-specific rules, specs, workflows, and docs belong under `harness/`.
 
 Harness docs use progressive disclosure through `AGENTS.md` files. A harness doc should be reachable from the root by following the `AGENTS.md` chain.
 
@@ -39,6 +41,8 @@ harness/
 `.meta-harness.json` records the Meta Harness source. Managed projects compare that source ref against Meta Harness to understand what changed.
 
 `meta-harness/AGENTS.md` indexes Meta Harness docs. `harness/AGENTS.md` indexes project-specific harness docs.
+
+Managed projects should place their own harness content under `harness/`, not by editing the copied `meta-harness/` management layer.
 
 ## Product Harness
 
@@ -82,6 +86,7 @@ PR enforcement belongs to Meta Harness. Managed projects should install the GitH
 
 - Consolidated Meta Harness into `meta-harness/HARNESS-DESIGN.md`.
 - Separated `meta-harness/` management docs from project-specific `harness/` docs.
+- Clarified that managed projects must not directly modify the copied `meta-harness/` management layer.
 - Defined managed project product context, product decisions, modular requirements with acceptance tests, AI policy, and engineering practice placement.
 - Added `CHECKLIST.md` enforcement and parseable commit-message attestation for changed files.
 - Added Meta Harness PR enforcement tooling and GitHub workflow template placement.
