@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+import argparse
+import re
+import sys
+from pathlib import Path
+
+
+TRAILER_RE = re.compile(
+    r"^Meta-Harness-Checklist:\s*path=([^;]+);\s*status=(pass|blocked|na)\s*$"
+)
+
+
+def normalize(path):
+    return path.strip().replace("\\", "/").lstrip("./")
+
+
+def read_lines(path):
+    return [normalize(line) for line in Path(path).read_text().splitlines() if line.strip()]
+
+
+def parse_attestations(path):
+    attestations = {}
+    for line in Path(path).read_text().splitlines():
+        match = TRAILER_RE.match(line.strip())
+        if not match:
+            continue
+        checklist_path = normalize(match.group(1))
+        attestations[checklist_path] = match.group(2)
+    return attestations
+
+
+def ancestor_dirs(file_path):
+    path = Path(normalize(file_path))
+    current = path.parent
+    parts = list(current.parts)
+    yield Path(".")
+    acc = Path(".")
+    for part in parts:
+        acc = acc / part
+        yield acc
+
+
+def applicable_checklists(repo_root, file_path):
+    checklists = []
+    for directory in ancestor_dirs(file_path):
+        checklist = repo_root / directory / "CHECKLIST.md"
+        if checklist.is_file():
+            checklists.append(normalize(str(checklist.relative_to(repo_root))))
+    return checklists
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Verify Meta Harness CHECKLIST.md attestations for changed files."
+    )
+    parser.add_argument("--repo-root", default=".")
+    parser.add_argument("--changed-files", required=True)
+    parser.add_argument("--attestations", required=True)
+    parser.add_argument("--allow-blocked", action="store_true")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    changed_files = read_lines(args.changed_files)
+    attestations = parse_attestations(args.attestations)
+
+    required = set()
+    for changed_file in changed_files:
+        required.update(applicable_checklists(repo_root, changed_file))
+
+    failures = []
+    for checklist in sorted(required):
+        status = attestations.get(checklist)
+        if status is None:
+            failures.append(f"missing attestation for {checklist}")
+        elif status == "blocked" and not args.allow_blocked:
+            failures.append(f"blocked checklist attestation for {checklist}")
+
+    if failures:
+        print("Meta Harness checklist attestation failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("Expected commit-message trailer format:", file=sys.stderr)
+        print(
+            "Meta-Harness-Checklist: path=<path-to-CHECKLIST.md>; status=<pass|blocked|na>",
+            file=sys.stderr,
+        )
+        return 1
+
+    if required:
+        print(f"Meta Harness checklist attestation passed for {len(required)} checklist(s).")
+    else:
+        print("Meta Harness checklist attestation passed: no applicable CHECKLIST.md files.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

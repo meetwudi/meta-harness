@@ -1,0 +1,26 @@
+name: Meta Harness Checklists
+
+on:
+  pull_request:
+
+jobs:
+  checklists:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect PR changes and attestations
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --name-only --diff-filter=ACMR "$BASE_SHA...$HEAD_SHA" > /tmp/meta-harness-changed-files.txt
+          git log --format=%B "$BASE_SHA..$HEAD_SHA" > /tmp/meta-harness-attestations.txt
+
+      - name: Verify checklist attestations
+        run: |
+          python3 meta-harness/tools/check-checklist-attestations \
+            --changed-files /tmp/meta-harness-changed-files.txt \
+            --attestations /tmp/meta-harness-attestations.txt

@@ -22,6 +22,9 @@ AGENTS.md
 meta-harness/
   AGENTS.md
   HARNESS-DESIGN.md
+  tools/
+  github/
+    workflows/
 harness/
   AGENTS.md
   product/
@@ -73,9 +76,12 @@ Meta-Harness-Checklist: path=<path-to-CHECKLIST.md>; status=<status>
 
 `<status>` is `pass`, `blocked`, or `na`. Use one attestation line per applicable checklist.
 
+PR enforcement belongs to Meta Harness. Managed projects should install the GitHub workflow template from `meta-harness/github/workflows/`; local hooks may mirror it but are not authoritative.
+
 ## Changelog
 
 - Consolidated Meta Harness into `meta-harness/HARNESS-DESIGN.md`.
 - Separated `meta-harness/` management docs from project-specific `harness/` docs.
 - Defined managed project product context, product decisions, modular requirements with acceptance tests, AI policy, and engineering practice placement.
 - Added `CHECKLIST.md` enforcement and parseable commit-message attestation for changed files.
+- Added Meta Harness PR enforcement tooling and GitHub workflow template placement.
