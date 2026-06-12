@@ -2,7 +2,7 @@
 
 Memory is agent-usable knowledge carried across time.
 
-Memory is a primitive. A Library may contain Memory, point to Memory, or be primarily a Memory Library.
+Memory is a primitive. A Library may contain Memory, point to it, or be primarily a Memory Library.
 
 Task memory should normally live outside the repository unless a human explicitly asks otherwise.
 
@@ -25,7 +25,7 @@ Memory may be organized as:
 - execution-specific memory
 - durable project context
 
-Memory organization is chosen by the Memory Library and the task using it.
+The Memory Library and task choose the organization.
 
 ## Task Interaction
 
@@ -39,7 +39,7 @@ A task may:
 - summarize older memory
 - mark memory unavailable when no suitable Memory Library exists
 
-Tasks should not need to restate that Memory exists. They only need task-specific memory instructions when the task has special memory needs.
+Tasks should not restate that Memory exists unless they have task-specific memory needs.
 
 ## Governance
 

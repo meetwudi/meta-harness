@@ -2,13 +2,13 @@
 
 A task is an outcome-oriented execution contract.
 
-Tasks live in a Library. The Library points to the place; the task definition lives inside that place.
+Tasks live in a Library. The Library points to the place that contains the task definition.
 
 Tasks use checklists to make procedure and outcomes verifiable.
 
 ## Shape
 
-Project-specific tasks commonly live under `harness/tasks/`:
+Project-specific tasks commonly use this shape:
 
 ```text
 harness/tasks/
@@ -32,7 +32,7 @@ harness/tasks/
 - outcome checklist
 - completion evidence
 
-Library references name a Library place:
+Reference Libraries by name:
 
 ```text
 library://project-harness
@@ -40,7 +40,7 @@ library://meta-harness
 library://task-memory
 ```
 
-They should not enumerate paths inside the Library.
+Do not enumerate paths inside the Library reference.
 
 ## Execution
 

@@ -1,8 +1,6 @@
 # Compliance
 
-Compliance is human-approved repository law.
-
-Compliance defines binding rules, constraints, requirements, policies, and principles for repository work.
+Compliance is human-approved repository law: binding rules, constraints, requirements, policies, and principles for repository work.
 
 Agents may clarify, format, deduplicate, or route compliance while preserving meaning. Agents must not create new compliance obligations unless the human explicitly approves them or the obligation already exists in sourced compliance.
 
@@ -22,19 +20,17 @@ The notice must appear before the first heading in the compliance file.
 
 Compliance may live inside any Library place.
 
-For this repository, Meta Harness compliance is found by exploring:
+For this repository, find Meta Harness compliance by exploring:
 
 ```text
 library://meta-harness
 ```
 
-The selected Library and its files define location and approval rules.
+The selected Library defines location and approval rules.
 
 ## Checklist
 
-Checklists turn compliance into reviewable checks.
-
-Compliance defines obligations. `CHECKLIST.md` files define verification.
+Checklists make compliance reviewable. Compliance defines obligations; `CHECKLIST.md` files define verification.
 
 For repository changes, applicable checklists should verify that:
 
