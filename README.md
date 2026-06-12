@@ -1,7 +1,6 @@
 ---
-meta_harness:
-  kind: readme
-  ai_edit: explicit_human_request_required
+agent_policy:
+  change: explicit_human_request
 ---
 
 # Meta Harness
