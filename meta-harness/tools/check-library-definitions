@@ -10,21 +10,14 @@ except ModuleNotFoundError:
     tomllib = None
 
 
-REQUIRED_FIELDS = {
+REQUIRED_LIBRARY_FIELDS = {
     "name": str,
-    "uri_authority": str,
-    "purpose": str,
-    "governance": str,
-    "paths": list,
+    "primitive_kind": str,
+    "location": str,
 }
 
-INDEX_REQUIRED_FIELDS = {
-    "name": str,
-    "definition": str,
-}
-
-VALID_PATH_KINDS = {"compliance", "memory", "task", "library", "reference"}
-VALID_LOCATION_RELATIVE_TO = {"current-git-repository"}
+VALID_PRIMITIVE_KINDS = {"library", "compliance", "task", "memory", "reference"}
+VALID_RELATIVE_TO = {"current-git-repository"}
 
 
 def fail(failures, message):
@@ -110,142 +103,61 @@ def load_toml(path, failures):
     return None
 
 
-def validate_location(repo_root, library_toml, path_entry, failures):
-    location = path_entry.get("location")
-    relative_to = path_entry.get("relative_to")
-
-    if location is None and relative_to is None:
-        return
-    if not isinstance(location, str) or not location.strip():
-        fail(failures, f"{library_toml}: path location must be a non-empty string when present")
-        return
-    if relative_to not in VALID_LOCATION_RELATIVE_TO:
-        fail(
-            failures,
-            f"{library_toml}: relative_to must be current-git-repository when location is present",
-        )
-        return
-    resolved = repo_root / location
-    if not resolved.exists():
-        fail(failures, f"{library_toml}: location does not exist: {location}")
-
-
-def validate_path_entry(repo_root, library_toml, authority, path_entry, seen_uris, failures):
-    if not isinstance(path_entry, dict):
-        fail(failures, f"{library_toml}: each paths entry must be a table")
+def validate_library_entry(repo_root, index_toml, entry, seen_names, failures):
+    if not isinstance(entry, dict):
+        fail(failures, f"{index_toml}: each libraries entry must be a table")
         return
 
-    uri = path_entry.get("uri")
-    kind = path_entry.get("kind")
+    for field, expected_type in REQUIRED_LIBRARY_FIELDS.items():
+        value = entry.get(field)
+        if not isinstance(value, expected_type) or not value.strip():
+            fail(failures, f"{index_toml}: {field} must be a non-empty {expected_type.__name__}")
 
-    if not isinstance(uri, str) or not uri.strip():
-        fail(failures, f"{library_toml}: path uri must be a non-empty string")
-        return
-    if uri in seen_uris:
-        fail(failures, f"{library_toml}: duplicate path uri: {uri}")
-    seen_uris.add(uri)
+    name = entry.get("name")
+    primitive_kind = entry.get("primitive_kind")
+    location = entry.get("location")
+    relative_to = entry.get("relative_to")
 
-    prefix = f"library://{authority}/"
-    if not uri.startswith(prefix):
-        fail(failures, f"{library_toml}: path uri must start with {prefix}: {uri}")
+    if isinstance(name, str):
+        if name in seen_names:
+            fail(failures, f"{index_toml}: duplicate library name: {name}")
+        seen_names.add(name)
 
-    if kind not in VALID_PATH_KINDS:
-        fail(failures, f"{library_toml}: path kind must be one of {sorted(VALID_PATH_KINDS)}")
+    if isinstance(primitive_kind, str) and primitive_kind not in VALID_PRIMITIVE_KINDS:
+        fail(failures, f"{index_toml}: primitive_kind must be one of {sorted(VALID_PRIMITIVE_KINDS)}")
 
-    validate_location(repo_root, library_toml, path_entry, failures)
+    if relative_to is not None and relative_to not in VALID_RELATIVE_TO:
+        fail(failures, f"{index_toml}: relative_to must be current-git-repository when present")
+
+    if isinstance(location, str) and relative_to == "current-git-repository":
+        resolved = repo_root / location
+        if not resolved.exists():
+            fail(failures, f"{index_toml}: location does not exist: {location}")
 
 
-def validate_index(libraries_root, failures):
+def validate_index(repo_root, libraries_root, failures):
     index_toml = libraries_root / "LIBRARIES.toml"
     if not index_toml.is_file():
         fail(failures, "harness/libraries: missing LIBRARIES.toml")
-        return {}
+        return 0
 
     data = load_toml(index_toml, failures)
     if data is None:
-        return {}
+        return 0
     if not isinstance(data, dict):
         fail(failures, f"{index_toml}: top-level value must be a table")
-        return {}
+        return 0
 
     libraries = data.get("libraries")
     if not isinstance(libraries, list):
         fail(failures, f"{index_toml}: libraries must be an array of tables")
-        return {}
+        return 0
 
-    indexed = {}
+    seen_names = set()
     for entry in libraries:
-        if not isinstance(entry, dict):
-            fail(failures, f"{index_toml}: each libraries entry must be a table")
-            continue
+        validate_library_entry(repo_root, index_toml, entry, seen_names, failures)
 
-        for field, expected_type in INDEX_REQUIRED_FIELDS.items():
-            value = entry.get(field)
-            if not isinstance(value, expected_type) or not value.strip():
-                fail(failures, f"{index_toml}: {field} must be a non-empty {expected_type.__name__}")
-
-        name = entry.get("name")
-        definition = entry.get("definition")
-        if not isinstance(name, str) or not isinstance(definition, str):
-            continue
-
-        if name in indexed:
-            fail(failures, f"{index_toml}: duplicate library name: {name}")
-            continue
-
-        definition_path = Path(definition)
-        if definition_path.is_absolute():
-            fail(failures, f"{index_toml}: definition must be relative to harness/libraries: {definition}")
-            continue
-
-        resolved = libraries_root / definition_path
-        if not resolved.is_file():
-            fail(failures, f"{index_toml}: definition does not exist: {definition}")
-            continue
-
-        if resolved.name != "LIBRARY.toml":
-            fail(failures, f"{index_toml}: definition must point to LIBRARY.toml: {definition}")
-
-        if resolved.parent.name != name:
-            fail(failures, f"{index_toml}: library name must match definition directory: {name}")
-
-        indexed[name] = resolved.parent
-
-    return indexed
-
-
-def validate_library(repo_root, library_dir, failures):
-    agents = library_dir / "AGENTS.md"
-    library_toml = library_dir / "LIBRARY.toml"
-
-    for required in (agents, library_toml):
-        if not required.is_file():
-            fail(failures, f"{library_dir}: missing {required.name}")
-            return None
-
-    data = load_toml(library_toml, failures)
-    if data is None:
-        return None
-    if not isinstance(data, dict):
-        fail(failures, f"{library_toml}: top-level value must be a table")
-        return None
-
-    for field, expected_type in REQUIRED_FIELDS.items():
-        value = data.get(field)
-        if not isinstance(value, expected_type) or (expected_type is str and not value.strip()):
-            fail(failures, f"{library_toml}: {field} must be a non-empty {expected_type.__name__}")
-
-    authority = data.get("uri_authority")
-    name = data.get("name")
-    if isinstance(name, str) and name and name != library_dir.name:
-        fail(failures, f"{library_toml}: name must match directory name {library_dir.name}")
-
-    seen_uris = set()
-    if isinstance(authority, str) and authority:
-        for path_entry in data.get("paths", []):
-            validate_path_entry(repo_root, library_toml, authority, path_entry, seen_uris, failures)
-
-    return authority
+    return len(libraries)
 
 
 def main():
@@ -264,21 +176,7 @@ def main():
     if not (libraries_root / "AGENTS.md").is_file():
         fail(failures, "harness/libraries: missing AGENTS.md")
 
-    indexed = validate_index(libraries_root, failures)
-
-    authorities = {}
-    for library_dir in sorted(path for path in libraries_root.iterdir() if path.is_dir()):
-        if library_dir.name not in indexed:
-            fail(failures, f"{libraries_root / 'LIBRARIES.toml'}: missing library entry: {library_dir.name}")
-        authority = validate_library(repo_root, library_dir, failures)
-        if authority:
-            if authority in authorities:
-                fail(failures, f"{library_dir / 'LIBRARY.toml'}: duplicate uri_authority {authority}")
-            authorities[authority] = library_dir
-
-    for name, library_dir in indexed.items():
-        if not library_dir.is_dir():
-            fail(failures, f"{libraries_root / 'LIBRARIES.toml'}: indexed library is not a directory: {name}")
+    count = validate_index(repo_root, libraries_root, failures)
 
     if failures:
         print("Meta Harness library definition check failed:", file=sys.stderr)
@@ -286,7 +184,7 @@ def main():
             print(f"- {failure}", file=sys.stderr)
         return 1
 
-    print(f"Meta Harness library definitions passed for {len(authorities)} library/libraries.")
+    print(f"Meta Harness library definitions passed for {count} library/libraries.")
     return 0
 
 

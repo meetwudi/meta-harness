@@ -1,28 +1,18 @@
 # Reduce duplication and AI slop while preserving effectiveness.
 
 name = "concise-cleanup"
-uri = "library://repo/tasks/concise-cleanup"
+source_library = "library://project-harness"
 purpose = "Make harness docs more concise, less duplicated, and less AI-sloppy while preserving operational effectiveness."
 
 libraries = [
-  "library://repo/compliance/*",
-  "library://repo/libraries/*",
-]
-
-memory_read = [
-  "library://repo/memory/tasks/concise-cleanup",
-]
-
-memory_create_per_execution = "library://repo/memory/task-executions/concise-cleanup/{execution_id}"
-
-memory_update = [
-  "library://repo/memory/tasks/concise-cleanup",
+  "library://meta-harness",
+  "library://project-harness",
 ]
 
 procedure = [
   "Read the applicable AGENTS.md discovery chain.",
   "Read this TASK.toml.",
-  "Read relevant Library and compliance definitions.",
+  "Read relevant Libraries and compliance.",
   "Find duplicated, defensive, vague, or over-expanded wording.",
   "Preserve sourced meaning and operational force.",
   "Prefer deletion, consolidation, and direct wording over new abstraction.",

@@ -20,23 +20,15 @@ The notice must appear before the first heading in the compliance file.
 
 ## Library
 
-Repo-backed compliance should use the repo Library:
+Compliance may live inside any Library place.
+
+For this repository, Meta Harness compliance is found by exploring:
 
 ```text
-library://repo/compliance/{path}
+library://meta-harness
 ```
 
-Examples:
-
-```text
-library://repo/compliance/ai-policy
-library://repo/compliance/development-principles
-library://repo/compliance/product/context
-library://repo/compliance/product/requirements/{requirement-name}
-library://repo/compliance/engineering/practices
-```
-
-The selected Library defines location and approval rules.
+The selected Library and its files define location and approval rules.
 
 ## Checklist
 
@@ -55,4 +47,4 @@ Compliance files should identify the root or path-specific `CHECKLIST.md` files 
 
 ## Tasks
 
-Tasks must obey applicable compliance. A task may read compliance through Library paths, propose compliance changes, or update checklists that enforce compliance.
+Tasks must obey applicable compliance. A task may read compliance through Libraries, propose compliance changes, or update checklists that enforce compliance.

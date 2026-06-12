@@ -12,19 +12,25 @@ except ModuleNotFoundError:
 
 REQUIRED_FIELDS = {
     "name": str,
-    "uri": str,
+    "source_library": str,
     "purpose": str,
+    "libraries": list,
     "procedure": list,
     "completion_evidence": list,
 }
 
 LIST_FIELDS = (
     "libraries",
-    "memory_read",
-    "memory_update",
+    "memory_libraries",
     "procedure",
     "outcomes",
     "completion_evidence",
+)
+
+LIBRARY_REFERENCE_FIELDS = (
+    "source_library",
+    "libraries",
+    "memory_libraries",
 )
 
 
@@ -110,6 +116,17 @@ def validate_string_list(path, data, field, failures):
         fail(failures, f"{path}: {field} must contain only non-empty strings")
 
 
+def validate_library_reference(path, field, value, failures):
+    if not isinstance(value, str):
+        return
+    if not value.startswith("library://"):
+        fail(failures, f"{path}: {field} must use library://")
+        return
+    name = value.removeprefix("library://")
+    if not name or "/" in name:
+        fail(failures, f"{path}: {field} must reference a Library name, not a Library path: {value}")
+
+
 def validate_task(task_dir, failures):
     agents = task_dir / "AGENTS.md"
     task_toml = task_dir / "TASK.toml"
@@ -138,13 +155,13 @@ def validate_task(task_dir, failures):
     if isinstance(name, str) and name != task_dir.name:
         fail(failures, f"{task_toml}: name must match directory name {task_dir.name}")
 
-    uri = data.get("uri")
-    if isinstance(uri, str) and uri != f"library://repo/tasks/{task_dir.name}":
-        fail(failures, f"{task_toml}: uri must be library://repo/tasks/{task_dir.name}")
-
-    memory_create = data.get("memory_create_per_execution")
-    if memory_create is not None and not isinstance(memory_create, str):
-        fail(failures, f"{task_toml}: memory_create_per_execution must be a string")
+    for field in LIBRARY_REFERENCE_FIELDS:
+        value = data.get(field)
+        if isinstance(value, list):
+            for item in value:
+                validate_library_reference(task_toml, field, item, failures)
+        else:
+            validate_library_reference(task_toml, field, value, failures)
 
 
 def main():

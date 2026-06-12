@@ -10,6 +10,6 @@ If `LIBRARIES.local.toml` exists, read it after `LIBRARIES.toml`. It is for priv
 
 ## Index Rules
 
-Agents must read a Library's `AGENTS.md` and `LIBRARY.toml` before using that Library.
+Each Library points to a place. Explore that place using its own docs and files.
 
 Local index entries must not weaken checked-in governance.

@@ -4,4 +4,4 @@ Use this checklist at repository root when compliance should be checked for ever
 
 Verify compliance:
 
-- `library://repo/compliance/{path}`
+- `library://meta-harness`

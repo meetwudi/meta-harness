@@ -8,4 +8,6 @@ If `LIBRARIES.local.toml` exists, read it after `LIBRARIES.toml`. It is ignored 
 
 ## Index Rules
 
+Each Library points to a place. Explore that place using its own docs and files.
+
 Local index entries must not weaken checked-in governance.

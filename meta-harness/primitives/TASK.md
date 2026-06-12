@@ -2,15 +2,13 @@
 
 A task is an outcome-oriented execution contract.
 
-Tasks live in a Library. Repo tasks use:
+Tasks live in a Library. The Library points to the place; the task definition lives inside that place.
 
-```text
-library://repo/tasks/{task-name}
-```
+Tasks use checklists to make procedure and outcomes verifiable.
 
 ## Shape
 
-Project-specific tasks belong under `harness/tasks/`:
+Project-specific tasks commonly live under `harness/tasks/`:
 
 ```text
 harness/tasks/
@@ -27,13 +25,22 @@ harness/tasks/
 `TASK.toml` should include:
 
 - name
-- URI
+- source Library
 - purpose
-- libraries to read
-- memory paths to read, create, or update
+- Libraries to read
 - procedure checklist
 - outcome checklist
 - completion evidence
+
+Library references name a Library place:
+
+```text
+library://project-harness
+library://meta-harness
+library://task-memory
+```
+
+They should not enumerate paths inside the Library.
 
 ## Execution
 
@@ -41,8 +48,8 @@ A task execution should:
 
 1. Read the task `AGENTS.md`.
 2. Read `TASK.toml`.
-3. Read referenced Libraries and compliance.
-4. Create per-execution memory when the task defines it.
+3. Read referenced Libraries.
+4. Use Memory when relevant or mark it unavailable when no suitable Memory Library exists.
 5. Complete procedure items.
 6. Check outcomes.
 7. Record completion evidence.

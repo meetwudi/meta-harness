@@ -8,6 +8,8 @@ Root entry point: [../AGENTS.md](../AGENTS.md)
 
 Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)
 
+Primitive orientation: [PRIMITIVE-ORIENTATION.md](PRIMITIVE-ORIENTATION.md)
+
 Project harness: [../harness/AGENTS.md](../harness/AGENTS.md)
 
 Primitive designs: [primitives/AGENTS.md](primitives/AGENTS.md)
@@ -25,8 +27,6 @@ Task index template: [templates/harness/tasks/AGENTS.md](templates/harness/tasks
 Library discovery template: [templates/harness/libraries/AGENTS.md](templates/harness/libraries/AGENTS.md)
 
 Library index template: [templates/harness/libraries/LIBRARIES.toml](templates/harness/libraries/LIBRARIES.toml)
-
-Repo library template: [templates/harness/libraries/repo/LIBRARY.toml](templates/harness/libraries/repo/LIBRARY.toml)
 
 Repository checklist template: [templates/CHECKLIST.md](templates/CHECKLIST.md)
 

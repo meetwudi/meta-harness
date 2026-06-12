@@ -1,5 +1,13 @@
 # Checked-in Library index for a managed project.
 
 [[libraries]]
-name = "repo"
-definition = "repo/LIBRARY.toml"
+name = "meta-harness"
+primitive_kind = "library"
+location = "meta-harness"
+relative_to = "current-git-repository"
+
+[[libraries]]
+name = "project-harness"
+primitive_kind = "library"
+location = "harness"
+relative_to = "current-git-repository"

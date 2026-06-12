@@ -2,5 +2,6 @@
 
 # Example:
 # [[libraries]]
-# name = "private"
-# definition = "/absolute/path/to/private/LIBRARY.toml"
+# name = "task-memory"
+# primitive_kind = "memory"
+# location = "/absolute/path/to/task-memory"

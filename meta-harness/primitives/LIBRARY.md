@@ -1,22 +1,22 @@
 # Library
 
-A Library is a governed knowledge place that agents may read from or update according to project rules.
+A Library is a governed place that agents may explore.
 
-A Library may be a local folder outside the repo, cloud knowledge base, database, private note system, CMS, website, documentation portal, API, or another knowledge source.
+A Library may point to a repository folder, local folder outside the repo, cloud knowledge base, database, private note system, CMS, website, documentation portal, API, or another knowledge source.
 
-Memory is a structured, agent-updatable Library path.
+The Library index says where the place is. The place itself carries the knowledge.
+
+Libraries organize knowledge, including primitive knowledge such as tasks, memory, compliance, and checklists.
 
 ## Shape
 
-Project-specific Library docs belong under `harness/libraries/`:
+Project-specific Library discovery belongs under `harness/libraries/`:
 
 ```text
 harness/libraries/
   AGENTS.md
   LIBRARIES.toml
-  {library-name}/
-    AGENTS.md
-    LIBRARY.toml
+  LIBRARIES.local.toml  # ignored when present
 ```
 
 `harness/libraries/AGENTS.md` explains Library discovery.
@@ -25,89 +25,74 @@ harness/libraries/
 
 `harness/libraries/LIBRARIES.local.toml` is the ignored local Library index.
 
-Agents should read both TOML indexes when present. Local index entries may extend or override access details for the current machine, but must not weaken checked-in governance.
+Agents should read both TOML indexes when present. Local index entries may add private or machine-local Libraries, but must not weaken checked-in governance.
 
-Each index entry points to a Library definition:
+## Index
+
+Each Library entry points to one place:
 
 ```toml
 [[libraries]]
-name = "repo"
-definition = "repo/LIBRARY.toml"
+name = "meta-harness"
+primitive_kind = "library"
+location = "meta-harness"
+relative_to = "current-git-repository"
 ```
 
-`LIBRARY.toml` is the Library definition. It should include:
+Required fields:
 
-- library name
-- URI authority
-- purpose
-- governance
-- `[[paths]]` entries
+- `name`
+- `primitive_kind`
+- `location`
 
-The repo keeps Library docs. The knowledge itself lives wherever the Library says it lives.
+`relative_to = "current-git-repository"` means the location is relative to the nearest Git repository root.
 
-Every checked-in Library must be listed in `LIBRARIES.toml` and have `AGENTS.md` and `LIBRARY.toml`. Agents must read both before using the Library unless a more specific `AGENTS.md` in the Library's discovery chain applies.
+When `relative_to` is omitted, `location` is an absolute location or an external location understood by the agent or tool that uses it.
 
-Local-only Library entries should include enough information to find the Library docs or explain why the Library is unavailable.
+## References
 
-## URI
-
-All Library references use `library://`:
+Library references use the Library name:
 
 ```text
-library://{library-name}/{path}
+library://{library-name}
 ```
-
-The `{library-name}` selects the Library. The `{path}` selects knowledge inside that Library.
 
 Examples:
 
 ```text
-library://project/memory/tasks/concise-harness-cleanup
-library://project/memory/task-executions/concise-harness-cleanup/{execution-id}
-library://private/memory/user-preferences
-library://nyt/articles/...
+library://meta-harness
+library://project-harness
+library://task-memory
 ```
 
-Memory-capable paths are Library paths with memory rules.
+A Library reference selects the place. Agents should explore the selected place instead of expecting the Library index to enumerate its contents.
 
-## Paths
+## Primitive Kind
 
-Each `[[paths]]` entry defines one addressable Library path:
+`primitive_kind` tells agents what kind of harness primitive the Library primarily carries.
 
-```toml
-[[paths]]
-uri = "library://repo/compliance/{path}"
-kind = "compliance"
-location = "meta-harness/compliance"
-relative_to = "current-git-repository"
-```
+Initial kinds:
 
-`location` is optional. When present, `relative_to = "current-git-repository"` means the location is relative to the nearest Git repository root.
+- `library`
+- `compliance`
+- `task`
+- `memory`
+- `reference`
 
-## Access
+A broad place such as `library://meta-harness` may contain several primitive kinds. In that case, use `primitive_kind = "library"` and let the place's own files guide exploration.
 
-Library access may be:
+## Memory
 
-- read-only
-- read-write
-- append-only
-- human-approved for updates
-- unavailable until a required tool, credential, or access method exists
+Task memory should normally live in a local or external memory Library, not in the repository.
 
-Agents must follow the selected Library's access rules before reading or updating knowledge.
+A task may create or organize a memory Library when it needs task execution memory and no suitable local Library exists. The local Library should be registered in `harness/libraries/LIBRARIES.local.toml`.
+
+Repository memory should not be created by default.
 
 ## Governance
 
-Governance should say:
+Library governance belongs either in the Library entry or in the place it points to.
 
-- who or what may read from the Library
-- who or what may update the Library
-- which paths require explicit human approval
-- whether agents may append, edit, consolidate, or only propose changes
-- how provenance must be preserved
+Compliance content still requires explicit human approval for obligation changes.
 
-Compliance paths require explicit human approval for obligation changes.
-
-When a human asks to create, update, configure, or use memory in a managed project, agents should use a memory-capable Library unless the human explicitly names another memory system.
-
-Requirements, decisions, checklists, product specs, and engineering specs remain authoritative in their own docs.
+Agents must follow the selected Library's governance before updating knowledge.
