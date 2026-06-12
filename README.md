@@ -1,6 +1,10 @@
-# Meta Harness
+---
+meta_harness:
+  kind: readme
+  ai_edit: explicit_human_request_required
+---
 
-AI agents may not change this file unless a human explicitly asks to change `README.md`.
+# Meta Harness
 
 Meta Harness is a knowledge-first project framework.
 
@@ -19,6 +23,6 @@ Project-specific knowledge belongs under `harness/`.
 
 ## Bootstrap
 
-To set up a new repository, read [meta-harness/BOOTSTRAP.md](meta-harness/BOOTSTRAP.md).
+To set up a new repository, ask:
 
-For the expected repository shape, read [meta-harness/HARNESS-DESIGN.md](meta-harness/HARNESS-DESIGN.md).
+> Read `meta-harness/BOOTSTRAP.md` and bootstrap Meta Harness.
