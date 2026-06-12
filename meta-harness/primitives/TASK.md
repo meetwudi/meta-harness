@@ -42,6 +42,13 @@ library://task-memory
 
 Do not enumerate paths inside the Library reference.
 
+Memory Libraries use these fields when configured:
+
+```toml
+per_execution_memory_library = "library://task-memory"
+cross_execution_memory_library = "library://task-memory"
+```
+
 ## Execution
 
 A task execution should:
@@ -49,7 +56,7 @@ A task execution should:
 1. Read the task `AGENTS.md`.
 2. Read `TASK.toml`.
 3. Read referenced Libraries.
-4. Use Memory when relevant or mark it unavailable when no suitable Memory Library exists.
+4. Use configured Memory Libraries when present.
 5. Complete procedure items.
 6. Check outcomes.
 7. Record completion evidence.

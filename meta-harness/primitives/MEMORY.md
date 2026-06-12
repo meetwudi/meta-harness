@@ -6,6 +6,14 @@ Memory is a primitive. A Library may contain Memory, point to it, or be primaril
 
 Task memory should normally live outside the repository unless a human explicitly asks otherwise.
 
+The default local task Memory Library is:
+
+```text
+library://task-memory
+```
+
+Managed projects may register it in ignored local Library discovery at `harness/libraries/LIBRARIES.local.toml`.
+
 ## Purpose
 
 Memory helps agents:
@@ -39,7 +47,10 @@ A task may:
 - summarize older memory
 - mark memory unavailable when no suitable Memory Library exists
 
-Tasks should not restate that Memory exists unless they have task-specific memory needs.
+Tasks may specify:
+
+- `per_execution_memory_library`
+- `cross_execution_memory_library`
 
 ## Governance
 

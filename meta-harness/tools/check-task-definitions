@@ -21,7 +21,6 @@ REQUIRED_FIELDS = {
 
 LIST_FIELDS = (
     "libraries",
-    "memory_libraries",
     "procedure",
     "outcomes",
     "completion_evidence",
@@ -30,7 +29,8 @@ LIST_FIELDS = (
 LIBRARY_REFERENCE_FIELDS = (
     "source_library",
     "libraries",
-    "memory_libraries",
+    "per_execution_memory_library",
+    "cross_execution_memory_library",
 )
 
 

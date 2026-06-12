@@ -1,7 +1,6 @@
 # Local Library index for this machine. Keep this file ignored by git.
 
-# Example:
-# [[libraries]]
-# name = "task-memory"
-# primitive_kind = "memory"
-# location = "/absolute/path/to/task-memory"
+[[libraries]]
+name = "task-memory"
+primitive_kind = "memory"
+location = "~/.meta-harness/task-memory"

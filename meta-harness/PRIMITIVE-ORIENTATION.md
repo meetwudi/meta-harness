@@ -19,6 +19,7 @@ The primitives compose:
 - Tasks read Libraries.
 - Tasks may update Libraries when allowed.
 - Tasks use Memory without needing every task to restate that Memory exists.
+- The default local task Memory Library is `library://task-memory` when registered.
 - Tasks use Checklists to make procedure and outcomes verifiable.
 - Compliance applies to work and uses Checklists for evidence.
 - Libraries organize all of these primitives.
