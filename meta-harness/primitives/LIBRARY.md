@@ -2,7 +2,7 @@
 
 A Library is a governed place that agents may explore.
 
-A Library may point to a repository folder, local folder outside the repo, cloud knowledge base, database, private note system, CMS, website, documentation portal, API, or another knowledge source.
+A Library may point to a repository folder, local folder outside the repo, cloud knowledge base, database, private notes, CMS, website, documentation portal, API, or another knowledge source.
 
 The Library index says where the place is. The place itself carries the knowledge.
 
@@ -19,7 +19,7 @@ harness/libraries/
   LIBRARIES.local.toml  # ignored when present
 ```
 
-`AGENTS.md` explains Library discovery. `LIBRARIES.toml` is the checked-in index. `LIBRARIES.local.toml` is ignored and may add private or machine-local Libraries, but must not weaken checked-in governance.
+`AGENTS.md` explains Library discovery. `LIBRARIES.toml` is the checked-in index. `LIBRARIES.local.toml` is ignored and may add private or machine-local Libraries without weakening checked-in governance.
 
 ## Index
 
@@ -59,7 +59,7 @@ library://project-harness
 library://task-memory
 ```
 
-A Library reference selects the place. Agents should explore that place instead of expecting the index to enumerate its contents.
+A Library reference selects a place to explore. The index does not enumerate that place's contents.
 
 ## Primitive Kind
 
@@ -79,7 +79,7 @@ A broad place such as `library://meta-harness` may contain several primitive kin
 
 Task memory should normally live in a local or external memory Library, not in the repository.
 
-A task may create or organize a memory Library when it needs task execution memory and no suitable local Library exists. Register that Library in `harness/libraries/LIBRARIES.local.toml`; do not create repository memory by default.
+A task may create or organize a memory Library when no suitable local Library exists. Register it in `harness/libraries/LIBRARIES.local.toml`; do not create repository memory by default.
 
 ## Governance
 

@@ -2,9 +2,7 @@
 
 Memory is agent-usable knowledge carried across time.
 
-Memory is a primitive. A Library may contain Memory, point to it, or be primarily a Memory Library.
-
-Task memory should normally live outside the repository unless a human explicitly asks otherwise.
+A Library may contain Memory, point to it, or be primarily a Memory Library.
 
 The default local task Memory Library is:
 
@@ -12,7 +10,7 @@ The default local task Memory Library is:
 library://task-memory
 ```
 
-Managed projects may register it in ignored local Library discovery at `harness/libraries/LIBRARIES.local.toml`.
+Managed projects may register it in ignored local Library discovery at `harness/libraries/LIBRARIES.local.toml`. Task memory should normally live outside the repository unless a human explicitly asks otherwise.
 
 ## Purpose
 
@@ -29,15 +27,12 @@ Memory may be organized as:
 
 - sequential entries
 - summaries
-- task-specific memory
-- execution-specific memory
+- task-specific execution memory
 - durable project context
 
 The Memory Library and task choose the organization.
 
 ## Task Interaction
-
-Every task execution should treat Memory as an available primitive.
 
 A task may:
 
