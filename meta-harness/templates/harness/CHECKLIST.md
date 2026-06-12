@@ -10,3 +10,7 @@ Use this checklist for changes under `harness/`.
 - Verify AI-proposed structure is clearly labeled as a non-committed proposal or was asked for before being added.
 - Verify AI-generated speculation has not been committed as product content or structure.
 - Verify reorganized, clarified, formatted, or deduplicated material preserves the meaning of the sourced material.
+- Verify repo-backed memory contains only repo-safe content.
+- Verify memory entries and summaries preserve source discipline and do not invent product content.
+- Verify private or external memories use descriptors and logical `memory://` references instead of committing private contents.
+- Verify memory consolidation preserves meaning and does not silently replace sequential history.
