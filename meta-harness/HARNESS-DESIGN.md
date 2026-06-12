@@ -4,7 +4,7 @@
 
 ## Principles
 
-Meta Harness defines how a managed project uses spec-as-code harness docs.
+Meta Harness defines how a managed project uses knowledge-first harness docs.
 
 A managed project is a repository that carries `.meta-harness.json` and follows this design.
 
@@ -29,6 +29,7 @@ AGENTS.md
 CHECKLIST.md
 meta-harness/
   AGENTS.md
+  BOOTSTRAP.md
   HARNESS-DESIGN.md
   compliance/
     AI-POLICY.md
