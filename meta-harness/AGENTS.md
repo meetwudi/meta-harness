@@ -8,7 +8,15 @@ Root entry point: [../AGENTS.md](../AGENTS.md)
 
 Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)
 
-Primitive orientation: [PRIMITIVE-ORIENTATION.md](PRIMITIVE-ORIENTATION.md)
+Harness file metadata: [HARNESS-FILE-METADATA.md](HARNESS-FILE-METADATA.md)
+
+Setup docs: [setup/AGENTS.md](setup/AGENTS.md)
+
+Primitive orientation: [setup/PRIMITIVE-ORIENTATION.md](setup/PRIMITIVE-ORIENTATION.md)
+
+New repository setup: [setup/BOOTSTRAP-NEW-REPOSITORY.md](setup/BOOTSTRAP-NEW-REPOSITORY.md)
+
+Upgrade: [setup/UPGRADE.md](setup/UPGRADE.md)
 
 Project harness: [../harness/AGENTS.md](../harness/AGENTS.md)
 
@@ -30,7 +38,9 @@ Library index template: [templates/harness/libraries/LIBRARIES.toml](templates/h
 
 Repository checklist template: [templates/CHECKLIST.md](templates/CHECKLIST.md)
 
-Commit hook template: [templates/git-hooks/commit-msg](templates/git-hooks/commit-msg)
+Pre-commit hook template: [templates/git-hooks/pre-commit](templates/git-hooks/pre-commit)
+
+Commit-message hook template: [templates/git-hooks/commit-msg](templates/git-hooks/commit-msg)
 
 Gitignore template: [templates/gitignore](templates/gitignore)
 
@@ -39,6 +49,7 @@ Gitignore template: [templates/gitignore](templates/gitignore)
 - `meta-harness/`: The management layer copied from Meta Harness. Managed projects must not modify this layer directly; update it only from the Meta Harness source.
 - `harness/`: The project-specific harness layer. It may be created by a project when project rules, specs, or workflows need their own progressive disclosure chain.
 - `meta-harness/primitives/`: Standard harness primitive designs.
+- `meta-harness/setup/`: Orientation, new repository setup, and upgrade guides.
 - `meta-harness/compliance/`: Human-approved compliance examples and management-layer rules.
 - `meta-harness/templates/`: Copyable templates for managed projects.
 - `meta-harness/tools/`: Portable enforcement tools.

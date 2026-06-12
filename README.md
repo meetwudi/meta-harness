@@ -24,4 +24,4 @@ Project-specific knowledge belongs under `harness/`.
 
 To set up a new repository, ask:
 
-> Read `meta-harness/BOOTSTRAP.md` and bootstrap Meta Harness.
+> Read `meta-harness/setup/BOOTSTRAP-NEW-REPOSITORY.md` and bootstrap Meta Harness.

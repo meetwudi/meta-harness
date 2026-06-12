@@ -2,7 +2,7 @@
 
 Read this before working in a Meta Harness-managed project.
 
-Meta Harness treats knowledge as code. AI is the runtime that reads, follows, and updates that knowledge under human rules.
+Meta Harness is knowledge-first. AI is the runtime that reads, follows, and updates knowledge under human rules.
 
 Libraries are where knowledge lives. A Library points to a place. The agent explores that place through its own files, tools, and instructions.
 
