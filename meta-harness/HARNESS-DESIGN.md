@@ -36,6 +36,9 @@ meta-harness/
     BOOTSTRAP-NEW-REPOSITORY.md
     PRIMITIVE-ORIENTATION.md
     UPGRADE.md
+    migrations/
+      AGENTS.md
+      {sequence}-{commit}-{name}.md
   compliance/
     AI-POLICY.md
     DEVELOPMENT-PRINCIPLES.md

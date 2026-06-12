@@ -2,8 +2,9 @@
 
 Use this folder for setup and orientation workflows.
 
-Primitive orientation: [PRIMITIVE-ORIENTATION.md](PRIMITIVE-ORIENTATION.md)
+Read the file that matches the workflow:
 
-New repository setup: [BOOTSTRAP-NEW-REPOSITORY.md](BOOTSTRAP-NEW-REPOSITORY.md)
-
-Upgrade: [UPGRADE.md](UPGRADE.md)
+- primitive orientation
+- new repository setup
+- upgrade
+- upgrade migrations under `migrations/`

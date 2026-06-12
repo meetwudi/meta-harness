@@ -14,6 +14,14 @@ git diff <old-source-ref>..<new-source-ref> -- meta-harness/
 
 Use that diff to understand what changed before editing the managed repository.
 
+## Migrations
+
+Review [migrations/AGENTS.md](migrations/AGENTS.md).
+
+For each migration, check whether the upgrade crosses the migration commit.
+
+Apply every crossed migration in order.
+
 ## Plan
 
 Do not blindly copy files.
@@ -26,6 +34,7 @@ Walk through the existing harness setup:
 - `meta-harness/`
 - `harness/`
 - installed git hooks and GitHub workflows
+- setup migrations crossed by the upgrade
 
 Identify what must change because of the Meta Harness update and why.
 
