@@ -8,6 +8,8 @@ Root entry point: [../AGENTS.md](../AGENTS.md)
 
 Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)
 
+Development principles: [DEVELOPMENT-PRINCIPLES.md](DEVELOPMENT-PRINCIPLES.md)
+
 AI policy: [AI-POLICY.md](AI-POLICY.md)
 
 Harness checklist template: [templates/harness/CHECKLIST.md](templates/harness/CHECKLIST.md)

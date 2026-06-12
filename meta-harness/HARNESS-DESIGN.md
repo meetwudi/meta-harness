@@ -6,6 +6,8 @@ Meta Harness defines how a managed project uses spec-as-code harness docs.
 
 A managed project is a repository that carries `.meta-harness.json` and follows this design.
 
+Development principles are defined in [DEVELOPMENT-PRINCIPLES.md](DEVELOPMENT-PRINCIPLES.md).
+
 Meta Harness is self-managed: this repository uses the same marker and management layer that it provides to managed projects.
 
 `meta-harness/` is the copied management layer. Managed projects must not modify files under `meta-harness/` directly; that layer should change only when updating from the Meta Harness source.
@@ -24,6 +26,7 @@ AGENTS.md
 meta-harness/
   AGENTS.md
   HARNESS-DESIGN.md
+  DEVELOPMENT-PRINCIPLES.md
   AI-POLICY.md
   templates/
   tools/
