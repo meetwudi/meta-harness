@@ -31,6 +31,7 @@ meta-harness/
   AGENTS.md
   BOOTSTRAP.md
   HARNESS-DESIGN.md
+  HARNESS-FILE-METADATA.md
   compliance/
     AI-POLICY.md
     DEVELOPMENT-PRINCIPLES.md
@@ -104,4 +105,4 @@ Managed projects should review repository-wide compliance with root `CHECKLIST.m
 
 Managed projects should review harness-specific compliance with `harness/CHECKLIST.md` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
 
-Library definitions, task definitions, and checklist attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror the same checks for commits with the commit hook template.
+Library definitions, task definitions, harness file metadata, and checklist attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.

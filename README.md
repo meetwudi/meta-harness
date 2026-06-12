@@ -1,5 +1,5 @@
 ---
-agent_policy:
+harness_file:
   change: explicit_human_request
 ---
 

@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+repo_root="$(git rev-parse --show-toplevel)"
+
+changed_files="$(mktemp)"
+trap 'rm -f "$changed_files"' EXIT
+
+git diff --cached --name-only --diff-filter=ACMR > "$changed_files"
+
+python3 "$repo_root/meta-harness/tools/check-harness-file-metadata" \
+  --repo-root "$repo_root" \
+  --changed-files "$changed_files"
