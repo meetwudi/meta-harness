@@ -52,6 +52,13 @@ Tasks may specify:
 - `per_execution_memory_library`
 - `cross_execution_memory_library`
 
+Example:
+
+```toml
+per_execution_memory_library = "library://task-memory/{task-name}/executions/"
+cross_execution_memory_library = "library://task-memory/{task-name}/common/"
+```
+
 ## Governance
 
 Memory updates must preserve provenance and meaning.

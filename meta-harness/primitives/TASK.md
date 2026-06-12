@@ -42,11 +42,11 @@ library://task-memory
 
 Do not enumerate paths inside the Library reference.
 
-Memory Libraries use these fields when configured:
+Memory fields may point to task-specific places inside a Memory Library:
 
 ```toml
-per_execution_memory_library = "library://task-memory"
-cross_execution_memory_library = "library://task-memory"
+per_execution_memory_library = "library://task-memory/{task-name}/executions/"
+cross_execution_memory_library = "library://task-memory/{task-name}/common/"
 ```
 
 ## Execution

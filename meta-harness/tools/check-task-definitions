@@ -29,6 +29,9 @@ LIST_FIELDS = (
 LIBRARY_REFERENCE_FIELDS = (
     "source_library",
     "libraries",
+)
+
+MEMORY_REFERENCE_FIELDS = (
     "per_execution_memory_library",
     "cross_execution_memory_library",
 )
@@ -127,6 +130,16 @@ def validate_library_reference(path, field, value, failures):
         fail(failures, f"{path}: {field} must reference a Library name, not a Library path: {value}")
 
 
+def validate_memory_reference(path, field, value, failures):
+    if value is None:
+        return
+    if not isinstance(value, str) or not value.strip():
+        fail(failures, f"{path}: {field} must be a non-empty string")
+        return
+    if not value.startswith("library://"):
+        fail(failures, f"{path}: {field} must use library://")
+
+
 def validate_task(task_dir, failures):
     agents = task_dir / "AGENTS.md"
     task_toml = task_dir / "TASK.toml"
@@ -162,6 +175,9 @@ def validate_task(task_dir, failures):
                 validate_library_reference(task_toml, field, item, failures)
         else:
             validate_library_reference(task_toml, field, value, failures)
+
+    for field in MEMORY_REFERENCE_FIELDS:
+        validate_memory_reference(task_toml, field, data.get(field), failures)
 
 
 def main():
