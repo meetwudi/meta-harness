@@ -1,3 +1,5 @@
+> Compliance: This file contains human-approved repository rules. AI agents may not change compliance obligations in this file unless a human explicitly approves the change.
+
 # AI Policy
 
 This policy applies to AI agents working in managed projects.
@@ -52,6 +54,8 @@ Good: Preserve the vague direction without acceptance tests. If the document req
 
 ## Checklist Requirement
 
-Managed projects should include `harness/CHECKLIST.md` to make this policy reviewable. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
+Managed projects should include root `CHECKLIST.md` to make repository-wide compliance reviewable. They may copy the template from `meta-harness/templates/CHECKLIST.md`.
+
+Managed projects may also include `harness/CHECKLIST.md` for harness-specific checks. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
 
 At minimum, that checklist should require reviewers to verify source discipline for material harness content.

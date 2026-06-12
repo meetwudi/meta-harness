@@ -4,10 +4,10 @@ This folder defines standard Meta Harness primitives.
 
 ## Primitive docs
 
-Product harness: [PRODUCT.md](PRODUCT.md)
+Task: [TASK.md](TASK.md)
 
-Memory harness: [MEMORY.md](MEMORY.md)
+Library: [LIBRARY.md](LIBRARY.md)
 
-Engineering practices: [ENGINEERING.md](ENGINEERING.md)
+Compliance: [COMPLIANCE.md](COMPLIANCE.md)
 
 Checklist attestation: [CHECKLIST.md](CHECKLIST.md)

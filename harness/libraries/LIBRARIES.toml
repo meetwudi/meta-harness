@@ -1,0 +1,5 @@
+# Checked-in Library index for this Meta Harness repository.
+
+[[libraries]]
+name = "repo"
+definition = "repo/LIBRARY.toml"

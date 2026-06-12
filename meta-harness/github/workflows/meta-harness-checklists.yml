@@ -1,15 +1,23 @@
-name: Meta Harness Checklists
+name: Meta Harness Checks
 
 on:
   pull_request:
 
 jobs:
-  checklists:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Verify library definitions
+        run: |
+          python3 meta-harness/tools/check-library-definitions
+
+      - name: Verify task definitions
+        run: |
+          python3 meta-harness/tools/check-task-definitions
 
       - name: Collect PR changes and attestations
         env:

@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+import argparse
+import ast
+import sys
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    tomllib = None
+
+
+REQUIRED_FIELDS = {
+    "name": str,
+    "uri": str,
+    "purpose": str,
+    "procedure": list,
+    "completion_evidence": list,
+}
+
+LIST_FIELDS = (
+    "libraries",
+    "memory_read",
+    "memory_update",
+    "procedure",
+    "outcomes",
+    "completion_evidence",
+)
+
+
+def fail(failures, message):
+    failures.append(message)
+
+
+def strip_comment(line):
+    in_string = False
+    result = []
+    for char in line:
+        if char == '"':
+            in_string = not in_string
+        if char == "#" and not in_string:
+            break
+        result.append(char)
+    return "".join(result).strip()
+
+
+def parse_value(raw):
+    raw = raw.strip()
+    if raw.startswith("["):
+        return ast.literal_eval(raw)
+    if raw.startswith('"') and raw.endswith('"'):
+        return ast.literal_eval(raw)
+    return raw
+
+
+def parse_minimal_toml(text):
+    data = {}
+    pending_key = None
+    pending_lines = []
+
+    def finish_pending():
+        nonlocal pending_key, pending_lines
+        if pending_key is None:
+            return
+        data[pending_key] = parse_value("\n".join(pending_lines))
+        pending_key = None
+        pending_lines = []
+
+    for raw_line in text.splitlines():
+        line = strip_comment(raw_line)
+        if not line:
+            continue
+        if pending_key is not None:
+            pending_lines.append(line)
+            if line.endswith("]"):
+                finish_pending()
+            continue
+        if "=" not in line:
+            continue
+        key, value = [part.strip() for part in line.split("=", 1)]
+        if value.startswith("[") and not value.endswith("]"):
+            pending_key = key
+            pending_lines = [value]
+            continue
+        data[key] = parse_value(value)
+
+    finish_pending()
+    return data
+
+
+def load_toml(path, failures):
+    try:
+        if tomllib is not None:
+            return tomllib.loads(path.read_text())
+        return parse_minimal_toml(path.read_text())
+    except Exception as exc:
+        fail(failures, f"{path}: invalid TOML: {exc}")
+    return None
+
+
+def validate_string_list(path, data, field, failures):
+    value = data.get(field, [])
+    if not isinstance(value, list):
+        fail(failures, f"{path}: {field} must be a list")
+        return
+    if not value and field in REQUIRED_FIELDS:
+        fail(failures, f"{path}: {field} must not be empty")
+    bad = [item for item in value if not isinstance(item, str) or not item.strip()]
+    if bad:
+        fail(failures, f"{path}: {field} must contain only non-empty strings")
+
+
+def validate_task(task_dir, failures):
+    agents = task_dir / "AGENTS.md"
+    task_toml = task_dir / "TASK.toml"
+
+    for required in (agents, task_toml):
+        if not required.is_file():
+            fail(failures, f"{task_dir}: missing {required.name}")
+            return
+
+    data = load_toml(task_toml, failures)
+    if data is None:
+        return
+    if not isinstance(data, dict):
+        fail(failures, f"{task_toml}: top-level value must be a table")
+        return
+
+    for field, expected_type in REQUIRED_FIELDS.items():
+        value = data.get(field)
+        if not isinstance(value, expected_type) or (expected_type is str and not value.strip()):
+            fail(failures, f"{task_toml}: {field} must be a non-empty {expected_type.__name__}")
+
+    for field in LIST_FIELDS:
+        validate_string_list(task_toml, data, field, failures)
+
+    name = data.get("name")
+    if isinstance(name, str) and name != task_dir.name:
+        fail(failures, f"{task_toml}: name must match directory name {task_dir.name}")
+
+    uri = data.get("uri")
+    if isinstance(uri, str) and uri != f"library://repo/tasks/{task_dir.name}":
+        fail(failures, f"{task_toml}: uri must be library://repo/tasks/{task_dir.name}")
+
+    memory_create = data.get("memory_create_per_execution")
+    if memory_create is not None and not isinstance(memory_create, str):
+        fail(failures, f"{task_toml}: memory_create_per_execution must be a string")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Verify Meta Harness Task definitions.")
+    parser.add_argument("--repo-root", default=".")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    tasks_root = repo_root / "harness" / "tasks"
+    failures = []
+
+    if not tasks_root.exists():
+        print("Meta Harness task definitions passed: no harness/tasks directory.")
+        return 0
+
+    if not (tasks_root / "AGENTS.md").is_file():
+        fail(failures, "harness/tasks: missing AGENTS.md")
+
+    count = 0
+    for task_dir in sorted(path for path in tasks_root.iterdir() if path.is_dir()):
+        validate_task(task_dir, failures)
+        count += 1
+
+    if failures:
+        print("Meta Harness task definition check failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
+        return 1
+
+    print(f"Meta Harness task definitions passed for {count} task(s).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

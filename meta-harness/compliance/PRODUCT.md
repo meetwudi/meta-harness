@@ -1,3 +1,5 @@
+> Compliance: This file contains human-approved repository rules. AI agents may not change compliance obligations in this file unless a human explicitly approves the change.
+
 # Product Harness
 
 Each managed project records product context in `harness/product/CONTEXT.md`: what the product is, who it is for, and what outcomes matter.

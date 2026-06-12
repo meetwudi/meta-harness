@@ -1,0 +1,6 @@
+# Local Library index for this machine. Keep this file ignored by git.
+
+# Example:
+# [[libraries]]
+# name = "private"
+# definition = "/absolute/path/to/private/LIBRARY.toml"

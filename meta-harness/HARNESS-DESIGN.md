@@ -1,3 +1,5 @@
+> Compliance: This file contains human-approved repository rules. AI agents may not change compliance obligations in this file unless a human explicitly approves the change.
+
 # Harness Design
 
 ## Principles
@@ -6,7 +8,7 @@ Meta Harness defines how a managed project uses spec-as-code harness docs.
 
 A managed project is a repository that carries `.meta-harness.json` and follows this design.
 
-Development principles are defined in [DEVELOPMENT-PRINCIPLES.md](DEVELOPMENT-PRINCIPLES.md).
+Development principles are defined in [compliance/DEVELOPMENT-PRINCIPLES.md](compliance/DEVELOPMENT-PRINCIPLES.md).
 
 Meta Harness is self-managed: this repository uses the same marker and management layer that it provides to managed projects.
 
@@ -22,26 +24,40 @@ The root `AGENTS.md` is protected: AI agents may change it only when a human exp
 
 ```text
 .meta-harness.json
+.gitignore
 AGENTS.md
+CHECKLIST.md
 meta-harness/
   AGENTS.md
   HARNESS-DESIGN.md
-  DEVELOPMENT-PRINCIPLES.md
-  AI-POLICY.md
+  compliance/
+    AI-POLICY.md
+    DEVELOPMENT-PRINCIPLES.md
+    PRODUCT.md
+    ENGINEERING.md
   primitives/
     AGENTS.md
   templates/
+    git-hooks/
+    gitignore
   tools/
   github/
     workflows/
 harness/
   AGENTS.md
   CHECKLIST.md
-  memory/
-    {memory-name}/
+  tasks/
+    AGENTS.md
+    {task-name}/
       AGENTS.md
-      entries.md or entries.jsonl
-      summary.md
+      TASK.toml
+  libraries/
+    AGENTS.md  # Library discovery instructions
+    LIBRARIES.toml  # checked-in Library index
+    LIBRARIES.local.toml  # ignored local Library index
+    {library-name}/
+      AGENTS.md
+      LIBRARY.toml
   product/
     AGENTS.md
     CONTEXT.md
@@ -65,19 +81,28 @@ Managed projects should use that diff as the change record instead of relying on
 
 Managed projects should place their own harness content under `harness/`, not by editing the copied `meta-harness/` management layer.
 
-## Primitive Designs
+## Operational Primitives
 
-Standard harness primitive designs live under [primitives/](primitives/).
+Standard operational primitive designs live under [primitives/](primitives/).
 
-- Product harness: [primitives/PRODUCT.md](primitives/PRODUCT.md)
-- Memory harness: [primitives/MEMORY.md](primitives/MEMORY.md)
-- Engineering practices: [primitives/ENGINEERING.md](primitives/ENGINEERING.md)
+- Task: [primitives/TASK.md](primitives/TASK.md)
+- Library: [primitives/LIBRARY.md](primitives/LIBRARY.md)
+- Compliance: [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md)
 - Checklist attestation: [primitives/CHECKLIST.md](primitives/CHECKLIST.md)
 
-Use [primitives/MEMORY.md](primitives/MEMORY.md) when a human asks to create or configure a memory.
+Use [primitives/LIBRARY.md](primitives/LIBRARY.md) when a human asks to configure where project knowledge lives, how agents may access a knowledge source, or how memory paths should work.
 
-## AI Policy
+Use [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md) when a human asks to create, change, clarify, or enforce repository rules, product requirements, engineering practices, AI policy, or other binding project obligations.
 
-AI behavior policy is defined in [AI-POLICY.md](AI-POLICY.md).
+## Compliance Docs
 
-Managed projects should operationalize that policy for PR review with `harness/CHECKLIST.md` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
+- AI policy: [compliance/AI-POLICY.md](compliance/AI-POLICY.md)
+- Development principles: [compliance/DEVELOPMENT-PRINCIPLES.md](compliance/DEVELOPMENT-PRINCIPLES.md)
+- Product harness: [compliance/PRODUCT.md](compliance/PRODUCT.md)
+- Engineering practices: [compliance/ENGINEERING.md](compliance/ENGINEERING.md)
+
+Managed projects should review repository-wide compliance with root `CHECKLIST.md`. They may copy the template from `meta-harness/templates/CHECKLIST.md`.
+
+Managed projects should review harness-specific compliance with `harness/CHECKLIST.md` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
+
+Library definitions, task definitions, and checklist attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror the same checks for commits with the commit hook template.

@@ -1,0 +1,21 @@
+#!/bin/sh
+set -eu
+
+commit_msg_file="$1"
+repo_root="$(git rev-parse --show-toplevel)"
+
+changed_files="$(mktemp)"
+trap 'rm -f "$changed_files"' EXIT
+
+git diff --cached --name-only --diff-filter=ACMR > "$changed_files"
+
+python3 "$repo_root/meta-harness/tools/check-library-definitions" \
+  --repo-root "$repo_root"
+
+python3 "$repo_root/meta-harness/tools/check-task-definitions" \
+  --repo-root "$repo_root"
+
+python3 "$repo_root/meta-harness/tools/check-checklist-attestations" \
+  --repo-root "$repo_root" \
+  --changed-files "$changed_files" \
+  --attestations "$commit_msg_file"
