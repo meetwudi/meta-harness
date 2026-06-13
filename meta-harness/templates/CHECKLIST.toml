@@ -1,0 +1,13 @@
+# Repository-wide checklist template.
+
+name = "repository"
+scope = "."
+purpose = "Review repository-wide compliance before accepting changes."
+
+libraries = [
+  "library://meta-harness",
+]
+
+[[items]]
+id = "meta-harness-compliance"
+text = "Verify compliance from library://meta-harness."

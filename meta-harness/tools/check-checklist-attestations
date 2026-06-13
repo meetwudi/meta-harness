@@ -43,7 +43,7 @@ def ancestor_dirs(file_path):
 def applicable_checklists(repo_root, file_path):
     checklists = []
     for directory in ancestor_dirs(file_path):
-        checklist = repo_root / directory / "CHECKLIST.md"
+        checklist = repo_root / directory / "CHECKLIST.toml"
         if checklist.is_file():
             checklists.append(normalize(str(checklist.relative_to(repo_root))))
     return checklists
@@ -51,7 +51,7 @@ def applicable_checklists(repo_root, file_path):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Verify Meta Harness CHECKLIST.md attestations for changed files."
+        description="Verify Meta Harness CHECKLIST.toml attestations for changed files."
     )
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--changed-files", required=True)
@@ -82,7 +82,7 @@ def main():
         print("", file=sys.stderr)
         print("Expected commit-message trailer format:", file=sys.stderr)
         print(
-            "Meta-Harness-Checklist: path=<path-to-CHECKLIST.md>; status=<pass|blocked|na>",
+            "Meta-Harness-Checklist: path=<path-to-CHECKLIST.toml>; status=<pass|blocked|na>",
             file=sys.stderr,
         )
         return 1
@@ -90,7 +90,7 @@ def main():
     if required:
         print(f"Meta Harness checklist attestation passed for {len(required)} checklist(s).")
     else:
-        print("Meta Harness checklist attestation passed: no applicable CHECKLIST.md files.")
+        print("Meta Harness checklist attestation passed: no applicable CHECKLIST.toml files.")
     return 0
 
 

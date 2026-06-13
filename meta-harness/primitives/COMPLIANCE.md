@@ -30,7 +30,7 @@ The selected Library defines location and approval rules.
 
 ## Checklist
 
-Checklists make compliance reviewable. Compliance defines obligations; `CHECKLIST.md` files define verification.
+Checklists make compliance reviewable. Compliance defines obligations; `CHECKLIST.toml` files define verification.
 
 For repository changes, applicable checklists should verify that:
 
@@ -39,7 +39,7 @@ For repository changes, applicable checklists should verify that:
 - AI-generated compliance content is not invented
 - compliance clarifications preserve sourced meaning
 
-Compliance files should identify the root or path-specific `CHECKLIST.md` files that verify them. Checklist attestations are the commit and PR evidence that applicable compliance was checked.
+Compliance files should identify the root or path-specific `CHECKLIST.toml` files that verify them. Checklist attestations are the commit and PR evidence that applicable compliance was checked.
 
 ## Tasks
 

@@ -1,0 +1,90 @@
+# Harness-specific checklist template.
+
+name = "harness"
+scope = "harness"
+purpose = "Review harness-specific compliance before accepting changes under harness/."
+
+libraries = [
+  "library://meta-harness",
+  "library://project-harness",
+]
+
+[[items]]
+id = "spec-before-code"
+text = "Verify material code changes are preceded by applicable spec updates, or the PR explains why no spec update is needed."
+
+[[items]]
+id = "source-material-content"
+text = "Verify material product content, product structure, or engineering practice added or changed in harness docs traces to human input, existing harness docs, or observed project evidence."
+
+[[items]]
+id = "rough-thinking"
+text = "Verify rough early product thinking stays in Raw Human Notes, Captured Direction, or close paraphrase instead of becoming requirements, acceptance tests, taxonomies, named loops, categories, workflows, or open questions."
+
+[[items]]
+id = "sourced-acceptance-tests"
+text = "Verify acceptance tests are sourced. If a requirement lacks sourced acceptance tests, mark that as an unknown source gap instead of inventing tests."
+
+[[items]]
+id = "sourced-open-questions"
+text = "Verify open questions are sourced. Do not add open questions merely because a topic seems incomplete."
+
+[[items]]
+id = "proposal-labeling"
+text = "Verify AI-proposed structure is labeled as a non-committed proposal or was requested before being added."
+
+[[items]]
+id = "no-ai-speculation"
+text = "Verify AI-generated speculation has not been committed as product content or structure."
+
+[[items]]
+id = "preserve-meaning"
+text = "Verify reorganized, clarified, formatted, or deduplicated material preserves the meaning of the sourced material."
+
+[[items]]
+id = "structured-source-of-truth"
+text = "Verify discovery and governance use the applicable structured source of truth instead of duplicate prose indexes."
+
+[[items]]
+id = "library-locations"
+text = "Verify Library definitions point to real places and declare a primitive kind."
+
+[[items]]
+id = "library-index-valid"
+text = "Verify checked-in Library definitions are valid in LIBRARIES.toml."
+
+[[items]]
+id = "shared-libraries"
+text = "Verify harness/libraries/LIBRARIES.toml lists shared repo-safe Libraries."
+
+[[items]]
+id = "local-libraries"
+text = "Verify local Library entries belong in ignored harness/libraries/LIBRARIES.local.toml and do not weaken checked-in governance."
+
+[[items]]
+id = "memory-libraries"
+text = "Verify memory-capable Libraries use the configured local or external location."
+
+[[items]]
+id = "library-memory-source-discipline"
+text = "Verify Library memory updates preserve source discipline and do not invent product content."
+
+[[items]]
+id = "task-definitions"
+text = "Verify task definitions include valid TASK.toml."
+
+[[items]]
+id = "compliance-notice"
+text = "Verify compliance files begin with the required human-approval notice."
+
+[[items]]
+id = "compliance-human-approval"
+text = "Verify compliance obligation changes have explicit human approval."
+
+[[items]]
+id = "compliance-checklist-links"
+text = "Verify compliance files identify applicable CHECKLIST.toml files."
+
+[[items]]
+id = "checklist-coverage"
+text = "Verify checklists cover applicable compliance obligations."

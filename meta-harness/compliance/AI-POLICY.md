@@ -30,6 +30,6 @@ Express durable learning as concise positive practice or checklist guidance inst
 
 ## Checklist Requirement
 
-Managed projects should include root `CHECKLIST.md` for repository-wide compliance review. They may also include descendant checklists for narrower scopes such as `harness/`.
+Managed projects should include root `CHECKLIST.toml` for repository-wide compliance review. They may also include descendant checklists for narrower scopes such as `harness/`.
 
 At minimum, checklists should verify source discipline for material harness content and preserve the applicable structured source of truth.

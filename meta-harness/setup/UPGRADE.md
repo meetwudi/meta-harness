@@ -29,7 +29,7 @@ Do not blindly copy files.
 Walk through the existing harness setup:
 
 - `AGENTS.md`
-- `CHECKLIST.md`
+- `CHECKLIST.toml`
 - `.meta-harness.json`
 - `meta-harness/`
 - `harness/`

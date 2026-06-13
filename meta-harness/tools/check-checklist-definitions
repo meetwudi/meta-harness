@@ -1,0 +1,222 @@
+#!/usr/bin/env python3
+import argparse
+import ast
+import re
+import sys
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    tomllib = None
+
+
+REQUIRED_FIELDS = {
+    "name": str,
+    "scope": str,
+    "purpose": str,
+    "items": list,
+}
+
+ITEM_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+
+def fail(failures, message):
+    failures.append(message)
+
+
+def relative(repo_root, path):
+    return str(path.relative_to(repo_root)).replace("\\", "/")
+
+
+def strip_comment(line):
+    in_string = False
+    result = []
+    for char in line:
+        if char == '"':
+            in_string = not in_string
+        if char == "#" and not in_string:
+            break
+        result.append(char)
+    return "".join(result).strip()
+
+
+def parse_value(raw):
+    raw = raw.strip()
+    if raw.startswith("["):
+        return ast.literal_eval(raw)
+    if raw.startswith('"') and raw.endswith('"'):
+        return ast.literal_eval(raw)
+    return raw
+
+
+def parse_minimal_toml(text):
+    data = {}
+    current = data
+    pending_key = None
+    pending_lines = []
+
+    def finish_pending():
+        nonlocal pending_key, pending_lines, current
+        if pending_key is None:
+            return
+        current[pending_key] = parse_value("\n".join(pending_lines))
+        pending_key = None
+        pending_lines = []
+
+    for raw_line in text.splitlines():
+        line = strip_comment(raw_line)
+        if not line:
+            continue
+        if pending_key is not None:
+            pending_lines.append(line)
+            if line.endswith("]"):
+                finish_pending()
+            continue
+        if line.startswith("[[") and line.endswith("]]"):
+            finish_pending()
+            table = line.strip("[]")
+            item = {}
+            data.setdefault(table, []).append(item)
+            current = item
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            finish_pending()
+            table = line.strip("[]")
+            current = data.setdefault(table, {})
+            continue
+        if "=" not in line:
+            continue
+        key, value = [part.strip() for part in line.split("=", 1)]
+        if value.startswith("[") and not value.endswith("]"):
+            pending_key = key
+            pending_lines = [value]
+            continue
+        current[key] = parse_value(value)
+
+    finish_pending()
+    return data
+
+
+def load_toml(path, failures):
+    try:
+        if tomllib is not None:
+            return tomllib.loads(path.read_text())
+        return parse_minimal_toml(path.read_text())
+    except Exception as exc:
+        fail(failures, f"{path}: invalid TOML: {exc}")
+    return None
+
+
+def expected_scope(repo_root, checklist_toml):
+    parent = checklist_toml.parent
+    if parent == repo_root:
+        return "."
+    return relative(repo_root, parent)
+
+
+def is_template_checklist(repo_root, checklist_toml):
+    parts = Path(relative(repo_root, checklist_toml)).parts
+    return len(parts) >= 3 and parts[0] == "meta-harness" and parts[1] == "templates"
+
+
+def validate_library_reference(path, field, value, failures):
+    if not isinstance(value, str) or not value.startswith("library://"):
+        fail(failures, f"{path}: {field} must use library://")
+
+
+def validate_libraries(path, data, failures):
+    libraries = data.get("libraries", [])
+    if not isinstance(libraries, list):
+        fail(failures, f"{path}: libraries must be a list when present")
+        return
+    for item in libraries:
+        validate_library_reference(path, "libraries", item, failures)
+
+
+def validate_items(path, items, failures):
+    if not isinstance(items, list):
+        return
+    if not items:
+        fail(failures, f"{path}: items must not be empty")
+        return
+
+    seen_ids = set()
+    for index, item in enumerate(items, start=1):
+        if not isinstance(item, dict):
+            fail(failures, f"{path}: items entry {index} must be a table")
+            continue
+
+        item_id = item.get("id")
+        text = item.get("text")
+        if not isinstance(item_id, str) or not item_id.strip():
+            fail(failures, f"{path}: items entry {index} id must be a non-empty string")
+        elif not ITEM_ID_RE.match(item_id):
+            fail(failures, f"{path}: item id must use lowercase letters, numbers, and hyphens: {item_id}")
+        elif item_id in seen_ids:
+            fail(failures, f"{path}: duplicate item id: {item_id}")
+        else:
+            seen_ids.add(item_id)
+
+        if not isinstance(text, str) or not text.strip():
+            fail(failures, f"{path}: item {item_id or index} text must be a non-empty string")
+
+        comment = item.get("comment")
+        if comment is not None and (not isinstance(comment, str) or not comment.strip()):
+            fail(failures, f"{path}: item {item_id or index} comment must be a non-empty string when present")
+
+
+def validate_checklist(repo_root, checklist_toml, failures):
+    data = load_toml(checklist_toml, failures)
+    if data is None:
+        return
+    if not isinstance(data, dict):
+        fail(failures, f"{checklist_toml}: top-level value must be a table")
+        return
+
+    for field, expected_type in REQUIRED_FIELDS.items():
+        value = data.get(field)
+        if not isinstance(value, expected_type) or (expected_type is str and not value.strip()):
+            fail(failures, f"{checklist_toml}: {field} must be a non-empty {expected_type.__name__}")
+
+    scope = data.get("scope")
+    expected = expected_scope(repo_root, checklist_toml)
+    if (
+        isinstance(scope, str)
+        and not is_template_checklist(repo_root, checklist_toml)
+        and scope != expected
+    ):
+        fail(failures, f"{checklist_toml}: scope must match containing directory: {expected}")
+
+    validate_libraries(checklist_toml, data, failures)
+    validate_items(checklist_toml, data.get("items"), failures)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Verify Meta Harness Checklist definitions.")
+    parser.add_argument("--repo-root", default=".")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    failures = []
+    checklists = sorted(repo_root.rglob("CHECKLIST.toml"))
+
+    if not checklists:
+        print("Meta Harness checklist definitions passed: no CHECKLIST.toml files.")
+        return 0
+
+    for checklist_toml in checklists:
+        validate_checklist(repo_root, checklist_toml, failures)
+
+    if failures:
+        print("Meta Harness checklist definition check failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
+        return 1
+
+    print(f"Meta Harness checklist definitions passed for {len(checklists)} checklist(s).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

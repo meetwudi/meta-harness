@@ -26,7 +26,7 @@ The root `AGENTS.md` is protected: AI agents may change it only when a human exp
 .meta-harness.json
 .gitignore
 AGENTS.md
-CHECKLIST.md
+CHECKLIST.toml
 meta-harness/
   AGENTS.md
   HARNESS-DESIGN.md
@@ -60,7 +60,7 @@ meta-harness/
     workflows/
 harness/
   AGENTS.md
-  CHECKLIST.md
+  CHECKLIST.toml
   tasks/
     AGENTS.md
     {task-name}/
@@ -126,8 +126,8 @@ By default this copies skills to `.codex/skills/` in the repository. Use `--code
 - Product harness: [compliance/PRODUCT.md](compliance/PRODUCT.md)
 - Engineering practices: [compliance/ENGINEERING.md](compliance/ENGINEERING.md)
 
-Managed projects should review repository-wide compliance with root `CHECKLIST.md`. They may copy the template from `meta-harness/templates/CHECKLIST.md`.
+Managed projects should review repository-wide compliance with root `CHECKLIST.toml`. They may copy the template from `meta-harness/templates/CHECKLIST.toml`.
 
-Managed projects should review harness-specific compliance with `harness/CHECKLIST.md` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
+Managed projects should review harness-specific compliance with `harness/CHECKLIST.toml` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.toml`.
 
 Library definitions, task definitions, skill definitions, harness file metadata, and checklist attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.
