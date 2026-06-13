@@ -15,6 +15,9 @@ python3 "$repo_root/meta-harness/tools/check-library-definitions" \
 python3 "$repo_root/meta-harness/tools/check-task-definitions" \
   --repo-root "$repo_root"
 
+python3 "$repo_root/meta-harness/tools/check-project-harness-compliance" \
+  --repo-root "$repo_root"
+
 python3 "$repo_root/meta-harness/tools/check-checklist-attestations" \
   --repo-root "$repo_root" \
   --changed-files "$changed_files" \

@@ -21,6 +21,8 @@ harness/libraries/
 
 `AGENTS.md` explains Library discovery. `LIBRARIES.toml` is the checked-in index. `LIBRARIES.local.toml` is ignored and may add private or machine-local Libraries without weakening checked-in governance.
 
+Libraries must be indexed only in `LIBRARIES.toml` or `LIBRARIES.local.toml`, not in `AGENTS.md` or other docs.
+
 ## Index
 
 Each Library entry points to one place:

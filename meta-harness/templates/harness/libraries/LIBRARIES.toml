@@ -1,4 +1,5 @@
 # Checked-in Library index for a managed project.
+# Libraries must be indexed only in LIBRARIES.toml or LIBRARIES.local.toml.
 
 [[libraries]]
 name = "meta-harness"

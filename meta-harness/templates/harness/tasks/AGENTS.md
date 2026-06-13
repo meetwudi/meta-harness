@@ -1,7 +1,5 @@
-# Task Index
+# Task Definitions
 
 This folder contains task definitions.
 
-## Tasks
-
-- `concise-cleanup`: [concise-cleanup/TASK.toml](concise-cleanup/TASK.toml)
+Each task directory contains its own `TASK.toml`.

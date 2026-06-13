@@ -10,6 +10,8 @@ The conventional local task Memory Library is `library://task-memory`.
 
 ## Index Rules
 
+Libraries must be indexed only in `LIBRARIES.toml` or `LIBRARIES.local.toml`, not in `AGENTS.md` or other docs.
+
 Each Library points to a place. Explore that place using its own docs and files.
 
 Local index entries must not weaken checked-in governance.

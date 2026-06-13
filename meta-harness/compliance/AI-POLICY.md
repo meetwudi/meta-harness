@@ -4,58 +4,32 @@
 
 This policy applies to AI agents working in managed projects.
 
-AI agents must stay concise.
+AI agents must be concise and source-disciplined.
 
 ## Source Discipline
 
-AI agents must not invent material product content, product structure, or engineering practices.
+Material product content, product structure, engineering practice, and compliance obligations must trace to human input, existing harness docs, or observed project evidence.
 
-Material content must trace to at least one of:
+When the source is unclear, ask the human or mark the specific gap as unknown.
 
-- Human input.
-- Existing harness docs.
-- Observed project evidence.
+## Preserve Before Expanding
 
-When the source is unclear, ask the human or mark the specific gap as unknown. Do not fill the gap with speculation.
+Clarification may tighten wording, remove duplication, reorder, or format material while preserving sourced meaning.
 
-## Clarification vs Elaboration
+Elaboration adds content or structure beyond the source. AI agents must not turn rough human thoughts into requirements, acceptance tests, taxonomies, named loops, categories, workflows, or open questions unless the human explicitly asks or the structure is already sourced.
 
-Clarification preserves sourced meaning. It may tighten wording, remove duplication, reorder, or format material while keeping close to human language.
+Capture early thinking as raw notes, captured direction, or close paraphrase. Label AI-proposed structure as a non-committed proposal unless the human accepts it.
 
-Elaboration adds product structure or content beyond the source. AI agents must not convert rough human thoughts into requirements, acceptance tests, taxonomies, named loops, categories, workflows, or open questions unless the human explicitly asks for that transformation or the structure is already present in sourced material.
+## Checkable Knowledge
 
-When capturing early product thinking, prefer a `Raw Human Notes` or `Captured Direction` section with close paraphrase.
+Prefer checkable authoritative files over duplicate prose indexes. Discovery and governance should live in the primitive's structured source when one exists, such as Library discovery in `LIBRARIES.toml` and task contracts in `TASK.toml`.
 
-If an AI agent wants to propose structure, it must either ask first or put it in an explicitly non-committed proposal section. Do not present proposed structure as accepted product content.
+`AGENTS.md` should explain how to use nearby sources while leaving enumeration to the structured source of truth.
 
-## Acceptance Tests and Open Questions
-
-Acceptance tests and open questions are product content, not cleanup tasks.
-
-AI agents must not add acceptance tests merely because a requirement document appears to need them. Add acceptance tests only when their expected behavior traces to human input, existing harness docs, or observed project evidence.
-
-If a requirement lacks sourced acceptance tests, mark that as an unknown source gap instead of inventing tests.
-
-AI agents must not add open questions merely because a topic seems incomplete. Add open questions only when the uncertainty itself traces to human input, existing harness docs, or observed project evidence.
-
-## Source Gaps
-
-AI agents may identify that a source gap exists. They must label the gap as unknown or ask for human direction instead of turning the gap into new product content.
-
-## Examples
-
-Bad: A human mentions one learning loop, and the AI records five named loops with invented labels and roles.
-
-Good: Record the one described loop in `Captured Direction` using close paraphrase. Mention unresolved wording only if the human raised that uncertainty.
-
-Bad: A human says onboarding should feel smoother, and the AI writes acceptance tests for account creation, tutorials, notifications, and retention.
-
-Good: Preserve the vague direction without acceptance tests. If the document requires tests, write a narrow source gap such as `Acceptance tests are not yet sourced.`
+Express durable learning as concise positive practice or checklist guidance instead of accumulating local warning text.
 
 ## Checklist Requirement
 
-Managed projects should include root `CHECKLIST.md` to make repository-wide compliance reviewable. They may copy the template from `meta-harness/templates/CHECKLIST.md`.
+Managed projects should include root `CHECKLIST.md` for repository-wide compliance review. They may also include descendant checklists for narrower scopes such as `harness/`.
 
-Managed projects may also include `harness/CHECKLIST.md` for harness-specific checks. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
-
-At minimum, that checklist should require reviewers to verify source discipline for material harness content.
+At minimum, checklists should verify source discipline for material harness content and preserve the applicable structured source of truth.

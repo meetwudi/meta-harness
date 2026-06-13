@@ -1,0 +1,266 @@
+#!/usr/bin/env python3
+import argparse
+import ast
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    tomllib = None
+
+
+REQUIRED_REPO_FILES = (
+    ".meta-harness.json",
+    ".gitignore",
+    "AGENTS.md",
+    "CHECKLIST.md",
+    "meta-harness/AGENTS.md",
+    "harness/AGENTS.md",
+)
+
+REQUIRED_PROJECT_HARNESS_FILES = (
+    "harness/AGENTS.md",
+    "harness/libraries/AGENTS.md",
+    "harness/libraries/LIBRARIES.toml",
+    "harness/tasks/AGENTS.md",
+)
+
+REQUIRED_LIBRARY_LOCATIONS = {
+    "meta-harness": "meta-harness",
+    "project-harness": "harness",
+}
+
+DELEGATED_CHECKS = (
+    "check-library-definitions",
+    "check-task-definitions",
+    "check-harness-file-metadata",
+)
+
+
+def fail(failures, message):
+    failures.append(message)
+
+
+def relative(path):
+    return str(path).replace("\\", "/")
+
+
+def load_json(path, failures):
+    try:
+        return json.loads(path.read_text())
+    except Exception as exc:
+        fail(failures, f"{relative(path)}: invalid JSON: {exc}")
+    return None
+
+
+def strip_comment(line):
+    in_string = False
+    result = []
+    for char in line:
+        if char == '"':
+            in_string = not in_string
+        if char == "#" and not in_string:
+            break
+        result.append(char)
+    return "".join(result).strip()
+
+
+def parse_value(raw):
+    raw = raw.strip()
+    if raw.startswith("["):
+        return ast.literal_eval(raw)
+    if raw.startswith('"') and raw.endswith('"'):
+        return ast.literal_eval(raw)
+    return raw
+
+
+def parse_minimal_toml(text):
+    data = {}
+    current = data
+    pending_key = None
+    pending_lines = []
+
+    def finish_pending():
+        nonlocal pending_key, pending_lines, current
+        if pending_key is None:
+            return
+        current[pending_key] = parse_value("\n".join(pending_lines))
+        pending_key = None
+        pending_lines = []
+
+    for raw_line in text.splitlines():
+        line = strip_comment(raw_line)
+        if not line:
+            continue
+        if pending_key is not None:
+            pending_lines.append(line)
+            if line.endswith("]"):
+                finish_pending()
+            continue
+        if line.startswith("[[") and line.endswith("]]"):
+            finish_pending()
+            table = line.strip("[]")
+            item = {}
+            data.setdefault(table, []).append(item)
+            current = item
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            finish_pending()
+            table = line.strip("[]")
+            current = data.setdefault(table, {})
+            continue
+        if "=" not in line:
+            continue
+        key, value = [part.strip() for part in line.split("=", 1)]
+        if value.startswith("[") and not value.endswith("]"):
+            pending_key = key
+            pending_lines = [value]
+            continue
+        current[key] = parse_value(value)
+
+    finish_pending()
+    return data
+
+
+def load_toml(path, failures):
+    try:
+        if tomllib is not None:
+            return tomllib.loads(path.read_text())
+        return parse_minimal_toml(path.read_text())
+    except Exception as exc:
+        fail(failures, f"{relative(path)}: invalid TOML: {exc}")
+    return None
+
+
+def validate_meta_harness_marker(repo_root, failures):
+    marker = repo_root / ".meta-harness.json"
+    data = load_json(marker, failures)
+    if data is None:
+        return
+
+    if data.get("schema") != 1:
+        fail(failures, ".meta-harness.json: schema must be 1")
+
+    source = data.get("source")
+    if not isinstance(source, dict):
+        fail(failures, ".meta-harness.json: source must be an object")
+        return
+
+    for field in ("type", "url", "ref"):
+        value = source.get(field)
+        if not isinstance(value, str) or not value.strip():
+            fail(failures, f".meta-harness.json: source.{field} must be a non-empty string")
+
+
+def validate_required_files(repo_root, failures):
+    required_files = dict.fromkeys(REQUIRED_REPO_FILES + REQUIRED_PROJECT_HARNESS_FILES)
+    for required in required_files:
+        path = repo_root / required
+        if not path.is_file():
+            fail(failures, f"{required}: required file is missing")
+
+    for required_dir in ("meta-harness", "harness"):
+        path = repo_root / required_dir
+        if not path.is_dir():
+            fail(failures, f"{required_dir}: required directory is missing")
+
+
+def validate_required_libraries(repo_root, failures):
+    index = repo_root / "harness" / "libraries" / "LIBRARIES.toml"
+    if not index.is_file():
+        return
+
+    data = load_toml(index, failures)
+    if data is None:
+        return
+
+    libraries = data.get("libraries")
+    if not isinstance(libraries, list):
+        return
+
+    by_name = {}
+    for entry in libraries:
+        if isinstance(entry, dict) and isinstance(entry.get("name"), str):
+            by_name[entry["name"]] = entry
+
+    for name, expected_location in REQUIRED_LIBRARY_LOCATIONS.items():
+        entry = by_name.get(name)
+        if entry is None:
+            fail(failures, f"harness/libraries/LIBRARIES.toml: missing required Library {name}")
+            continue
+
+        location = entry.get("location")
+        relative_to = entry.get("relative_to")
+        if location != expected_location:
+            fail(
+                failures,
+                "harness/libraries/LIBRARIES.toml: "
+                f"{name} location must be {expected_location}",
+            )
+        if relative_to != "current-git-repository":
+            fail(
+                failures,
+                "harness/libraries/LIBRARIES.toml: "
+                f"{name} relative_to must be current-git-repository",
+            )
+
+
+def run_delegated_check(repo_root, tool_name, failures):
+    tool = repo_root / "meta-harness" / "tools" / tool_name
+    if not tool.is_file():
+        fail(failures, f"meta-harness/tools/{tool_name}: delegated check is missing")
+        return
+
+    result = subprocess.run(
+        [sys.executable, str(tool), "--repo-root", str(repo_root)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode == 0:
+        return
+
+    output = "\n".join(
+        line for line in (result.stderr + result.stdout).splitlines() if line.strip()
+    )
+    if output:
+        fail(failures, f"{tool_name} failed:\n{output}")
+    else:
+        fail(failures, f"{tool_name} failed with exit code {result.returncode}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Verify project-specific harness compliance with Meta Harness."
+    )
+    parser.add_argument("--repo-root", default=".")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    failures = []
+
+    validate_required_files(repo_root, failures)
+    if (repo_root / ".meta-harness.json").is_file():
+        validate_meta_harness_marker(repo_root, failures)
+    validate_required_libraries(repo_root, failures)
+
+    for tool_name in DELEGATED_CHECKS:
+        run_delegated_check(repo_root, tool_name, failures)
+
+    if failures:
+        print("Meta Harness project harness compliance check failed:", file=sys.stderr)
+        for failure in failures:
+            for line in failure.splitlines():
+                print(f"- {line}", file=sys.stderr)
+        return 1
+
+    print("Meta Harness project harness compliance passed.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
