@@ -4,6 +4,8 @@ A task is an outcome-oriented execution contract.
 
 Tasks live in a Library. The Library points to the place that contains the task definition.
 
+A task is selected by source Library and task identity. Paths are only implementation details discovered after resolving the Library.
+
 ## Shape
 
 Project-specific tasks use this shape:
@@ -49,12 +51,14 @@ cross_execution_memory_library = "library://task-memory/{task-name}/common/"
 
 A task execution:
 
-1. Read the task `AGENTS.md`.
-2. Read `TASK.toml`.
-3. Read referenced Libraries.
-4. Use configured Memory Libraries when present.
-5. Complete procedure items and check outcomes.
-6. Record completion evidence.
-7. Promote durable learning to task memory when applicable.
+1. Resolve the task's source Library through Library discovery.
+2. Follow that Library's own discovery docs to the task representation.
+3. Read the task-local instructions and task definition.
+4. Verify the task definition's `source_library` matches the selected Library.
+5. Resolve and read referenced Libraries.
+6. Use configured Memory Libraries when present.
+7. Complete procedure items and check outcomes.
+8. Record completion evidence.
+9. Promote durable learning to task memory when applicable.
 
 A task is done when required procedure, outcomes, memory handling, and completion evidence are complete, blocked, or not applicable.

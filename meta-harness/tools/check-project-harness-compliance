@@ -36,6 +36,7 @@ REQUIRED_LIBRARY_LOCATIONS = {
 DELEGATED_CHECKS = (
     "check-library-definitions",
     "check-task-definitions",
+    "check-skill-definitions",
     "check-harness-file-metadata",
 )
 

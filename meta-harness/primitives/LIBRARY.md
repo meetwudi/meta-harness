@@ -63,6 +63,19 @@ library://task-memory
 
 A Library reference selects a place to explore. The index does not enumerate that place's contents.
 
+## Use Protocol
+
+To use a Library:
+
+1. Read Library discovery instructions.
+2. Read the checked-in Library index.
+3. Read the local Library index when present.
+4. Resolve the `library://{library-name}` reference to its indexed place.
+5. Follow the selected place's own `AGENTS.md`, governance, and files.
+6. Read or update only the knowledge needed for the current work.
+
+If a Library reference includes a suffix after the Library name, first resolve the Library name, then interpret the suffix inside that Library's own place and rules.
+
 ## Primitive Kind
 
 `primitive_kind` tells agents what kind of harness primitive the Library primarily carries.

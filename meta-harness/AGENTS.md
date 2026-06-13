@@ -14,4 +14,6 @@ Primitive designs: [primitives/AGENTS.md](primitives/AGENTS.md)
 
 Compliance docs: [compliance/AGENTS.md](compliance/AGENTS.md)
 
+Installable skills: [skills/AGENTS.md](skills/AGENTS.md)
+
 Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)

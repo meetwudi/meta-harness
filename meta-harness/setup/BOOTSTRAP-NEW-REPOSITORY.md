@@ -8,6 +8,12 @@ Copy `meta-harness/` into the repository as-is.
 
 Do not change copied files under `meta-harness/` for project-specific needs.
 
+Optionally install bundled Codex skills into the repository:
+
+```text
+python3 meta-harness/tools/install-skills
+```
+
 Create project-specific harness content under `harness/`.
 
 Add `.meta-harness.json` to record the Meta Harness source.

@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import shutil
+import sys
+from pathlib import Path
+
+
+def fail(message):
+    print(f"install-skills: {message}", file=sys.stderr)
+    return 1
+
+
+def repo_root_from(start):
+    path = Path(start).resolve()
+    for candidate in (path, *path.parents):
+        if (candidate / "meta-harness" / "skills").is_dir():
+            return candidate
+    raise FileNotFoundError("could not find meta-harness/skills from repo root")
+
+
+def codex_home_skills_dir():
+    codex_home = os.environ.get("CODEX_HOME")
+    if codex_home:
+        return Path(codex_home).expanduser() / "skills"
+    return Path.home() / ".codex" / "skills"
+
+
+def skill_dirs(skills_root, selected):
+    if selected:
+        for name in selected:
+            path = skills_root / name
+            if not path.is_dir():
+                raise FileNotFoundError(f"skill not found: {name}")
+            yield path
+        return
+
+    for path in sorted(skills_root.iterdir()):
+        if path.is_dir() and (path / "SKILL.md").is_file():
+            yield path
+
+
+def copy_skill(source, target_root, force):
+    target = target_root / source.name
+    if target.resolve() == source.resolve():
+        raise OSError(f"target matches source for {source.name}")
+    if target.exists():
+        if not force:
+            raise FileExistsError(f"{target} already exists; use --force to replace it")
+        shutil.rmtree(target)
+    shutil.copytree(source, target)
+    return target
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Install Meta Harness Codex skills from meta-harness/skills."
+    )
+    parser.add_argument("--repo-root", default=".", help="Repository root or descendant.")
+    parser.add_argument(
+        "--target-dir",
+        help="Directory that will receive skill folders. Defaults to .codex/skills in the repository.",
+    )
+    parser.add_argument(
+        "--codex-home",
+        action="store_true",
+        help="Install into ${CODEX_HOME:-~/.codex}/skills instead of the repository-local .codex/skills.",
+    )
+    parser.add_argument(
+        "--skill",
+        action="append",
+        default=[],
+        help="Install only this skill name. May be repeated.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Replace an existing installed copy of the selected skill.",
+    )
+    args = parser.parse_args()
+
+    if args.target_dir and args.codex_home:
+        return fail("use only one of --target-dir or --codex-home")
+
+    try:
+        repo_root = repo_root_from(args.repo_root)
+    except FileNotFoundError as exc:
+        return fail(str(exc))
+
+    skills_root = repo_root / "meta-harness" / "skills"
+    if args.codex_home:
+        target_root = codex_home_skills_dir()
+    elif args.target_dir:
+        target_root = Path(args.target_dir).expanduser().resolve()
+    else:
+        target_root = repo_root / ".codex" / "skills"
+
+    try:
+        selected = list(skill_dirs(skills_root, args.skill))
+        if not selected:
+            return fail(f"no skills found in {skills_root}")
+        target_root.mkdir(parents=True, exist_ok=True)
+        installed = [copy_skill(path, target_root, args.force) for path in selected]
+    except (FileExistsError, FileNotFoundError, OSError) as exc:
+        return fail(str(exc))
+
+    for path in installed:
+        print(f"Installed {path.name} -> {path}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -33,6 +33,7 @@ Walk through the existing harness setup:
 - `.meta-harness.json`
 - `meta-harness/`
 - `harness/`
+- installed skills from `meta-harness/skills/`
 - installed git hooks and GitHub workflows
 - setup migrations crossed by the upgrade
 

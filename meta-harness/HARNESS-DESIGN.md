@@ -46,6 +46,12 @@ meta-harness/
     ENGINEERING.md
   primitives/
     AGENTS.md
+  skills/
+    AGENTS.md
+    {skill-name}/
+      SKILL.md
+      agents/
+        openai.yaml
   templates/
     git-hooks/
     gitignore
@@ -101,6 +107,18 @@ Use [primitives/LIBRARY.md](primitives/LIBRARY.md) when a human asks to configur
 
 Use [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md) when a human asks to create, change, clarify, or enforce repository rules, product requirements, engineering practices, AI policy, or other binding project obligations.
 
+## Installable Skills
+
+Meta Harness may ship Codex skills under [skills/](skills/). These skills make shared harness behavior available through Codex's skill system while still reading the local repository's own harness docs.
+
+Install bundled skills into the current repository with:
+
+```text
+python3 meta-harness/tools/install-skills
+```
+
+By default this copies skills to `.codex/skills/` in the repository. Use `--codex-home` to install into `${CODEX_HOME:-~/.codex}/skills` instead.
+
 ## Compliance Docs
 
 - AI policy: [compliance/AI-POLICY.md](compliance/AI-POLICY.md)
@@ -112,4 +130,4 @@ Managed projects should review repository-wide compliance with root `CHECKLIST.m
 
 Managed projects should review harness-specific compliance with `harness/CHECKLIST.md` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.md`.
 
-Library definitions, task definitions, harness file metadata, and checklist attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.
+Library definitions, task definitions, skill definitions, harness file metadata, and checklist attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.

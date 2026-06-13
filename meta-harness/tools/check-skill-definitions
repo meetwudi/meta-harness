@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+import argparse
+import re
+import sys
+from pathlib import Path
+
+
+MAX_SKILL_NAME_LENGTH = 64
+
+
+def fail(failures, message):
+    failures.append(message)
+
+
+def relative(repo_root, path):
+    return str(path.relative_to(repo_root)).replace("\\", "/")
+
+
+def parse_front_matter(text):
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+
+    front_matter = []
+    for line in lines[1:]:
+        if line.strip() == "---":
+            return front_matter
+        front_matter.append(line)
+    return None
+
+
+def parse_simple_yaml_mapping(lines):
+    data = {}
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if line.startswith(" ") or ":" not in stripped:
+            continue
+        key, value = stripped.split(":", 1)
+        value = value.strip()
+        if value.startswith('"') and value.endswith('"'):
+            value = value[1:-1]
+        data[key.strip()] = value
+    return data
+
+
+def validate_skill_md(repo_root, skill_dir, failures):
+    skill_md = skill_dir / "SKILL.md"
+    if not skill_md.is_file():
+        fail(failures, f"{relative(repo_root, skill_dir)}: missing SKILL.md")
+        return
+
+    text = skill_md.read_text()
+    front_matter = parse_front_matter(text)
+    if front_matter is None:
+        fail(failures, f"{relative(repo_root, skill_md)}: missing YAML front matter")
+        return
+
+    data = parse_simple_yaml_mapping(front_matter)
+    name = data.get("name")
+    description = data.get("description")
+
+    if name != skill_dir.name:
+        fail(
+            failures,
+            f"{relative(repo_root, skill_md)}: name must match directory name {skill_dir.name}",
+        )
+    if isinstance(name, str):
+        if not re.match(r"^[a-z0-9-]+$", name):
+            fail(failures, f"{relative(repo_root, skill_md)}: name must be hyphen-case")
+        if name.startswith("-") or name.endswith("-") or "--" in name:
+            fail(failures, f"{relative(repo_root, skill_md)}: name has invalid hyphen placement")
+        if len(name) > MAX_SKILL_NAME_LENGTH:
+            fail(failures, f"{relative(repo_root, skill_md)}: name is too long")
+
+    if not isinstance(description, str) or not description.strip():
+        fail(failures, f"{relative(repo_root, skill_md)}: description is required")
+    elif "TODO" in description or (
+        description.startswith("[") and description.endswith("]")
+    ):
+        fail(failures, f"{relative(repo_root, skill_md)}: description still looks like a template")
+
+    if "TODO" in text:
+        fail(failures, f"{relative(repo_root, skill_md)}: contains TODO placeholder text")
+
+
+def validate_openai_yaml(repo_root, skill_dir, failures):
+    openai_yaml = skill_dir / "agents" / "openai.yaml"
+    if not openai_yaml.is_file():
+        fail(failures, f"{relative(repo_root, skill_dir)}: missing agents/openai.yaml")
+        return
+
+    text = openai_yaml.read_text()
+    required = ("display_name:", "short_description:", "default_prompt:")
+    for field in required:
+        if field not in text:
+            fail(failures, f"{relative(repo_root, openai_yaml)}: missing {field[:-1]}")
+    if f"${skill_dir.name}" not in text:
+        fail(
+            failures,
+            f"{relative(repo_root, openai_yaml)}: default_prompt should mention ${skill_dir.name}",
+        )
+
+
+def validate_harness_use_library_skill(repo_root, skill_dir, failures):
+    if skill_dir.name != "harness-use-library":
+        return
+
+    skill_md = skill_dir / "SKILL.md"
+    if not skill_md.is_file():
+        return
+
+    text = skill_md.read_text()
+    required = (
+        "library://",
+        "meta-harness/primitives/LIBRARY.md",
+        "Library index",
+        "AGENTS.md",
+    )
+    for pattern in required:
+        if pattern not in text:
+            fail(
+                failures,
+                f"{relative(repo_root, skill_md)}: harness-use-library should mention {pattern}",
+            )
+
+
+def validate_harness_run_task_skill(repo_root, skill_dir, failures):
+    if skill_dir.name != "harness-run-task":
+        return
+
+    skill_md = skill_dir / "SKILL.md"
+    if not skill_md.is_file():
+        return
+
+    text = skill_md.read_text()
+    required = (
+        "$harness-use-library",
+        "meta-harness/primitives/TASK.md",
+        "library://",
+        "source Library",
+    )
+    for pattern in required:
+        if pattern not in text:
+            fail(
+                failures,
+                f"{relative(repo_root, skill_md)}: harness-run-task should mention {pattern}",
+            )
+
+    path_first_patterns = (
+        "under harness/tasks",
+        "harness/tasks/{task-name}",
+        "harness/tasks/{task-name}/TASK.toml",
+    )
+    for pattern in path_first_patterns:
+        if pattern in text:
+            fail(
+                failures,
+                f"{relative(repo_root, skill_md)}: harness-run-task must not use path-first task selection: {pattern}",
+            )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Verify Meta Harness Codex skill definitions.")
+    parser.add_argument("--repo-root", default=".")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    skills_root = repo_root / "meta-harness" / "skills"
+    failures = []
+
+    if not skills_root.exists():
+        print("Meta Harness skill definitions passed: no meta-harness/skills directory.")
+        return 0
+
+    if not (skills_root / "AGENTS.md").is_file():
+        fail(failures, "meta-harness/skills: missing AGENTS.md")
+
+    count = 0
+    for skill_dir in sorted(path for path in skills_root.iterdir() if path.is_dir()):
+        validate_skill_md(repo_root, skill_dir, failures)
+        validate_openai_yaml(repo_root, skill_dir, failures)
+        validate_harness_use_library_skill(repo_root, skill_dir, failures)
+        validate_harness_run_task_skill(repo_root, skill_dir, failures)
+        count += 1
+
+    if failures:
+        print("Meta Harness skill definition check failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
+        return 1
+
+    print(f"Meta Harness skill definitions passed for {count} skill(s).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
