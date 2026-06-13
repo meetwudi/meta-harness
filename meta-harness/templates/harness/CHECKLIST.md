@@ -15,7 +15,7 @@ Use this checklist for changes under `harness/`.
 - Verify checked-in Library definitions are valid in `LIBRARIES.toml`.
 - Verify `harness/libraries/LIBRARIES.toml` lists shared repo-safe Libraries.
 - Verify local Library entries belong in ignored `harness/libraries/LIBRARIES.local.toml` and do not weaken checked-in governance.
-- Verify memory-capable Libraries are outside the repository unless a human explicitly asks otherwise.
+- Verify memory-capable Libraries use the configured local or external location.
 - Verify Library memory updates preserve source discipline and do not invent product content.
 - Verify task definitions include valid `TASK.toml`.
 - Verify compliance files begin with the required human-approval notice.

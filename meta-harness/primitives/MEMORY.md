@@ -10,7 +10,12 @@ The default local task Memory Library is:
 library://task-memory
 ```
 
-Managed projects may register it in ignored local Library discovery at `harness/libraries/LIBRARIES.local.toml`. Task memory should normally live outside the repository unless a human explicitly asks otherwise.
+Managed projects may register it in ignored local Library discovery at
+`harness/libraries/LIBRARIES.local.toml`.
+
+Unless otherwise specified, agents choose a filesystem-safe project name from the
+repository name and use `~/.<project-name>/task-memory` as the local default
+location.
 
 ## Purpose
 

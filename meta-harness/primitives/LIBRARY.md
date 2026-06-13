@@ -92,9 +92,12 @@ A broad place such as `library://meta-harness` may contain several primitive kin
 
 ## Memory
 
-Task memory should normally live in a local or external memory Library, not in the repository.
+Task memory uses a local or external memory Library.
 
-A task may create or organize a memory Library when no suitable local Library exists. Register it in `harness/libraries/LIBRARIES.local.toml`; do not create repository memory by default.
+A task may create or organize a memory Library when no suitable local Library exists.
+Unless otherwise specified, choose a filesystem-safe project name from the
+repository name, use `~/.<project-name>/task-memory`, and register it in
+`harness/libraries/LIBRARIES.local.toml`.
 
 ## Governance
 

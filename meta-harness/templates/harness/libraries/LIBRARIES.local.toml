@@ -1,6 +1,9 @@
 # Local Library index for this machine. Keep this file ignored by git.
+# During bootstrap, replace <project-name> with a filesystem-safe name chosen
+# from the repository name. Local Libraries for this project default under
+# ~/.<project-name>/ unless otherwise specified.
 
 [[libraries]]
 name = "task-memory"
 primitive_kind = "memory"
-location = "~/.meta-harness/task-memory"
+location = "~/.<project-name>/task-memory"
