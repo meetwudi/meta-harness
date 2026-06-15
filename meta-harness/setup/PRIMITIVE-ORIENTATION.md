@@ -11,8 +11,7 @@ Some knowledge is a primitive:
 - Library: a governed place to explore.
 - Task: a countable unit of execution with required outcomes.
 - Memory: agent-usable knowledge carried across time.
-- Compliance: human-approved rules that govern work.
-- Checklist: explicit checks used to verify procedure, outcomes, and compliance.
+- Compliance: human-approved obligations and explicit checks used to govern and verify work.
 
 The primitives compose:
 
@@ -20,8 +19,7 @@ The primitives compose:
 - Tasks may update Libraries when allowed.
 - Tasks use Memory without needing every task to restate that Memory exists.
 - The default local task Memory Library is `library://task-memory` when registered.
-- Tasks use Checklists to make procedure and outcomes verifiable.
-- Compliance applies to work and uses Checklists for evidence.
-- Libraries organize all of these primitives.
+- Tasks use Compliance to make procedure and outcomes verifiable.
+- Libraries organize all primitives.
 
-When starting work, first discover the relevant Libraries, then identify applicable tasks, memory, compliance, and checklists.
+When starting work, first discover the relevant Libraries, then identify applicable tasks, memory, and compliance.

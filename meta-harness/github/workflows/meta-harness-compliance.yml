@@ -19,9 +19,9 @@ jobs:
         run: |
           python3 meta-harness/tools/check-task-definitions
 
-      - name: Verify checklist definitions
+      - name: Verify compliance definitions
         run: |
-          python3 meta-harness/tools/check-checklist-definitions
+          python3 meta-harness/tools/check-compliance-definitions
 
       - name: Verify skill definitions
         run: |
@@ -43,8 +43,8 @@ jobs:
           git diff --name-only --diff-filter=ACMR "$BASE_SHA...$HEAD_SHA" > /tmp/meta-harness-changed-files.txt
           git log --format=%B "$BASE_SHA..$HEAD_SHA" > /tmp/meta-harness-attestations.txt
 
-      - name: Verify checklist attestations
+      - name: Verify compliance attestations
         run: |
-          python3 meta-harness/tools/check-checklist-attestations \
+          python3 meta-harness/tools/check-compliance-attestations \
             --changed-files /tmp/meta-harness-changed-files.txt \
             --attestations /tmp/meta-harness-attestations.txt

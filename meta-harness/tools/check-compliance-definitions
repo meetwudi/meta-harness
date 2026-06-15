@@ -12,13 +12,12 @@ except ModuleNotFoundError:
 
 
 REQUIRED_FIELDS = {
-    "name": str,
-    "scope": str,
-    "purpose": str,
     "items": list,
 }
 
 ITEM_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+ALLOWED_TOP_LEVEL_FIELDS = {"items"}
+SUBAGENT_NOTICE = "# Harness-Compliance: Review applicable compliance with an independent subagent before attesting."
 
 
 def fail(failures, message):
@@ -108,32 +107,6 @@ def load_toml(path, failures):
     return None
 
 
-def expected_scope(repo_root, checklist_toml):
-    parent = checklist_toml.parent
-    if parent == repo_root:
-        return "."
-    return relative(repo_root, parent)
-
-
-def is_template_checklist(repo_root, checklist_toml):
-    parts = Path(relative(repo_root, checklist_toml)).parts
-    return len(parts) >= 3 and parts[0] == "meta-harness" and parts[1] == "templates"
-
-
-def validate_library_reference(path, field, value, failures):
-    if not isinstance(value, str) or not value.startswith("library://"):
-        fail(failures, f"{path}: {field} must use library://")
-
-
-def validate_libraries(path, data, failures):
-    libraries = data.get("libraries", [])
-    if not isinstance(libraries, list):
-        fail(failures, f"{path}: libraries must be a list when present")
-        return
-    for item in libraries:
-        validate_library_reference(path, "libraries", item, failures)
-
-
 def validate_items(path, items, failures):
     if not isinstance(items, list):
         return
@@ -166,55 +139,56 @@ def validate_items(path, items, failures):
             fail(failures, f"{path}: item {item_id or index} comment must be a non-empty string when present")
 
 
-def validate_checklist(repo_root, checklist_toml, failures):
-    data = load_toml(checklist_toml, failures)
+def validate_subagent_notice(compliance_toml, failures):
+    lines = compliance_toml.read_text().splitlines()
+    first_content = next((line.strip() for line in lines if line.strip()), "")
+    if first_content != SUBAGENT_NOTICE:
+        fail(failures, f"{compliance_toml}: first content line must be {SUBAGENT_NOTICE!r}")
+
+
+def validate_compliance(repo_root, compliance_toml, failures):
+    validate_subagent_notice(compliance_toml, failures)
+    data = load_toml(compliance_toml, failures)
     if data is None:
         return
     if not isinstance(data, dict):
-        fail(failures, f"{checklist_toml}: top-level value must be a table")
+        fail(failures, f"{compliance_toml}: top-level value must be a table")
         return
 
     for field, expected_type in REQUIRED_FIELDS.items():
         value = data.get(field)
         if not isinstance(value, expected_type) or (expected_type is str and not value.strip()):
-            fail(failures, f"{checklist_toml}: {field} must be a non-empty {expected_type.__name__}")
+            fail(failures, f"{compliance_toml}: {field} must be a non-empty {expected_type.__name__}")
 
-    scope = data.get("scope")
-    expected = expected_scope(repo_root, checklist_toml)
-    if (
-        isinstance(scope, str)
-        and not is_template_checklist(repo_root, checklist_toml)
-        and scope != expected
-    ):
-        fail(failures, f"{checklist_toml}: scope must match containing directory: {expected}")
+    for field in sorted(set(data) - ALLOWED_TOP_LEVEL_FIELDS):
+        fail(failures, f"{compliance_toml}: only items may be defined at the top level")
 
-    validate_libraries(checklist_toml, data, failures)
-    validate_items(checklist_toml, data.get("items"), failures)
+    validate_items(compliance_toml, data.get("items"), failures)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Verify Meta Harness Checklist definitions.")
+    parser = argparse.ArgumentParser(description="Verify Meta Harness compliance definitions.")
     parser.add_argument("--repo-root", default=".")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
     failures = []
-    checklists = sorted(repo_root.rglob("CHECKLIST.toml"))
+    compliance_files = sorted(repo_root.rglob("COMPLIANCE.toml"))
 
-    if not checklists:
-        print("Meta Harness checklist definitions passed: no CHECKLIST.toml files.")
+    if not compliance_files:
+        print("Meta Harness compliance definitions passed: no COMPLIANCE.toml files.")
         return 0
 
-    for checklist_toml in checklists:
-        validate_checklist(repo_root, checklist_toml, failures)
+    for compliance_toml in compliance_files:
+        validate_compliance(repo_root, compliance_toml, failures)
 
     if failures:
-        print("Meta Harness checklist definition check failed:", file=sys.stderr)
+        print("Meta Harness compliance definition check failed:", file=sys.stderr)
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         return 1
 
-    print(f"Meta Harness checklist definitions passed for {len(checklists)} checklist(s).")
+    print(f"Meta Harness compliance definitions passed for {len(compliance_files)} file(s).")
     return 0
 
 

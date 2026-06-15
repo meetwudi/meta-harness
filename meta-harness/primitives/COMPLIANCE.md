@@ -1,6 +1,6 @@
 # Compliance
 
-Compliance is human-approved repository law: binding rules, constraints, requirements, policies, and principles for repository work.
+Compliance is human-approved repository law: binding rules, constraints, requirements, policies, principles, and verification items for repository work.
 
 Agents may clarify, format, deduplicate, or route compliance while preserving meaning. Agents must not create new compliance obligations unless the human explicitly approves them or the obligation already exists in sourced compliance.
 
@@ -28,19 +28,47 @@ library://meta-harness
 
 The selected Library defines location and approval rules.
 
-## Checklist
+## Structured Compliance
 
-Checklists make compliance reviewable. Compliance defines obligations; `CHECKLIST.toml` files define verification.
+Compliance applies to a Library and to descendant folders inside that Library.
 
-For repository changes, applicable checklists should verify that:
+Use `COMPLIANCE.toml` at a Library root for Library-wide compliance. Use descendant `COMPLIANCE.toml` files for narrower folder compliance. The file's location defines its scope: it applies to files in the same folder and its descendants.
+
+For each PR, changed files must be checked against every `COMPLIANCE.toml` in their directory ancestry.
+
+`COMPLIANCE.toml` begins with a subagent review instruction:
+
+```toml
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting.
+```
+
+`COMPLIANCE.toml` includes verification items:
+
+Use TOML comments for human context and durable review notes that should stay with the compliance file.
+
+```toml
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting.
+
+[[items]]
+id = "meta-harness-compliance"
+text = "Verify compliance from library://meta-harness."
+```
+
+For repository changes, applicable compliance should verify that:
 
 - compliance changes have explicit human approval
 - implementation changes follow applicable compliance
 - AI-generated compliance content is not invented
 - compliance clarifications preserve sourced meaning
 
-Compliance files should identify the root or path-specific `CHECKLIST.toml` files that verify them. Checklist attestations are the commit and PR evidence that applicable compliance was checked.
+AI agents must read each applicable compliance file, complete every relevant item, and leave a parseable commit-message attestation:
 
-## Tasks
+```text
+Harness-Compliance: path=<path-to-COMPLIANCE.toml>; status=<status>
+```
 
-Tasks must obey applicable compliance. A task may read compliance through Libraries, propose compliance changes, or update checklists that enforce compliance.
+`<status>` is `pass`, `blocked`, or `na`. Use one attestation line per applicable compliance file.
+
+## Application
+
+Compliance is applied to a Library or to descendant folders inside that Library. Work in a folder must satisfy every applicable `COMPLIANCE.toml` from the Library root through that folder.

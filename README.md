@@ -11,7 +11,7 @@ It starts from a simple premise: AI is a runtime for knowledge.
 
 In a harnessed repository, knowledge is not just documentation, planning, or specification. It is the material an AI runtime reads, follows, updates when allowed, and uses to do accountable work.
 
-Meta Harness provides a small structure for that work: Libraries, Tasks, Memory, Compliance, and Checklists.
+Meta Harness provides a small structure for that work: Libraries, Tasks, Memory, and Compliance.
 
 ## Repository Shape
 

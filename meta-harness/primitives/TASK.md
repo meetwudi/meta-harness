@@ -28,8 +28,8 @@ harness/tasks/
 - source Library reference
 - purpose
 - Library references to read
-- procedure checklist
-- outcome checklist
+- procedure items
+- outcome items
 - completion evidence
 
 Use `library://{library-name}` references, not paths:

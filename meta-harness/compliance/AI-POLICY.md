@@ -26,10 +26,10 @@ Prefer checkable authoritative files over duplicate prose indexes. Discovery and
 
 `AGENTS.md` should explain how to use nearby sources while leaving enumeration to the structured source of truth.
 
-Express durable learning as concise positive practice or checklist guidance instead of accumulating local warning text.
+Express durable learning as concise positive practice or compliance guidance instead of accumulating local warning text.
 
-## Checklist Requirement
+## Compliance Requirement
 
-Managed projects should include root `CHECKLIST.toml` for repository-wide compliance review. They may also include descendant checklists for narrower scopes such as `harness/`.
+Managed projects should include root `COMPLIANCE.toml` for repository-wide compliance review. They may also include descendant compliance files for narrower scopes such as `harness/`.
 
-At minimum, checklists should verify source discipline for material harness content and preserve the applicable structured source of truth.
+At minimum, compliance items should verify source discipline for material harness content and preserve the applicable structured source of truth.

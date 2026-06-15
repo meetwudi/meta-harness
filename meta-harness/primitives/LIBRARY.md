@@ -6,7 +6,7 @@ A Library may point to a repository folder, local folder outside the repo, cloud
 
 The Library index says where the place is. The place itself carries the knowledge.
 
-Libraries organize knowledge, including tasks, memory, compliance, and checklists.
+Libraries organize knowledge, including tasks, memory, and compliance.
 
 ## Shape
 

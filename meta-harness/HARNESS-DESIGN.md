@@ -26,7 +26,7 @@ The root `AGENTS.md` is protected: AI agents may change it only when a human exp
 .meta-harness.json
 .gitignore
 AGENTS.md
-CHECKLIST.toml
+COMPLIANCE.toml
 meta-harness/
   AGENTS.md
   HARNESS-DESIGN.md
@@ -60,7 +60,7 @@ meta-harness/
     workflows/
 harness/
   AGENTS.md
-  CHECKLIST.toml
+  COMPLIANCE.toml
   tasks/
     AGENTS.md
     {task-name}/
@@ -97,11 +97,12 @@ Managed projects should place their own harness content under `harness/`, not by
 
 Standard operational primitive designs live under [primitives/](primitives/).
 
+Primitives are roles assigned to knowledge organized by Libraries. A managed codebase is itself a Library, and its harness files assign roles such as Task, Memory, and Compliance to the knowledge inside it.
+
 - Task: [primitives/TASK.md](primitives/TASK.md)
 - Library: [primitives/LIBRARY.md](primitives/LIBRARY.md)
 - Memory: [primitives/MEMORY.md](primitives/MEMORY.md)
 - Compliance: [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md)
-- Checklist attestation: [primitives/CHECKLIST.md](primitives/CHECKLIST.md)
 
 Use [primitives/LIBRARY.md](primitives/LIBRARY.md) when a human asks to configure where project knowledge lives or how agents may access a knowledge source.
 
@@ -126,8 +127,8 @@ By default this copies skills to `.codex/skills/` in the repository. Use `--code
 - Product harness: [compliance/PRODUCT.md](compliance/PRODUCT.md)
 - Engineering practices: [compliance/ENGINEERING.md](compliance/ENGINEERING.md)
 
-Managed projects should review repository-wide compliance with root `CHECKLIST.toml`. They may copy the template from `meta-harness/templates/CHECKLIST.toml`.
+Managed projects should review repository-wide compliance with root `COMPLIANCE.toml`. They may copy the template from `meta-harness/templates/COMPLIANCE.toml`.
 
-Managed projects should review harness-specific compliance with `harness/CHECKLIST.toml` or a more specific descendant checklist. They may copy the template from `meta-harness/templates/harness/CHECKLIST.toml`.
+Managed projects should review harness-specific compliance with `harness/COMPLIANCE.toml` or a more specific descendant compliance file. They may copy the template from `meta-harness/templates/harness/COMPLIANCE.toml`.
 
-Library definitions, task definitions, skill definitions, harness file metadata, and checklist attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.
+Library definitions, task definitions, skill definitions, harness file metadata, and compliance attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.

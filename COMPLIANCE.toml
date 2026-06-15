@@ -1,0 +1,5 @@
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting.
+
+[[items]]
+id = "meta-harness-compliance"
+text = "Verify compliance from library://meta-harness."

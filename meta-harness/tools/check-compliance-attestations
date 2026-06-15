@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 TRAILER_RE = re.compile(
-    r"^Meta-Harness-Checklist:\s*path=([^;]+);\s*status=(pass|blocked|na)\s*$"
+    r"^Harness-Compliance:\s*path=([^;]+);\s*status=(pass|blocked|na)\s*$"
 )
 
 
@@ -24,8 +24,8 @@ def parse_attestations(path):
         match = TRAILER_RE.match(line.strip())
         if not match:
             continue
-        checklist_path = normalize(match.group(1))
-        attestations[checklist_path] = match.group(2)
+        compliance_path = normalize(match.group(1))
+        attestations[compliance_path] = match.group(2)
     return attestations
 
 
@@ -40,18 +40,18 @@ def ancestor_dirs(file_path):
         yield acc
 
 
-def applicable_checklists(repo_root, file_path):
-    checklists = []
+def applicable_compliance(repo_root, file_path):
+    compliance_files = []
     for directory in ancestor_dirs(file_path):
-        checklist = repo_root / directory / "CHECKLIST.toml"
-        if checklist.is_file():
-            checklists.append(normalize(str(checklist.relative_to(repo_root))))
-    return checklists
+        compliance = repo_root / directory / "COMPLIANCE.toml"
+        if compliance.is_file():
+            compliance_files.append(normalize(str(compliance.relative_to(repo_root))))
+    return compliance_files
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Verify Meta Harness CHECKLIST.toml attestations for changed files."
+        description="Verify Meta Harness COMPLIANCE.toml attestations for changed files."
     )
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--changed-files", required=True)
@@ -65,32 +65,32 @@ def main():
 
     required = set()
     for changed_file in changed_files:
-        required.update(applicable_checklists(repo_root, changed_file))
+        required.update(applicable_compliance(repo_root, changed_file))
 
     failures = []
-    for checklist in sorted(required):
-        status = attestations.get(checklist)
+    for compliance in sorted(required):
+        status = attestations.get(compliance)
         if status is None:
-            failures.append(f"missing attestation for {checklist}")
+            failures.append(f"missing attestation for {compliance}")
         elif status == "blocked" and not args.allow_blocked:
-            failures.append(f"blocked checklist attestation for {checklist}")
+            failures.append(f"blocked compliance attestation for {compliance}")
 
     if failures:
-        print("Meta Harness checklist attestation failed:", file=sys.stderr)
+        print("Meta Harness compliance attestation failed:", file=sys.stderr)
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         print("", file=sys.stderr)
         print("Expected commit-message trailer format:", file=sys.stderr)
         print(
-            "Meta-Harness-Checklist: path=<path-to-CHECKLIST.toml>; status=<pass|blocked|na>",
+            "Harness-Compliance: path=<path-to-COMPLIANCE.toml>; status=<pass|blocked|na>",
             file=sys.stderr,
         )
         return 1
 
     if required:
-        print(f"Meta Harness checklist attestation passed for {len(required)} checklist(s).")
+        print(f"Meta Harness compliance attestation passed for {len(required)} file(s).")
     else:
-        print("Meta Harness checklist attestation passed: no applicable CHECKLIST.toml files.")
+        print("Meta Harness compliance attestation passed: no applicable COMPLIANCE.toml files.")
     return 0
 
 

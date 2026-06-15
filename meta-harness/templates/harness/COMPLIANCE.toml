@@ -1,13 +1,4 @@
-# Harness-specific checklist template.
-
-name = "harness"
-scope = "harness"
-purpose = "Review harness-specific compliance before accepting changes under harness/."
-
-libraries = [
-  "library://meta-harness",
-  "library://project-harness",
-]
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting.
 
 [[items]]
 id = "spec-before-code"
@@ -82,9 +73,9 @@ id = "compliance-human-approval"
 text = "Verify compliance obligation changes have explicit human approval."
 
 [[items]]
-id = "compliance-checklist-links"
-text = "Verify compliance files identify applicable CHECKLIST.toml files."
+id = "compliance-ancestry"
+text = "Verify changed files satisfy every applicable COMPLIANCE.toml in their Library and folder ancestry."
 
 [[items]]
-id = "checklist-coverage"
-text = "Verify checklists cover applicable compliance obligations."
+id = "compliance-coverage"
+text = "Verify compliance items cover applicable obligations."
