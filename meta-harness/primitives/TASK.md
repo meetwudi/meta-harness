@@ -56,7 +56,8 @@ A task execution:
 3. Read the task-local instructions and task definition.
 4. Verify the task definition's `source_library` matches the selected Library.
 5. Resolve and read referenced Libraries.
-6. Use configured Memory Libraries when present.
+6. Use configured Memory Libraries when present, including applicable
+   `MEMORY.toml` instructions.
 7. Complete procedure items and check outcomes.
 8. Record completion evidence.
 9. Promote durable learning to task memory when applicable.

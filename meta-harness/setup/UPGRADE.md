@@ -18,9 +18,10 @@ Use that diff to understand what changed before editing the managed repository.
 
 Review [migrations/AGENTS.md](migrations/AGENTS.md).
 
-For each migration, check whether the upgrade crosses the migration commit.
+For each migration, read its `When To Apply` criteria and compare them with the
+source diff and the managed repository's current harness state.
 
-Apply every crossed migration in order.
+Apply every matching migration in order.
 
 ## Plan
 

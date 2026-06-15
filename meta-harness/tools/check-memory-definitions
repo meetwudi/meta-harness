@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+import argparse
+import ast
+import sys
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    tomllib = None
+
+
+REQUIRED_FIELDS = {
+    "instructions": list,
+}
+
+OPTIONAL_FIELDS = {
+    "collections",
+}
+
+COLLECTION_REQUIRED_FIELDS = {
+    "name": str,
+    "location": str,
+    "instructions": list,
+}
+
+
+def fail(failures, message):
+    failures.append(message)
+
+
+def strip_comment(line):
+    in_string = False
+    result = []
+    for char in line:
+        if char == '"':
+            in_string = not in_string
+        if char == "#" and not in_string:
+            break
+        result.append(char)
+    return "".join(result).strip()
+
+
+def parse_value(raw):
+    raw = raw.strip()
+    if raw.startswith("["):
+        return ast.literal_eval(raw)
+    if raw.startswith('"') and raw.endswith('"'):
+        return ast.literal_eval(raw)
+    return raw
+
+
+def parse_minimal_toml(text):
+    data = {}
+    current = data
+    pending_key = None
+    pending_lines = []
+
+    def finish_pending():
+        nonlocal pending_key, pending_lines, current
+        if pending_key is None:
+            return
+        current[pending_key] = parse_value("\n".join(pending_lines))
+        pending_key = None
+        pending_lines = []
+
+    for raw_line in text.splitlines():
+        line = strip_comment(raw_line)
+        if not line:
+            continue
+        if pending_key is not None:
+            pending_lines.append(line)
+            if line.endswith("]"):
+                finish_pending()
+            continue
+        if line.startswith("[[") and line.endswith("]]"):
+            finish_pending()
+            table = line.strip("[]")
+            item = {}
+            data.setdefault(table, []).append(item)
+            current = item
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            finish_pending()
+            table = line.strip("[]")
+            current = data.setdefault(table, {})
+            continue
+        if "=" not in line:
+            continue
+        key, value = [part.strip() for part in line.split("=", 1)]
+        if value.startswith("[") and not value.endswith("]"):
+            pending_key = key
+            pending_lines = [value]
+            continue
+        current[key] = parse_value(value)
+
+    finish_pending()
+    return data
+
+
+def load_toml(path, failures):
+    try:
+        if tomllib is not None:
+            return tomllib.loads(path.read_text())
+        return parse_minimal_toml(path.read_text())
+    except Exception as exc:
+        fail(failures, f"{path}: invalid TOML: {exc}")
+    return None
+
+
+def validate_string_list(path, data, field, failures):
+    value = data.get(field)
+    if not isinstance(value, list):
+        fail(failures, f"{path}: {field} must be a list")
+        return
+    if not value:
+        fail(failures, f"{path}: {field} must not be empty")
+        return
+    bad = [item for item in value if not isinstance(item, str) or not item.strip()]
+    if bad:
+        fail(failures, f"{path}: {field} must contain only non-empty strings")
+
+
+def validate_required_fields(path, data, required_fields, failures):
+    for field, expected_type in required_fields.items():
+        value = data.get(field)
+        if not isinstance(value, expected_type) or (expected_type is str and not value.strip()):
+            fail(failures, f"{path}: {field} must be a non-empty {expected_type.__name__}")
+
+
+def validate_collections(path, collections, failures):
+    if collections is None:
+        return
+    if not isinstance(collections, list):
+        fail(failures, f"{path}: collections must be an array of tables")
+        return
+    if not collections:
+        fail(failures, f"{path}: collections must not be empty when present")
+        return
+
+    seen_names = set()
+    for index, collection in enumerate(collections, start=1):
+        label = f"{path}: collections entry {index}"
+        if not isinstance(collection, dict):
+            fail(failures, f"{label} must be a table")
+            continue
+
+        validate_required_fields(label, collection, COLLECTION_REQUIRED_FIELDS, failures)
+        validate_string_list(label, collection, "instructions", failures)
+
+        for field in sorted(set(collection) - set(COLLECTION_REQUIRED_FIELDS)):
+            fail(failures, f"{label}: unsupported field {field}")
+
+        name = collection.get("name")
+        if isinstance(name, str):
+            if name in seen_names:
+                fail(failures, f"{path}: duplicate collection name: {name}")
+            seen_names.add(name)
+
+
+def validate_memory(memory_toml, failures):
+    data = load_toml(memory_toml, failures)
+    if data is None:
+        return
+    if not isinstance(data, dict):
+        fail(failures, f"{memory_toml}: top-level value must be a table")
+        return
+
+    validate_required_fields(memory_toml, data, REQUIRED_FIELDS, failures)
+    validate_string_list(memory_toml, data, "instructions", failures)
+    validate_collections(memory_toml, data.get("collections"), failures)
+
+    for field in sorted(set(data) - set(REQUIRED_FIELDS) - OPTIONAL_FIELDS):
+        fail(failures, f"{memory_toml}: unsupported field {field}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Verify Meta Harness Memory definitions.")
+    parser.add_argument("--repo-root", default=".")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    failures = []
+    memory_files = sorted(repo_root.rglob("MEMORY.toml"))
+
+    if not memory_files:
+        print("Meta Harness memory definitions passed: no MEMORY.toml files.")
+        return 0
+
+    for memory_toml in memory_files:
+        validate_memory(memory_toml, failures)
+
+    if failures:
+        print("Meta Harness memory definition check failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
+        return 1
+
+    print(f"Meta Harness memory definitions passed for {len(memory_files)} file(s).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

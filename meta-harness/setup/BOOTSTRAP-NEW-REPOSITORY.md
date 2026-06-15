@@ -19,8 +19,12 @@ Create project-specific harness content under `harness/`.
 Create ignored local Library discovery at `harness/libraries/LIBRARIES.local.toml`
 from the template. Choose a filesystem-safe project name from the repository
 name, create `~/.<project-name>/task-memory`, and use that path for the
-`task-memory` Library. Local Libraries for the project default under
-`~/.<project-name>/` unless otherwise specified.
+`task-memory` Library. Copy `meta-harness/templates/task-memory/MEMORY.toml`
+into that memory directory and adjust it if the project needs a different memory
+structure. Local Libraries for the project default under `~/.<project-name>/`
+unless otherwise specified. Because local task memory is ignored or external,
+repository PR checks validate the template and any checked-in `MEMORY.toml`
+files, not the live local memory directory.
 
 Add `.meta-harness.json` to record the Meta Harness source.
 
@@ -34,6 +38,8 @@ Ask Codex or Claude Code:
 > `.meta-harness.json`, and create project-specific harness content under
 > `harness/`. Choose a filesystem-safe project name from the repository name,
 > create `~/.<project-name>/task-memory`, and register it in ignored
-> `harness/libraries/LIBRARIES.local.toml`. Use
+> `harness/libraries/LIBRARIES.local.toml`. Copy
+> `meta-harness/templates/task-memory/MEMORY.toml` into the task-memory
+> directory. Use
 > `meta-harness/setup/BOOTSTRAP-NEW-REPOSITORY.md` and
 > `meta-harness/HARNESS-DESIGN.md` as the source docs.

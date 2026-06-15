@@ -1,4 +1,4 @@
-# Harness-Compliance: Review applicable compliance with an independent subagent before attesting.
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
 
 [[items]]
 id = "meta-harness-compliance"

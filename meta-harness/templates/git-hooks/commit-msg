@@ -15,6 +15,9 @@ python3 "$repo_root/meta-harness/tools/check-library-definitions" \
 python3 "$repo_root/meta-harness/tools/check-task-definitions" \
   --repo-root "$repo_root"
 
+python3 "$repo_root/meta-harness/tools/check-memory-definitions" \
+  --repo-root "$repo_root"
+
 python3 "$repo_root/meta-harness/tools/check-compliance-definitions" \
   --repo-root "$repo_root"
 

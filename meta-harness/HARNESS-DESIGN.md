@@ -38,7 +38,7 @@ meta-harness/
     UPGRADE.md
     migrations/
       AGENTS.md
-      {sequence}-{commit}-{name}.md
+      {sequence}-{name}.md
   compliance/
     AI-POLICY.md
     DEVELOPMENT-PRINCIPLES.md
@@ -55,6 +55,8 @@ meta-harness/
   templates/
     git-hooks/
     gitignore
+    task-memory/
+      MEMORY.toml
   tools/
   github/
     workflows/
@@ -97,7 +99,7 @@ Managed projects should place their own harness content under `harness/`, not by
 
 Standard operational primitive designs live under [primitives/](primitives/).
 
-Primitives are roles assigned to knowledge organized by Libraries. A managed codebase is itself a Library, and its harness files assign roles such as Task, Memory, and Compliance to the knowledge inside it.
+Primitives are named kinds of knowledge places organized by Libraries. A managed codebase is itself a Library, and its harness files can mark knowledge inside it as Task, Memory, Compliance, or another primitive kind.
 
 - Task: [primitives/TASK.md](primitives/TASK.md)
 - Library: [primitives/LIBRARY.md](primitives/LIBRARY.md)
@@ -131,4 +133,4 @@ Managed projects should review repository-wide compliance with root `COMPLIANCE.
 
 Managed projects should review harness-specific compliance with `harness/COMPLIANCE.toml` or a more specific descendant compliance file. They may copy the template from `meta-harness/templates/harness/COMPLIANCE.toml`.
 
-Library definitions, task definitions, skill definitions, harness file metadata, and compliance attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.
+Library definitions, task definitions, memory definitions, skill definitions, harness file metadata, and compliance attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.

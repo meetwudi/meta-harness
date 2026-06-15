@@ -99,6 +99,9 @@ Unless otherwise specified, choose a filesystem-safe project name from the
 repository name, use `~/.<project-name>/task-memory`, and register it in
 `harness/libraries/LIBRARIES.local.toml`.
 
+When a Memory Library contains `MEMORY.toml`, read it before using that Memory
+Library.
+
 ## Governance
 
 Library governance belongs either in the Library entry or in the place it points to.

@@ -4,6 +4,9 @@ Memory is agent-usable knowledge carried across time.
 
 A Library may contain Memory, point to it, or be primarily a Memory Library.
 
+`MEMORY.toml` marks a place as a structured Memory primitive and tells agents
+how to use that memory collection.
+
 The default local task Memory Library is:
 
 ```text
@@ -36,6 +39,48 @@ Memory may be organized as:
 - durable project context
 
 The Memory Library and task choose the organization.
+
+When a memory place contains `MEMORY.toml`, agents must read it before reading
+or updating that memory.
+
+## Shape
+
+`MEMORY.toml` describes the memory collection. It does not store the memory
+entries.
+
+Example:
+
+```toml
+instructions = [
+  "Preserve provenance and meaning.",
+  "Do not invent product content, compliance obligations, engineering practices, acceptance tests, or open questions.",
+]
+```
+
+`MEMORY.toml` includes:
+
+- `instructions`
+- optional `[[collections]]`
+
+Use `[[collections]]` when one Memory primitive contains named subcollections:
+
+```toml
+[[collections]]
+name = "executions"
+location = "{task-name}/executions/"
+instructions = ["Store per-execution memory as sequential entries."]
+```
+
+Each collection includes:
+
+- `name`
+- `location`
+- `instructions`
+
+Repository checks validate `MEMORY.toml` files that are checked into or present
+inside the repository being checked. Ignored local or external Memory Libraries
+must follow their own `MEMORY.toml` at use time, but are not enforced by PR
+checks unless that memory place is included in the checked path.
 
 ## Task Interaction
 

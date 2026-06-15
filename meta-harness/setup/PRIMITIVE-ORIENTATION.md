@@ -18,6 +18,8 @@ The primitives compose:
 - Tasks read Libraries.
 - Tasks may update Libraries when allowed.
 - Tasks use Memory without needing every task to restate that Memory exists.
+- When Memory contains `MEMORY.toml`, that file describes how the memory is
+  organized and what agents may update.
 - The default local task Memory Library is `library://task-memory` when registered.
 - Tasks use Compliance to make procedure and outcomes verifiable.
 - Libraries organize all primitives.

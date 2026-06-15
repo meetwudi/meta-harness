@@ -39,15 +39,19 @@ For each PR, changed files must be checked against every `COMPLIANCE.toml` in th
 `COMPLIANCE.toml` begins with a subagent review instruction:
 
 ```toml
-# Harness-Compliance: Review applicable compliance with an independent subagent before attesting.
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
 ```
+
+If independent subagent review is required but unavailable, ask the human to
+approve subagent use. If approval is denied or the review cannot be completed,
+attest `blocked` rather than `pass`.
 
 `COMPLIANCE.toml` includes verification items:
 
 Use TOML comments for human context and durable review notes that should stay with the compliance file.
 
 ```toml
-# Harness-Compliance: Review applicable compliance with an independent subagent before attesting.
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
 
 [[items]]
 id = "meta-harness-compliance"

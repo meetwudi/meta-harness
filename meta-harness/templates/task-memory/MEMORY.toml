@@ -1,0 +1,20 @@
+instructions = [
+  "Preserve provenance and meaning.",
+  "Do not invent product content, compliance obligations, engineering practices, acceptance tests, or open questions.",
+]
+
+[[collections]]
+name = "executions"
+location = "{task-name}/executions/"
+instructions = [
+  "Store per-execution memory as sequential entries.",
+  "Append a new entry for each execution, or record why no entry was created.",
+]
+
+[[collections]]
+name = "common"
+location = "{task-name}/common/"
+instructions = [
+  "Store durable cross-execution summaries and stable lessons.",
+  "Update summaries when sourced execution memory changes what future agents should know.",
+]
