@@ -4,6 +4,9 @@ Memory is agent-usable knowledge carried across time.
 
 A Library may contain Memory, point to it, or be primarily a Memory Library.
 
+Filesystem Memory Libraries are also Library roots and must include
+`LIBRARY.toml` for task access.
+
 `MEMORY.toml` marks a place as a structured Memory primitive and tells agents
 how to use that memory collection.
 
@@ -40,8 +43,8 @@ Memory may be organized as:
 
 The Memory Library and task choose the organization.
 
-When a memory place contains `MEMORY.toml`, agents must read it before reading
-or updating that memory.
+When a memory place contains `LIBRARY.toml` or `MEMORY.toml`, agents must read
+the applicable files before reading or updating that memory.
 
 ## Shape
 

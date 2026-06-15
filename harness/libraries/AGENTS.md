@@ -14,4 +14,7 @@ Libraries must be indexed only in `LIBRARIES.toml` or `LIBRARIES.local.toml`, no
 
 Each Library points to a place. Explore that place using its own docs and files.
 
+After resolving a filesystem Library, read its `LIBRARY.toml` before reading or
+updating that Library.
+
 Local index entries must not weaken checked-in governance.

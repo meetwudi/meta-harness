@@ -13,13 +13,13 @@ another place addressable by a Library.
 `designation` is only the prose word for marking a collection as a primitive.
 Do not write a `designation` field.
 
-Write `primitive_kind` in Library indexes such as `LIBRARIES.toml` and
-`LIBRARIES.local.toml`.
+Do not write `primitive_kind` in Library indexes. Libraries choose places;
+structured files inside those places identify contained primitives.
 
 For folder-scoped primitives, the structured file is the marker. For example,
-`TASK.toml` marks a folder as a Task, `MEMORY.toml` marks a Memory collection,
-and `COMPLIANCE.toml` marks compliance rules for that folder and its
-descendants.
+`LIBRARY.toml` marks a Library root, `TASK.toml` marks a folder as a Task,
+`MEMORY.toml` marks a Memory collection, and `COMPLIANCE.toml` marks
+compliance rules for that folder and its descendants.
 
 ## Primitive docs
 

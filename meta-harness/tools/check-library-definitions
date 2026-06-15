@@ -12,11 +12,15 @@ except ModuleNotFoundError:
 
 REQUIRED_LIBRARY_FIELDS = {
     "name": str,
-    "primitive_kind": str,
     "location": str,
 }
 
-VALID_PRIMITIVE_KINDS = {"library", "compliance", "task", "memory", "reference"}
+DISALLOWED_LIBRARY_FIELDS = {"primitive_kind"}
+REQUIRED_LIBRARY_TOML_FIELDS = {
+    "name": str,
+    "update_tasks": list,
+}
+OPTIONAL_LIBRARY_TOML_FIELDS = {"read_tasks"}
 VALID_RELATIVE_TO = {"current-git-repository"}
 
 
@@ -103,7 +107,92 @@ def load_toml(path, failures):
     return None
 
 
-def validate_library_entry(repo_root, index_toml, entry, seen_names, failures):
+def validate_required_fields(path, data, required_fields, failures):
+    for field, expected_type in required_fields.items():
+        value = data.get(field)
+        if not isinstance(value, expected_type) or (expected_type is str and not value.strip()):
+            fail(failures, f"{path}: {field} must be a non-empty {expected_type.__name__}")
+
+
+def validate_task_uri_patterns(path, data, field, failures, require_task_path):
+    value = data.get(field)
+    if value is None:
+        return
+    if not isinstance(value, list):
+        fail(failures, f"{path}: {field} must be a list")
+        return
+
+    for pattern in value:
+        if not isinstance(pattern, str) or not pattern.strip():
+            fail(failures, f"{path}: {field} must contain only non-empty strings")
+            continue
+        if pattern != pattern.strip():
+            fail(failures, f"{path}: {field} pattern must not have surrounding whitespace: {pattern!r}")
+            continue
+        if not pattern.startswith("library://"):
+            fail(failures, f"{path}: {field} pattern must use library://: {pattern}")
+            continue
+        suffix = pattern.removeprefix("library://")
+        if not suffix:
+            fail(failures, f"{path}: {field} pattern must include a Library name or glob: {pattern}")
+            continue
+        if require_task_path and "/" not in suffix:
+            fail(
+                failures,
+                f"{path}: {field} pattern must identify tasks inside a Library URI: {pattern}",
+            )
+
+
+def resolve_filesystem_location(repo_root, entry):
+    location = entry.get("location")
+    relative_to = entry.get("relative_to")
+
+    if not isinstance(location, str):
+        return None
+    if relative_to == "current-git-repository":
+        return repo_root / location
+    if location.startswith("/") or location.startswith("~"):
+        return Path(location).expanduser()
+    return None
+
+
+def validate_library_toml(index_toml, entry, library_root, failures, validated_library_tomls):
+    if library_root is None:
+        return
+    if not library_root.exists():
+        return
+    if not library_root.is_dir():
+        fail(failures, f"{index_toml}: filesystem Library location must be a directory: {library_root}")
+        return
+
+    library_toml = library_root / "LIBRARY.toml"
+    if not library_toml.is_file():
+        fail(failures, f"{index_toml}: missing LIBRARY.toml for Library {entry.get('name')}")
+        return
+    validated_library_tomls.add(library_toml.resolve())
+
+    data = load_toml(library_toml, failures)
+    if data is None:
+        return
+    if not isinstance(data, dict):
+        fail(failures, f"{library_toml}: top-level value must be a table")
+        return
+
+    validate_required_fields(library_toml, data, REQUIRED_LIBRARY_TOML_FIELDS, failures)
+    validate_task_uri_patterns(library_toml, data, "read_tasks", failures, require_task_path=False)
+    validate_task_uri_patterns(library_toml, data, "update_tasks", failures, require_task_path=True)
+
+    entry_name = entry.get("name")
+    marker_name = data.get("name")
+    if isinstance(entry_name, str) and isinstance(marker_name, str) and entry_name != marker_name:
+        fail(failures, f"{library_toml}: name must match Library index name {entry_name}")
+
+    supported_fields = set(REQUIRED_LIBRARY_TOML_FIELDS) | OPTIONAL_LIBRARY_TOML_FIELDS
+    for field in sorted(set(data) - supported_fields):
+        fail(failures, f"{library_toml}: unsupported field {field}")
+
+
+def validate_library_entry(repo_root, index_toml, entry, seen_names, failures, validated_library_tomls):
     if not isinstance(entry, dict):
         fail(failures, f"{index_toml}: each libraries entry must be a table")
         return
@@ -114,17 +203,16 @@ def validate_library_entry(repo_root, index_toml, entry, seen_names, failures):
             fail(failures, f"{index_toml}: {field} must be a non-empty {expected_type.__name__}")
 
     name = entry.get("name")
-    primitive_kind = entry.get("primitive_kind")
     location = entry.get("location")
     relative_to = entry.get("relative_to")
+
+    for field in sorted(DISALLOWED_LIBRARY_FIELDS & set(entry)):
+        fail(failures, f"{index_toml}: {field} belongs in the Library place, not the index")
 
     if isinstance(name, str):
         if name in seen_names:
             fail(failures, f"{index_toml}: duplicate library name: {name}")
         seen_names.add(name)
-
-    if isinstance(primitive_kind, str) and primitive_kind not in VALID_PRIMITIVE_KINDS:
-        fail(failures, f"{index_toml}: primitive_kind must be one of {sorted(VALID_PRIMITIVE_KINDS)}")
 
     if relative_to is not None and relative_to not in VALID_RELATIVE_TO:
         fail(failures, f"{index_toml}: relative_to must be current-git-repository when present")
@@ -134,9 +222,16 @@ def validate_library_entry(repo_root, index_toml, entry, seen_names, failures):
         if not resolved.exists():
             fail(failures, f"{index_toml}: location does not exist: {location}")
 
+    validate_library_toml(
+        index_toml,
+        entry,
+        resolve_filesystem_location(repo_root, entry),
+        failures,
+        validated_library_tomls,
+    )
 
-def validate_index(repo_root, libraries_root, failures):
-    index_toml = libraries_root / "LIBRARIES.toml"
+
+def validate_index(repo_root, index_toml, seen_names, failures, validated_library_tomls):
     if not index_toml.is_file():
         fail(failures, "harness/libraries: missing LIBRARIES.toml")
         return 0
@@ -153,11 +248,25 @@ def validate_index(repo_root, libraries_root, failures):
         fail(failures, f"{index_toml}: libraries must be an array of tables")
         return 0
 
-    seen_names = set()
     for entry in libraries:
-        validate_library_entry(repo_root, index_toml, entry, seen_names, failures)
+        validate_library_entry(
+            repo_root,
+            index_toml,
+            entry,
+            seen_names,
+            failures,
+            validated_library_tomls,
+        )
 
     return len(libraries)
+
+
+def repository_library_tomls(repo_root):
+    ignored_roots = {".git"}
+    for path in sorted(repo_root.rglob("LIBRARY.toml")):
+        if any(part in ignored_roots for part in path.relative_to(repo_root).parts):
+            continue
+        yield path
 
 
 def main():
@@ -176,7 +285,33 @@ def main():
     if not (libraries_root / "AGENTS.md").is_file():
         fail(failures, "harness/libraries: missing AGENTS.md")
 
-    count = validate_index(repo_root, libraries_root, failures)
+    index_paths = [libraries_root / "LIBRARIES.toml"]
+    local_index = libraries_root / "LIBRARIES.local.toml"
+    if local_index.is_file():
+        index_paths.append(local_index)
+
+    seen_names = set()
+    validated_library_tomls = set()
+    count = 0
+    for index_toml in index_paths:
+        count += validate_index(
+            repo_root,
+            index_toml,
+            seen_names,
+            failures,
+            validated_library_tomls,
+        )
+
+    for library_toml in repository_library_tomls(repo_root):
+        if library_toml.resolve() in validated_library_tomls:
+            continue
+        validate_library_toml(
+            library_toml,
+            {},
+            library_toml.parent,
+            failures,
+            validated_library_tomls,
+        )
 
     if failures:
         print("Meta Harness library definition check failed:", file=sys.stderr)

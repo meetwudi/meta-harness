@@ -1,0 +1,3 @@
+name = "meta-harness"
+read_tasks = ["library://*"]
+update_tasks = []

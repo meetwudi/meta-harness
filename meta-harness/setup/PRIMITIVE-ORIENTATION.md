@@ -17,6 +17,8 @@ The primitives compose:
 
 - Tasks read Libraries.
 - Tasks may update Libraries when allowed.
+- When a filesystem Library contains `LIBRARY.toml`, that file describes which
+  task URI patterns may read or update it.
 - Tasks use Memory without needing every task to restate that Memory exists.
 - When Memory contains `MEMORY.toml`, that file describes how the memory is
   organized and what agents may update.

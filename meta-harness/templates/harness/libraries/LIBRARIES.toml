@@ -2,13 +2,16 @@
 # Libraries must be indexed only in LIBRARIES.toml or LIBRARIES.local.toml.
 
 [[libraries]]
+name = "repository"
+location = "."
+relative_to = "current-git-repository"
+
+[[libraries]]
 name = "meta-harness"
-primitive_kind = "library"
 location = "meta-harness"
 relative_to = "current-git-repository"
 
 [[libraries]]
 name = "project-harness"
-primitive_kind = "library"
 location = "harness"
 relative_to = "current-git-repository"

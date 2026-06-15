@@ -27,8 +27,10 @@ The root `AGENTS.md` is protected: AI agents may change it only when a human exp
 .gitignore
 AGENTS.md
 COMPLIANCE.toml
+LIBRARY.toml
 meta-harness/
   AGENTS.md
+  LIBRARY.toml
   HARNESS-DESIGN.md
   HARNESS-FILE-METADATA.md
   setup/
@@ -53,15 +55,18 @@ meta-harness/
       agents/
         openai.yaml
   templates/
+    LIBRARY.toml
     git-hooks/
     gitignore
     task-memory/
+      LIBRARY.toml
       MEMORY.toml
   tools/
   github/
     workflows/
 harness/
   AGENTS.md
+  LIBRARY.toml
   COMPLIANCE.toml
   tasks/
     AGENTS.md

@@ -1,0 +1,3 @@
+name = "task-memory"
+read_tasks = ["library://*"]
+update_tasks = ["library://project-harness/tasks/*"]

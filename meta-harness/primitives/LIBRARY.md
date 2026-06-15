@@ -23,6 +23,9 @@ harness/libraries/
 
 Libraries must be indexed only in `LIBRARIES.toml` or `LIBRARIES.local.toml`, not in `AGENTS.md` or other docs.
 
+Every filesystem Library root must contain `LIBRARY.toml`. The index points to
+the place; `LIBRARY.toml` describes that place's task access.
+
 ## Index
 
 Each Library entry points to one place:
@@ -30,7 +33,6 @@ Each Library entry points to one place:
 ```toml
 [[libraries]]
 name = "meta-harness"
-primitive_kind = "library"
 location = "meta-harness"
 relative_to = "current-git-repository"
 ```
@@ -38,12 +40,55 @@ relative_to = "current-git-repository"
 Required fields:
 
 - `name`
-- `primitive_kind`
 - `location`
 
 `relative_to = "current-git-repository"` means the location is relative to the nearest Git repository root.
 
 When `relative_to` is omitted, `location` is an absolute location or an external location understood by the agent or tool that uses it.
+
+Do not put primitive kind in the Library index. A Library may contain Tasks,
+Memory, Compliance, references, and other Libraries; the place's own files
+define what is inside.
+
+## Definition
+
+`LIBRARY.toml` lives at the Library root.
+
+Example:
+
+```toml
+name = "meta-harness"
+read_tasks = ["library://*"]
+update_tasks = []
+```
+
+Required fields:
+
+- `name`
+- `update_tasks`
+
+Optional fields:
+
+- `read_tasks`
+
+Task access entries are task identifier glob patterns expressed as
+`library://` URI patterns. Use an empty `update_tasks` list when no task may
+update the Library.
+
+Examples:
+
+```toml
+update_tasks = []
+update_tasks = ["library://project-harness/tasks/*"]
+update_tasks = ["library://daily-gmail-learning-digest/tasks/*"]
+```
+
+Read access is configurable per Library. For example, a harness Library may
+allow all tasks to read it:
+
+```toml
+read_tasks = ["library://*"]
+```
 
 ## References
 
@@ -71,24 +116,12 @@ To use a Library:
 2. Read the checked-in Library index.
 3. Read the local Library index when present.
 4. Resolve the `library://{library-name}` reference to its indexed place.
-5. Follow the selected place's own `AGENTS.md`, governance, and files.
-6. Read or update only the knowledge needed for the current work.
+5. Read the selected place's `LIBRARY.toml` when it is a filesystem Library.
+6. Follow the selected place's own `AGENTS.md`, governance, and files.
+7. Read or update only the knowledge needed for the current work and only when
+   task access allows the update.
 
 If a Library reference includes a suffix after the Library name, first resolve the Library name, then interpret the suffix inside that Library's own place and rules.
-
-## Primitive Kind
-
-`primitive_kind` tells agents what kind of harness primitive the Library primarily carries.
-
-Initial kinds:
-
-- `library`
-- `compliance`
-- `task`
-- `memory`
-- `reference`
-
-A broad place such as `library://meta-harness` may contain several primitive kinds. Use `primitive_kind = "library"` and let the place's own files guide exploration.
 
 ## Memory
 

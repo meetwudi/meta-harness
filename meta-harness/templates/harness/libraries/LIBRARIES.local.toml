@@ -5,5 +5,4 @@
 
 [[libraries]]
 name = "task-memory"
-primitive_kind = "memory"
 location = "~/.<project-name>/task-memory"

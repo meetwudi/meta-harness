@@ -38,7 +38,7 @@ text = "Verify discovery and governance use the applicable structured source of 
 
 [[items]]
 id = "library-locations"
-text = "Verify Library definitions point to real places and declare a primitive kind."
+text = "Verify Library definitions point to real places and filesystem Library roots contain LIBRARY.toml."
 
 [[items]]
 id = "library-index-valid"
