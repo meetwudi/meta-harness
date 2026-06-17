@@ -12,17 +12,14 @@ except ModuleNotFoundError:
 
 REQUIRED_LIBRARY_FIELDS = {
     "name": str,
-    "location": str,
 }
 
-DISALLOWED_LIBRARY_FIELDS = {"primitive_kind"}
+DISALLOWED_LIBRARY_FIELDS = {"primitive_kind", "relative_to"}
 REQUIRED_LIBRARY_TOML_FIELDS = {
     "name": str,
     "update_tasks": list,
 }
 OPTIONAL_LIBRARY_TOML_FIELDS = {"read_tasks"}
-VALID_RELATIVE_TO = {"current-git-repository"}
-
 
 def fail(failures, message):
     failures.append(message)
@@ -145,12 +142,12 @@ def validate_task_uri_patterns(path, data, field, failures, require_task_path):
 
 def resolve_filesystem_location(repo_root, entry):
     location = entry.get("location")
-    relative_to = entry.get("relative_to")
+    relative_location = entry.get("relative_location")
 
+    if isinstance(relative_location, str):
+        return repo_root / relative_location
     if not isinstance(location, str):
         return None
-    if relative_to == "current-git-repository":
-        return repo_root / location
     if location.startswith("/") or location.startswith("~"):
         return Path(location).expanduser()
     return None
@@ -204,23 +201,33 @@ def validate_library_entry(repo_root, index_toml, entry, seen_names, failures, v
 
     name = entry.get("name")
     location = entry.get("location")
-    relative_to = entry.get("relative_to")
+    relative_location = entry.get("relative_location")
 
     for field in sorted(DISALLOWED_LIBRARY_FIELDS & set(entry)):
-        fail(failures, f"{index_toml}: {field} belongs in the Library place, not the index")
+        if field == "relative_to":
+            fail(failures, f"{index_toml}: use relative_location instead of relative_to")
+        else:
+            fail(failures, f"{index_toml}: {field} belongs in the Library place, not the index")
 
     if isinstance(name, str):
         if name in seen_names:
             fail(failures, f"{index_toml}: duplicate library name: {name}")
         seen_names.add(name)
 
-    if relative_to is not None and relative_to not in VALID_RELATIVE_TO:
-        fail(failures, f"{index_toml}: relative_to must be current-git-repository when present")
+    has_location = isinstance(location, str) and bool(location.strip())
+    has_relative_location = isinstance(relative_location, str) and bool(relative_location.strip())
 
-    if isinstance(location, str) and relative_to == "current-git-repository":
-        resolved = repo_root / location
+    if has_location == has_relative_location:
+        fail(failures, f"{index_toml}: each Library must set exactly one of location or relative_location")
+    elif "location" in entry and not has_location:
+        fail(failures, f"{index_toml}: location must be a non-empty string")
+    elif "relative_location" in entry and not has_relative_location:
+        fail(failures, f"{index_toml}: relative_location must be a non-empty string")
+
+    if has_relative_location:
+        resolved = repo_root / relative_location
         if not resolved.exists():
-            fail(failures, f"{index_toml}: location does not exist: {location}")
+            fail(failures, f"{index_toml}: relative_location does not exist: {relative_location}")
 
     validate_library_toml(
         index_toml,

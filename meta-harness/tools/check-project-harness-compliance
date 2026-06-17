@@ -196,19 +196,12 @@ def validate_required_libraries(repo_root, failures):
             fail(failures, f"harness/libraries/LIBRARIES.toml: missing required Library {name}")
             continue
 
-        location = entry.get("location")
-        relative_to = entry.get("relative_to")
-        if location != expected_location:
+        relative_location = entry.get("relative_location")
+        if relative_location != expected_location:
             fail(
                 failures,
                 "harness/libraries/LIBRARIES.toml: "
-                f"{name} location must be {expected_location}",
-            )
-        if relative_to != "current-git-repository":
-            fail(
-                failures,
-                "harness/libraries/LIBRARIES.toml: "
-                f"{name} relative_to must be current-git-repository",
+                f"{name} relative_location must be {expected_location}",
             )
 
 

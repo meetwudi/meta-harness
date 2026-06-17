@@ -1,0 +1,4 @@
+id = "knowledge-agent.openai-trace-conversation-history"
+title = "Every conversation uses OpenAI Trace API and local history storage"
+source = "Human-listed requirement 4 on 2026-06-17."
+text = "Every conversation should use the OpenAI Trace API. A local writable Library should store every conversation history, traces, and related records."

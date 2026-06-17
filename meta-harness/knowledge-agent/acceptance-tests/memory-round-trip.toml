@@ -1,0 +1,17 @@
+id = "knowledge-agent.acceptance.memory-round-trip"
+title = "Memory round trip across conversations"
+requirements = [
+  "knowledge-agent.library-index-goal-input",
+  "knowledge-agent.provider-interface",
+  "knowledge-agent.library-writes-memory",
+  "knowledge-agent.openai-trace-conversation-history",
+]
+procedure = [
+  "Ask the knowledge agent to create a Library and write a value into that Library.",
+  "Start another conversation.",
+  "Ask the knowledge agent to retrieve the value from memory and print it.",
+]
+expected = [
+  "The second conversation retrieves the value written by the first conversation.",
+  "The second conversation prints the right value.",
+]

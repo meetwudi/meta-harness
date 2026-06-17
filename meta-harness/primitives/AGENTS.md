@@ -18,8 +18,9 @@ structured files inside those places identify contained primitives.
 
 For folder-scoped primitives, the structured file is the marker. For example,
 `LIBRARY.toml` marks a Library root, `TASK.toml` marks a folder as a Task,
-`MEMORY.toml` marks a Memory collection, and `COMPLIANCE.toml` marks
-compliance rules for that folder and its descendants.
+`MEMORY.toml` marks a Memory collection, `COMPLIANCE.toml` marks
+compliance rules for that folder and its descendants, and `SPEC.toml` marks a
+Spec.
 
 ## Primitive docs
 
@@ -30,3 +31,5 @@ Library: [LIBRARY.md](LIBRARY.md)
 Memory: [MEMORY.md](MEMORY.md)
 
 Compliance: [COMPLIANCE.md](COMPLIANCE.md)
+
+Spec: [SPEC.md](SPEC.md)

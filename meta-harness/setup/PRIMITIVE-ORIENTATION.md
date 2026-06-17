@@ -12,6 +12,7 @@ Some knowledge is a primitive:
 - Task: a countable unit of execution with required outcomes.
 - Memory: agent-usable knowledge carried across time.
 - Compliance: human-approved obligations and explicit checks used to govern and verify work.
+- Spec: a modular requirement map with separate acceptance tests.
 
 The primitives compose:
 
@@ -24,6 +25,8 @@ The primitives compose:
   organized and what agents may update.
 - The default local task Memory Library is `library://task-memory` when registered.
 - Tasks use Compliance to make procedure and outcomes verifiable.
+- Specs connect sourced requirements, acceptance tests, and implementation
+  citations.
 - Libraries organize all primitives.
 
 When starting work, first discover the relevant Libraries, then identify applicable tasks, memory, and compliance.

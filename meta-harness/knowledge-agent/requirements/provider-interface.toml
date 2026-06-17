@@ -1,0 +1,4 @@
+id = "knowledge-agent.provider-interface"
+title = "Provider agnostic with OpenAI first"
+source = "Human-listed requirement 2 on 2026-06-17."
+text = "Provider agnostic. Start with OpenAI, but with a clean interface that can plug in other providers later."

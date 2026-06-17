@@ -3,15 +3,12 @@
 
 [[libraries]]
 name = "repository"
-location = "."
-relative_to = "current-git-repository"
+relative_location = "."
 
 [[libraries]]
 name = "meta-harness"
-location = "meta-harness"
-relative_to = "current-git-repository"
+relative_location = "meta-harness"
 
 [[libraries]]
 name = "project-harness"
-location = "harness"
-relative_to = "current-git-repository"
+relative_location = "harness"

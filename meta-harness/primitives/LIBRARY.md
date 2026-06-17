@@ -33,18 +33,19 @@ Each Library entry points to one place:
 ```toml
 [[libraries]]
 name = "meta-harness"
-location = "meta-harness"
-relative_to = "current-git-repository"
+relative_location = "meta-harness"
 ```
 
 Required fields:
 
 - `name`
-- `location`
+- one of `relative_location` or `location`
 
-`relative_to = "current-git-repository"` means the location is relative to the nearest Git repository root.
+`relative_location` means the Library location is relative to the current
+project folder.
 
-When `relative_to` is omitted, `location` is an absolute location or an external location understood by the agent or tool that uses it.
+Use `location` for an absolute location or an external location understood by
+the agent or tool that uses it.
 
 Do not put primitive kind in the Library index. A Library may contain Tasks,
 Memory, Compliance, references, and other Libraries; the place's own files

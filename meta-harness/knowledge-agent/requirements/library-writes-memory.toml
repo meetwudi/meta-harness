@@ -1,0 +1,4 @@
+id = "knowledge-agent.library-writes-memory"
+title = "Knowledge agent can write files into Libraries"
+source = "Human-listed requirement 3 on 2026-06-17."
+text = "Knowledge agent is able to write files into Libraries, including updating memories."

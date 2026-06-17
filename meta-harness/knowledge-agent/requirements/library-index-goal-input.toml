@@ -1,0 +1,4 @@
+id = "knowledge-agent.library-index-goal-input"
+title = "Knowledge agent can take a Library index and a goal"
+source = "Human-listed requirement 1 on 2026-06-17."
+text = "Knowledge agent can take a Library index and a goal and follow through the goal."

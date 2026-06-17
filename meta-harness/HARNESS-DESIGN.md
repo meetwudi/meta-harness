@@ -104,16 +104,19 @@ Managed projects should place their own harness content under `harness/`, not by
 
 Standard operational primitive designs live under [primitives/](primitives/).
 
-Primitives are named kinds of knowledge places organized by Libraries. A managed codebase is itself a Library, and its harness files can mark knowledge inside it as Task, Memory, Compliance, or another primitive kind.
+Primitives are named kinds of knowledge places organized by Libraries. A managed codebase is itself a Library, and its harness files can mark knowledge inside it as Task, Memory, Compliance, Spec, or another primitive kind.
 
 - Task: [primitives/TASK.md](primitives/TASK.md)
 - Library: [primitives/LIBRARY.md](primitives/LIBRARY.md)
 - Memory: [primitives/MEMORY.md](primitives/MEMORY.md)
 - Compliance: [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md)
+- Spec: [primitives/SPEC.md](primitives/SPEC.md)
 
 Use [primitives/LIBRARY.md](primitives/LIBRARY.md) when a human asks to configure where project knowledge lives or how agents may access a knowledge source.
 
 Use [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md) when a human asks to create, change, clarify, or enforce repository rules, product requirements, engineering practices, AI policy, or other binding project obligations.
+
+Use [primitives/SPEC.md](primitives/SPEC.md) when a human asks to structure specs as modular requirements, acceptance tests, and implementation citations.
 
 ## Installable Skills
 

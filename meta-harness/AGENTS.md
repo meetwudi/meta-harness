@@ -16,4 +16,6 @@ Compliance docs: [compliance/AGENTS.md](compliance/AGENTS.md)
 
 Installable skills: [skills/AGENTS.md](skills/AGENTS.md)
 
+Knowledge agent: [knowledge-agent/AGENTS.md](knowledge-agent/AGENTS.md)
+
 Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)
