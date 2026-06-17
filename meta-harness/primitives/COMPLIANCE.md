@@ -34,7 +34,8 @@ Compliance applies to a Library and to descendant folders inside that Library.
 
 Use `COMPLIANCE.toml` at a Library root for Library-wide compliance. Use descendant `COMPLIANCE.toml` files for narrower folder compliance. The file's location defines its scope: it applies to files in the same folder and its descendants.
 
-For each PR, changed files must be checked against every `COMPLIANCE.toml` in their directory ancestry.
+For each PR, changed files must be checked against every applicable
+`COMPLIANCE.toml` from the Library root through the changed file's directory.
 
 `COMPLIANCE.toml` begins with a subagent review instruction:
 
@@ -51,8 +52,6 @@ attest `blocked` rather than `pass`.
 Use TOML comments for human context and durable review notes that should stay with the compliance file.
 
 ```toml
-# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
-
 [[items]]
 id = "meta-harness-compliance"
 text = "Verify compliance from library://meta-harness."
@@ -72,7 +71,3 @@ Harness-Compliance: path=<path-to-COMPLIANCE.toml>; status=<status>
 ```
 
 `<status>` is `pass`, `blocked`, or `na`. Use one attestation line per applicable compliance file.
-
-## Application
-
-Compliance is applied to a Library or to descendant folders inside that Library. Work in a folder must satisfy every applicable `COMPLIANCE.toml` from the Library root through that folder.

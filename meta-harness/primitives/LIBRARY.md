@@ -127,13 +127,8 @@ If a Library reference includes a suffix after the Library name, first resolve t
 
 Task memory uses a local or external memory Library.
 
-A task may create or organize a memory Library when no suitable local Library exists.
-Unless otherwise specified, choose a filesystem-safe project name from the
-repository name, use `~/.<project-name>/task-memory`, and register it in
-`harness/libraries/LIBRARIES.local.toml`.
-
-When a Memory Library contains `MEMORY.toml`, read it before using that Memory
-Library.
+When no suitable Memory Library exists, create or organize one using
+[MEMORY.md](MEMORY.md).
 
 ## Governance
 

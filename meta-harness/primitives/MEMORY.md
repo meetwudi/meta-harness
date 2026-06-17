@@ -41,10 +41,9 @@ Memory may be organized as:
 - task-specific execution memory
 - durable project context
 
-The Memory Library and task choose the organization.
-
-When a memory place contains `LIBRARY.toml` or `MEMORY.toml`, agents must read
-the applicable files before reading or updating that memory.
+The Memory Library and task choose the organization. Memory use follows the
+Library's `LIBRARY.toml` access rules and the memory place's `MEMORY.toml`
+instructions.
 
 ## Shape
 
