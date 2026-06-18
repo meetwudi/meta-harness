@@ -1,2 +1,3 @@
-harness/libraries/LIBRARIES.local.toml
-.codex/skills/
+# Do not change this file without human approval. Specific folders should own their own .gitignore files.
+LIBRARIES.local.toml
+.codex/

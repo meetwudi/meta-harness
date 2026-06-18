@@ -1,3 +1,6 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
 # Reduce duplication and AI slop while preserving effectiveness.
 
 name = "concise-cleanup"

@@ -7,11 +7,14 @@ requirements = [
   "knowledge-agent.openai-trace-conversation-history",
 ]
 procedure = [
-  "Ask the knowledge agent to create a Library and write a value into that Library.",
+  "Use the project local root containing Knowledge Agent conversations and memory Libraries.",
+  "Ask the knowledge agent to remember a value without naming the memory Library path.",
   "Start another conversation.",
   "Ask the knowledge agent to retrieve the value from memory and print it.",
 ]
 expected = [
+  "Each conversation has a timestamped folder under the conversations Library.",
+  "The conversations Library and memory Library each have a LIBRARY.toml.",
   "The second conversation retrieves the value written by the first conversation.",
   "The second conversation prints the right value.",
 ]

@@ -1,3 +1,6 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
 # Check that project-specific harness content follows the shared Meta Harness shape.
 
 name = "project-harness-compliance"

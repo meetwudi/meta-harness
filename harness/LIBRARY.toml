@@ -1,3 +1,10 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
 name = "project-harness"
+description = "Project-specific harness knowledge, Library discovery, Tasks, and compliance for this repository."
+# read_tasks and update_tasks are Harness primitive Task URI patterns.
+# read_tasks controls which primitive Tasks may read this Library.
 read_tasks = ["library://*"]
+# update_tasks controls which primitive Tasks may update this Library.
 update_tasks = ["library://project-harness/tasks/concise-cleanup"]

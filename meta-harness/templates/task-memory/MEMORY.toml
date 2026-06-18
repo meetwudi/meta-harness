@@ -1,3 +1,6 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
 instructions = [
   "Preserve provenance and meaning.",
   "Do not invent product content, compliance obligations, engineering practices, acceptance tests, or open questions.",

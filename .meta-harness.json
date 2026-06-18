@@ -1,5 +1,9 @@
 {
   "schema": 1,
+  "project": {
+    "name": "meta-harness",
+    "localRoot": "~/.meta-harness"
+  },
   "source": {
     "type": "git",
     "url": "https://github.com/meetwudi/meta-harness.git",

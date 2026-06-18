@@ -1,3 +1,6 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
 # This file marks this folder as a Spec primitive.
 name = "knowledge-agent"
 version = "v0.0.0"

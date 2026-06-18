@@ -8,3 +8,6 @@ provider choices, prompts, or runtime rules change.
 
 Start with [SPEC.toml](SPEC.toml), then read the referenced requirement and
 acceptance-test collections.
+
+Implementation for this Spec lives under [impl/](impl/), relative to
+`SPEC.toml`.

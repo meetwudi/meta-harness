@@ -1,0 +1,9 @@
+id = "knowledge-agent.library-index-only-agent-input"
+title = "Only the Library index is an agent-facing Library input"
+source = "Human-listed requirement on 2026-06-18: the main agent file must not explicitly pass Memory or Conversation Library paths; the agent should learn writable Libraries from the Library index."
+text = "The Knowledge Agent must pass only the Library index as the agent-facing Library input. It must not explicitly pass named Memory, Conversation, or shared-memory Library paths through the main agent file, request prompt, provider trace metadata, or provider run options."
+clarifications = [
+  "Host runtime code may prepare local folders and stage them into the sandbox.",
+  "Writable runtime Libraries are exposed to the agent through generated sandbox-local Library indexes, not direct request fields.",
+  "The agent is expected to discover writable Libraries from Library indexes and Library governance.",
+]

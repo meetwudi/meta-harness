@@ -29,4 +29,18 @@ The primitives compose:
   citations.
 - Libraries organize all primitives.
 
+Primitive TOML files for the five current primitives identify themselves with a
+short comment header:
+
+```toml
+# This is a Harness primitive.
+# See also: library://meta-harness
+```
+
+For `COMPLIANCE.toml`, the `# Harness-Compliance:` review notice remains the
+first content line; the primitive header follows that notice.
+
+Requirement files, acceptance-test files, and Library indexes are structured
+harness files, but they are not primitives.
+
 When starting work, first discover the relevant Libraries, then identify applicable tasks, memory, and compliance.

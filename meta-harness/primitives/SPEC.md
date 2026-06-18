@@ -18,11 +18,26 @@ citable requirement files and separate acceptance-test files.
     {requirement-id}.toml
   acceptance-tests/
     {acceptance-test-id}.toml
+  impl/
+    ...
 ```
 
 Specs lead to implemented, fully harnessed generated code. Generated files
 should begin with a comment that tells humans not to edit generated output
 directly and to update the Spec first.
+
+Implementation generated from a Spec lives under the Spec root in folders
+relative to `SPEC.toml`. Do not place Spec-owned implementation in a central
+repository tool folder unless the human explicitly asks for that layout.
+
+Generated implementation code should be modular. Use one function per file.
+Each function must have a docstring that explains what the function does.
+
+Every generated implementation file must start with:
+
+- the generated-file notice
+- the requirement IDs the file supports, when it supports requirements
+- a short explanation of how the function or file supports those requirements
 
 Example generated-file notice:
 

@@ -19,7 +19,7 @@ REQUIRED_LIBRARY_TOML_FIELDS = {
     "name": str,
     "update_tasks": list,
 }
-OPTIONAL_LIBRARY_TOML_FIELDS = {"read_tasks"}
+OPTIONAL_LIBRARY_TOML_FIELDS = {"description", "read_tasks", "agent_excludes"}
 
 def fail(failures, message):
     failures.append(message)
@@ -136,8 +136,34 @@ def validate_task_uri_patterns(path, data, field, failures, require_task_path):
         if require_task_path and "/" not in suffix:
             fail(
                 failures,
-                f"{path}: {field} pattern must identify tasks inside a Library URI: {pattern}",
+                f"{path}: {field} pattern must identify tasks inside a URI: {pattern}",
             )
+
+
+def validate_agent_excludes(path, data, failures):
+    value = data.get("agent_excludes")
+    if value is None:
+        return
+    if not isinstance(value, list):
+        fail(failures, f"{path}: agent_excludes must be a list")
+        return
+    for pattern in value:
+        if not isinstance(pattern, str) or not pattern.strip():
+            fail(failures, f"{path}: agent_excludes must contain only non-empty strings")
+            continue
+        if pattern != pattern.strip():
+            fail(failures, f"{path}: agent_excludes pattern must not have surrounding whitespace: {pattern!r}")
+            continue
+        if pattern.startswith("/") or "\\" in pattern:
+            fail(failures, f"{path}: agent_excludes patterns must be relative POSIX paths: {pattern}")
+
+
+def validate_optional_string(path, data, field, failures):
+    value = data.get(field)
+    if value is None:
+        return
+    if not isinstance(value, str) or not value.strip():
+        fail(failures, f"{path}: {field} must be a non-empty string")
 
 
 def resolve_filesystem_location(repo_root, entry):
@@ -176,8 +202,10 @@ def validate_library_toml(index_toml, entry, library_root, failures, validated_l
         return
 
     validate_required_fields(library_toml, data, REQUIRED_LIBRARY_TOML_FIELDS, failures)
+    validate_optional_string(library_toml, data, "description", failures)
     validate_task_uri_patterns(library_toml, data, "read_tasks", failures, require_task_path=False)
     validate_task_uri_patterns(library_toml, data, "update_tasks", failures, require_task_path=True)
+    validate_agent_excludes(library_toml, data, failures)
 
     entry_name = entry.get("name")
     marker_name = data.get("name")

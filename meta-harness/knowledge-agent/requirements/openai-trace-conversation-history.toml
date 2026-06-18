@@ -2,3 +2,9 @@ id = "knowledge-agent.openai-trace-conversation-history"
 title = "Every conversation uses OpenAI Trace API and local history storage"
 source = "Human-listed requirement 4 on 2026-06-17."
 text = "Every conversation should use the OpenAI Trace API. A local writable Library should store every conversation history, traces, and related records."
+clarifications = [
+  "Default local Knowledge Agent artifacts live under the project local root from .meta-harness.json.",
+  "The Knowledge Agent local root contains a conversations Library and a memory Library.",
+  "Each conversation is stored under the conversations Library in a folder named with a sortable timestamped conversation id.",
+  "Conversation history storage should be discoverable through a Library index, not through direct prompt instructions.",
+]

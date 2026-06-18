@@ -1,0 +1,9 @@
+id = "knowledge-agent.storage-agnostic-runtime"
+title = "Storage agnostic runtime"
+source = "Human-listed requirement on 2026-06-18: the Knowledge Agent must work as a local CLI and later on backend systems where user roots may sync through a database-backed interface."
+text = "The Knowledge Agent orchestration code must be storage agnostic. Local filesystem copy and sync-back behavior is one storage implementation, but the main runtime must use an interface that can later support backend storage, user-root materialization, or database-backed sync."
+clarifications = [
+  "The local CLI implementation may use filesystem folders and copy them into the sandbox workspace.",
+  "A future backend implementation may materialize a user's root or Libraries from a database into the sandbox workspace and sync changes back through the same interface.",
+  "Main orchestration code should not directly call local filesystem storage functions for conversation or memory persistence.",
+]

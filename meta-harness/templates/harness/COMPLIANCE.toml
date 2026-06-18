@@ -1,4 +1,6 @@
 # Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
+# This is a Harness primitive.
+# See also: library://meta-harness
 
 [[items]]
 id = "spec-before-code"

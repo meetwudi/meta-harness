@@ -2,6 +2,7 @@
 import argparse
 import ast
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -33,6 +34,8 @@ REQUIRED_LIBRARY_LOCATIONS = {
     "meta-harness": "meta-harness",
     "project-harness": "harness",
 }
+
+PROJECT_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 
 DELEGATED_CHECKS = (
     "check-library-definitions",
@@ -147,6 +150,24 @@ def validate_meta_harness_marker(repo_root, failures):
 
     if data.get("schema") != 1:
         fail(failures, ".meta-harness.json: schema must be 1")
+
+    project = data.get("project")
+    if not isinstance(project, dict):
+        fail(failures, ".meta-harness.json: project must be an object")
+    else:
+        name = project.get("name")
+        if not isinstance(name, str) or not name.strip():
+            fail(failures, ".meta-harness.json: project.name must be a non-empty string")
+        elif name in {".", ".."} or "/" in name or "\\" in name or not PROJECT_NAME_RE.match(name):
+            fail(
+                failures,
+                ".meta-harness.json: project.name must be filesystem-safe "
+                "(letters, numbers, dot, underscore, and dash)",
+            )
+
+        local_root = project.get("localRoot")
+        if not isinstance(local_root, str) or not local_root.strip():
+            fail(failures, ".meta-harness.json: project.localRoot must be a non-empty string")
 
     source = data.get("source")
     if not isinstance(source, dict):

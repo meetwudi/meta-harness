@@ -86,7 +86,26 @@ harness/
     AGENTS.md
 ```
 
-`.meta-harness.json` records the Meta Harness source.
+`.meta-harness.json` records the managed project name, local root, and Meta
+Harness source:
+
+```json
+{
+  "schema": 1,
+  "project": {
+    "name": "project-name",
+    "localRoot": "~/.project-name"
+  },
+  "source": {
+    "type": "git",
+    "url": "https://github.com/meetwudi/meta-harness.git",
+    "ref": "source-ref"
+  }
+}
+```
+
+`project.name` is a filesystem-safe project name. `project.localRoot` is the
+default local root for ignored or machine-local Libraries and runtime artifacts.
 
 To understand management-layer changes, managed projects compare source refs directly with `git diff` in the Meta Harness source repository:
 

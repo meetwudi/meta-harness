@@ -59,7 +59,11 @@ Example:
 
 ```toml
 name = "meta-harness"
+description = "Shared Meta Harness knowledge, primitives, setup guidance, templates, and tools."
+# read_tasks and update_tasks are Harness primitive Task URI patterns.
+# read_tasks controls which primitive Tasks may read this Library.
 read_tasks = ["library://*"]
+# update_tasks controls which primitive Tasks may update this Library.
 update_tasks = []
 ```
 
@@ -70,7 +74,12 @@ Required fields:
 
 Optional fields:
 
+- `description`
 - `read_tasks`
+- `agent_excludes`
+
+`description` is a concise human-readable summary of what the Library is for.
+Agents should use it when choosing among available Libraries.
 
 Task access entries are task identifier glob patterns expressed as
 `library://` URI patterns. Use an empty `update_tasks` list when no task may
@@ -89,6 +98,19 @@ allow all tasks to read it:
 
 ```toml
 read_tasks = ["library://*"]
+```
+
+`agent_excludes` is an optional list of path patterns, relative to the Library
+root, that agent runtimes should not expose when staging a Library into an agent
+workspace. Use it for generated code, implementation internals, build output, or
+other files that should not be part of agent discovery for that Library.
+
+Example:
+
+```toml
+agent_excludes = [
+  "knowledge-agent/**",
+]
 ```
 
 ## References

@@ -19,9 +19,8 @@ library://task-memory
 Managed projects may register it in ignored local Library discovery at
 `harness/libraries/LIBRARIES.local.toml`.
 
-Unless otherwise specified, agents choose a filesystem-safe project name from the
-repository name and use `~/.<project-name>/task-memory` as the local default
-location.
+Unless otherwise specified, agents read `.meta-harness.json` `project.localRoot`
+and use `<project.localRoot>/task-memory` as the local default location.
 
 ## Purpose
 
@@ -44,6 +43,9 @@ Memory may be organized as:
 The Memory Library and task choose the organization. Memory use follows the
 Library's `LIBRARY.toml` access rules and the memory place's `MEMORY.toml`
 instructions.
+
+Agents choose Memory Libraries from Library descriptions, `LIBRARY.toml` access
+rules, and `MEMORY.toml` instructions.
 
 ## Shape
 
