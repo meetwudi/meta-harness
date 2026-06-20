@@ -21,11 +21,8 @@ export async function ensureConversationsLibrary(root: string): Promise<void> {
         "",
         `name = "${CONVERSATIONS_LIBRARY_NAME}"`,
         'description = "Conversation history Library for Knowledge Agent sessions, including prompts, summaries, trace references, and conversation records."',
-        "# read_tasks and update_tasks are Harness primitive Task URI patterns.",
-        "# read_tasks controls which primitive Tasks may read this Library.",
-        'read_tasks = ["library://*"]',
-        "# update_tasks controls which primitive Tasks may update this Library.",
-        'update_tasks = ["library://knowledge-agent/conversations/*"]',
+        'read_actors = ["actor://knowledge-agent"]',
+        'update_actors = ["actor://knowledge-agent"]',
         "",
       ].join("\n"),
     );

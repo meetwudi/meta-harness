@@ -1,0 +1,4 @@
+id = "librarian.intro-resource-interface"
+title = "Intro returns primitive onboarding content"
+source = "Human-listed requirement on 2026-06-20: intro should mirror the search return interface and return the primitives onboarding file content."
+text = "The Librarian intro tool returns primitive onboarding content using the same result shape as Librarian search."

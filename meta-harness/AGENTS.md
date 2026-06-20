@@ -18,4 +18,6 @@ Installable skills: [skills/AGENTS.md](skills/AGENTS.md)
 
 Knowledge agent: [knowledge-agent/AGENTS.md](knowledge-agent/AGENTS.md)
 
+Librarian: [librarian/AGENTS.md](librarian/AGENTS.md)
+
 Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)

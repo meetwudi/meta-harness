@@ -3,7 +3,8 @@
 A Spec is a modular requirement map.
 
 Specs live in a Library. `SPEC.toml` marks a place as a Spec primitive and
-points agents to requirement collections and acceptance-test collections.
+points agents to requirement collections, acceptance-test collections, and any
+test guidance or executable test maps the Spec declares.
 
 A Spec is not a long prose document. It is a structured map to smaller,
 citable requirement files and separate acceptance-test files.
@@ -18,6 +19,10 @@ citable requirement files and separate acceptance-test files.
     {requirement-id}.toml
   acceptance-tests/
     {acceptance-test-id}.toml
+  test-guidelines/
+    integration.md
+  integration-tests/
+    {integration-test-id}.toml
   impl/
     ...
 ```
@@ -55,6 +60,11 @@ Generated file. Do not edit directly; update the Spec first.
 - `[[requirement_collections]]`
 - `[[acceptance_test_collections]]`
 
+`SPEC.toml` may also include:
+
+- `[[test_guideline_collections]]`
+- `[[integration_test_collections]]`
+
 Example:
 
 ```toml
@@ -69,6 +79,14 @@ location = "requirements"
 [[acceptance_test_collections]]
 name = "acceptance-tests"
 location = "acceptance-tests"
+
+[[test_guideline_collections]]
+name = "test-guidelines"
+location = "test-guidelines"
+
+[[integration_test_collections]]
+name = "integration-tests"
+location = "integration-tests"
 ```
 
 Each collection includes:
@@ -117,6 +135,32 @@ Each acceptance-test file includes:
 
 The `requirements` field contains requirement IDs.
 
+## Test Guidelines
+
+Specs may include test-guideline collections for guidance that applies across
+integration and acceptance tests.
+
+Guideline files may be Markdown when the guidance is prose. Test guidelines
+should explain testing style, boundaries, fixtures, storage setup, and when to
+prefer real collaborators over mocks.
+
+## Integration Tests
+
+Integration-test files describe runnable tests that verify multiple implemented
+parts together. Integration tests are separate from acceptance tests because an
+acceptance test describes user-visible success, while an integration test may
+describe a concrete executable verification path.
+
+Each integration-test file includes:
+
+- `id`
+- `title`
+- `requirements`
+- `procedure`
+- `expected`
+
+The `requirements` field contains requirement IDs.
+
 ## Implementation Citations
 
 Implementation code cites requirements with this parseable token:
@@ -134,4 +178,5 @@ implementation citation in checked implementation code.
 
 Spec updates are spec-first. Update `SPEC.toml`, requirements, and acceptance
 tests before implementation code when behavior, interfaces, prompts, provider
-choices, runtime rules, or validation expectations change.
+choices, runtime rules, or validation expectations change. Update test
+guidelines or integration tests when those expectations change.

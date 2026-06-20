@@ -1,0 +1,7 @@
+id = "librarian.tool-call-observability"
+title = "Tool calls are recorded in conversation context"
+source = "Human-listed requirement on 2026-06-19: every tool call should be logged into the conversation with inputs and redacted outputs so tests can verify the actual call sequence without prompting the agent to self-report."
+text = "Each Librarian tool call must be recorded by the runtime into the current conversation context, including the tool name, call order, input, and output summary. File contents in outputs must be redacted as `<redacted file contents from the server>`."
+clarifications = [
+  "This is runtime observability, not a prompt instruction for the agent to report its own tool usage.",
+]

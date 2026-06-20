@@ -1,11 +1,12 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.storage-agnostic-runtime: adapts local filesystem persistence to the storage interface.
-// Supports knowledge-agent.library-writes-memory: provides local writable Library staging and sync-back.
+// Supports knowledge-agent.library-writes-memory: provides local writable Libraries through Librarian.
 // Supports knowledge-agent.openai-trace-conversation-history: provides local conversation history storage.
+// Supports knowledge-agent.uses-librarian: creates Librarian context for local storage.
 
+import { createLocalLibrarianContext } from "./create-local-librarian-context.js";
 import { prepareLocalRuntime } from "./prepare-local-runtime.js";
 import { recordLocalHistory } from "./record-local-history.js";
-import { syncSandboxLibraries } from "./sync-sandbox-libraries.js";
 import type { KnowledgeAgentStorage } from "./types.js";
 
 /**
@@ -14,7 +15,7 @@ import type { KnowledgeAgentStorage } from "./types.js";
 export function localFileSystemStorage(): KnowledgeAgentStorage {
   return {
     prepareRuntime: prepareLocalRuntime,
-    syncFromSandbox: syncSandboxLibraries,
+    createLibrarianContext: createLocalLibrarianContext,
     recordConversation: recordLocalHistory,
   };
 }

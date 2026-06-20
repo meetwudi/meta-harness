@@ -7,7 +7,9 @@
     "knowledge-agent": "./src/cli.ts"
   },
   "scripts": {
+    "prebuild": "npm --prefix ../../librarian/impl run build",
     "build": "tsc -p tsconfig.json",
+    "prerun": "npm --prefix ../../librarian/impl run build",
     "run": "tsx src/cli.ts"
   },
   "engines": {

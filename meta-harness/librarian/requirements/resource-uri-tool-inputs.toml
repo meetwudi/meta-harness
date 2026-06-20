@@ -1,0 +1,4 @@
+id = "librarian.resource-uri-tool-inputs"
+title = "Tools use Library resource URIs"
+source = "Human-listed requirement on 2026-06-20: Librarian tools should use natural Library resource URIs such as `library://meta-harness/setup/PRIMITIVE-ORIENTATION.md`."
+text = "Librarian read, update, intro, and search resource records identify files with a single Library resource URI."

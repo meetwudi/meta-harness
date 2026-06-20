@@ -1,41 +1,23 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.openai-trace-conversation-history: stores local conversation history and trace references.
 // Supports knowledge-agent.storage-agnostic-runtime: implements local filesystem conversation record storage.
+// Supports librarian.tool-call-observability: stores only Librarian tool call events in librarian-trace.json.
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { resultSummary } from "./result-summary.js";
 import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
 
 /**
- * Writes the local conversation record containing prompt, run summary, and trace metadata.
+ * Writes local conversation prompt, summary, and Librarian trace files.
  */
 export async function recordLocalHistory(
   options: ProviderRunOptions & { provider: string },
   localRuntime: PreparedRuntime,
   prompt: string,
-  result: unknown,
+  _result: unknown,
 ): Promise<void> {
   const recordedAt = new Date().toISOString();
   const conversationRoot = join(localRuntime.conversationsLibrary, options.conversationId);
-  const record = {
-    conversationId: options.conversationId,
-    provider: options.provider,
-    model: options.model,
-    libraryIndex: options.libraryIndex,
-    localRoot: localRuntime.localRoot,
-    conversationsLibrary: localRuntime.conversationsLibrary,
-    memoryLibrary: localRuntime.memoryLibrary,
-    sandboxWorkspace: options.sandboxWorkspace,
-    prompt,
-    result: resultSummary(result),
-    trace: {
-      sdk: "OpenAI Agents SDK",
-      workflowName: `knowledge-agent:${options.conversationId}`,
-      exportedBySdkDefault: options.provider === "openai",
-    },
-    recordedAt,
-  };
   await mkdir(conversationRoot, { recursive: true });
   await writeFile(join(conversationRoot, "prompt.md"), `${prompt}\n`);
   await writeFile(
@@ -47,20 +29,18 @@ export async function recordLocalHistory(
       "",
       `Goal: ${options.goal}`,
       "",
-      `Library index: ${options.libraryIndex}`,
-      "",
       `Provider: ${options.provider}`,
       "",
       `Model: ${options.model}`,
       "",
-      `Memory Library: ${localRuntime.memoryLibrary}`,
+      `Librarian tool calls: ${options.librarianContext.toolCallEvents.length}`,
       "",
       `Sandbox workspace: ${options.sandboxWorkspace}`,
       "",
     ].join("\n"),
   );
   await writeFile(
-    join(conversationRoot, "record.json"),
-    `${JSON.stringify(record, null, 2)}\n`,
+    join(conversationRoot, "librarian-trace.json"),
+    `${JSON.stringify(options.librarianContext.toolCallEvents, null, 2)}\n`,
   );
 }

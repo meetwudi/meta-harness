@@ -1,0 +1,4 @@
+id = "librarian.direct-storage-updates"
+title = "Updates write directly to storage"
+source = "Human-listed requirement on 2026-06-19: Librarian should direct write through storage."
+text = "Librarian update operations write directly to the underlying storage backend."

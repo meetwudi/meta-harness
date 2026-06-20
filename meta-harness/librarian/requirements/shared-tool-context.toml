@@ -1,0 +1,4 @@
+id = "librarian.shared-tool-context"
+title = "Tools share context"
+source = "Human-listed requirement on 2026-06-19: Librarian tools share a context."
+text = "Librarian tools share a runtime context."

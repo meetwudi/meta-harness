@@ -1,0 +1,4 @@
+id = "knowledge-agent.uses-librarian"
+title = "Knowledge Agent uses Librarian"
+source = "Human-listed requirement on 2026-06-19: Knowledge Agent should consume Librarian instead of owning Library resolution."
+text = "Knowledge Agent consumes Librarian for Library resolution and related Library operations."

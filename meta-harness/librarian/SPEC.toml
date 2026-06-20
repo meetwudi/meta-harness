@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+# This file marks this folder as a Spec primitive.
+name = "librarian"
+version = "v0.0.0"
+source = "Human-listed Librarian requirements captured on 2026-06-19."
+
+[[requirement_collections]]
+name = "requirements"
+location = "requirements"
+
+[[acceptance_test_collections]]
+name = "acceptance-tests"
+location = "acceptance-tests"
+
+[[test_guideline_collections]]
+name = "test-guidelines"
+location = "test-guidelines"
+
+[[integration_test_collections]]
+name = "integration-tests"
+location = "integration-tests"

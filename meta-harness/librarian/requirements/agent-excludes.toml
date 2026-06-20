@@ -1,0 +1,4 @@
+id = "librarian.agent-excludes"
+title = "Librarian applies agent_excludes"
+source = "Human-listed requirement on 2026-06-18: implement agent_excludes in LIBRARY.toml."
+text = "Librarian applies Library agent_excludes from LIBRARY.toml when reading and searching filesystem Libraries."

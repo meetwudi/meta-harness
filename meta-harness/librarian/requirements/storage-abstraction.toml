@@ -1,0 +1,4 @@
+id = "librarian.storage-abstraction"
+title = "Storage is abstracted"
+source = "Human-listed requirement on 2026-06-19: storage is abstracted so local filesystem can later use any backend."
+text = "Librarian storage is abstracted so a local filesystem backend can later be replaced or complemented by other backends."

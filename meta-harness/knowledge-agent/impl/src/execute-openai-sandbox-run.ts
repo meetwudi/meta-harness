@@ -19,6 +19,7 @@ export async function executeOpenAISandboxRun(
     agent,
     "Open knowledge-agent/request.md and follow the goal.",
     {
+      maxTurns: 24,
       sandbox: {
         client: options.sandboxClient,
         snapshot: {

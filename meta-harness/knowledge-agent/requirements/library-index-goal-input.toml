@@ -4,8 +4,9 @@ source = "Human-listed requirement 1 on 2026-06-17, clarified by the human on 20
 text = "Knowledge agent can take a Library index and a goal and follow through the goal."
 clarifications = [
   "Use the OpenAI Agents SDK sandbox agent runtime.",
-  "Pass the agent a prompt that includes the Library index location and the goal.",
-  "Let the agent discover Meta Harness setup instructions and primitives through the Library index, AGENTS.md files, and repository knowledge as much as possible.",
+  "Pass the agent a prompt that includes the goal and requires starting through Librarian intro.",
+  "Supply the Library index to Librarian as runtime tool context.",
+  "Let the agent discover Meta Harness setup instructions and primitives through Librarian tools and repository knowledge as much as possible.",
   "Do not pass conversation or memory Library paths in the request prompt; writable memory should be discoverable through Library indexes.",
   "Implementation for this Spec should live under impl/ relative to this Spec root.",
   "Prompts should live as readable template files under impl/prompts/ and be rendered by implementation code.",

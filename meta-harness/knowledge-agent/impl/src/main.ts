@@ -5,17 +5,16 @@
 // Supports knowledge-agent.openai-trace-conversation-history: writes local prompt and conversation records.
 // Supports knowledge-agent.library-index-only-agent-input: keeps Library index as the only agent-facing Library input.
 // Supports knowledge-agent.storage-agnostic-runtime: uses storage through an implementation interface.
+// Supports knowledge-agent.uses-librarian: routes Library operations through Librarian.
 
 import { buildRequest } from "./build-request.js";
 import { findRepoRoot } from "./find-repo-root.js";
 import { loadMetaHarnessConfig } from "./load-meta-harness-config.js";
 import { parseArgs } from "./parse-args.js";
-import { prepareSandboxRepo } from "./prepare-sandbox-repo.js";
 import { providerFromName } from "./provider-from-name.js";
 import { resultSummary } from "./result-summary.js";
 import { storageFromConfig } from "./storage-from-config.js";
 import { usage } from "./usage.js";
-import { writeSandboxLocalLibraryIndex } from "./write-sandbox-local-library-index.js";
 import type { ProviderRunOptions } from "./types.js";
 
 /**
@@ -47,26 +46,30 @@ export async function main(): Promise<number> {
     sandboxWorkspaceInput: parsed.sandboxWorkspace,
     conversationId: parsed.conversationId,
   });
+  const librarianContext = storage.createLibrarianContext(
+    {
+      repoRootPath,
+      libraryIndex: parsed.libraryIndex,
+      conversationId: parsed.conversationId,
+    },
+    runtime,
+  );
 
   // Harness-Requirement: knowledge-agent.library-index-only-agent-input
-  // Only the Library index is an agent-facing Library input. Host-local runtime
-  // folders are exposed through sandbox Library discovery, not direct request fields.
+  // The only Library context passed to the agent runtime is hidden Librarian tool
+  // context; the prompt does not name specific runtime Libraries.
   const options: ProviderRunOptions = {
     repoRoot: repoRootPath,
-    sandboxRepoRoot: runtime.sandboxRepoRoot,
-    libraryIndex: parsed.libraryIndex,
     goal: parsed.goal,
     model: parsed.model ?? provider.defaultModel,
     client: parsed.client,
     conversationId: parsed.conversationId,
     sandboxWorkspace: runtime.sandboxWorkspace,
+    librarianContext,
   };
-  await prepareSandboxRepo(options);
-  await writeSandboxLocalLibraryIndex(options);
   provider.assertReady();
   const prompt = buildRequest(options);
   const result = await provider.runConversation(options);
-  await storage.syncFromSandbox(options, runtime);
   await storage.recordConversation({ ...options, provider: provider.name }, runtime, prompt, result);
 
   const summary = resultSummary(result);

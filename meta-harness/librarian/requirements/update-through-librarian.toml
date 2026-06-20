@@ -1,0 +1,4 @@
+id = "librarian.update-through-librarian"
+title = "Updates go through Librarian"
+source = "Human-listed requirement on 2026-06-19: agents should be able to update through Librarian."
+text = "Agents can update Library content through Librarian."

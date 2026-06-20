@@ -1,0 +1,4 @@
+id = "librarian.file-listing"
+title = "Librarian lists files under a URI"
+source = "Human-listed requirement on 2026-06-20: Librarian should have a tool to list files under a URI, with recursive listing for filesystem storage and filter-style behavior for database storage."
+text = "Librarian provides a tool that lists file resource URIs under a Library URI or Library folder URI. The tool supports non-recursive and recursive listing."

@@ -21,11 +21,8 @@ export async function ensureMemoryLibrary(root: string): Promise<void> {
         "",
         `name = "${MEMORY_LIBRARY_NAME}"`,
         'description = "Durable Memory Library shared across Knowledge Agent conversations for retrievable values, notes, and summaries."',
-        "# read_tasks and update_tasks are Harness primitive Task URI patterns.",
-        "# read_tasks controls which primitive Tasks may read this Library.",
-        'read_tasks = ["library://*"]',
-        "# update_tasks controls which primitive Tasks may update this Library.",
-        'update_tasks = ["library://knowledge-agent/conversations/*"]',
+        'read_actors = ["actor://knowledge-agent"]',
+        'update_actors = ["actor://knowledge-agent"]',
         "",
       ].join("\n"),
     );

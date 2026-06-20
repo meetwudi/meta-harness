@@ -1,0 +1,4 @@
+id = "librarian.tool-comments"
+title = "Tools describe what they are for"
+source = "Human-listed requirement on 2026-06-19: tools should have comments so the agent knows what they are for."
+text = "Each Librarian tool exposed to an agent must include a concise description that explains what the tool is for."

@@ -3,12 +3,12 @@
 // Supports knowledge-agent.library-index-goal-input: defines the required run input shape.
 // Supports knowledge-agent.library-index-only-agent-input: keeps local Library paths out of agent-facing run options.
 // Supports knowledge-agent.storage-agnostic-runtime: defines the storage boundary for runtime persistence.
-// Supports knowledge-agent.library-scoped-sandbox-staging: defines Library staging data structures.
 
 import type {
   DockerSandboxClient,
   UnixLocalSandboxClient,
 } from "@openai/agents/sandbox/local";
+import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
 
 export type Args = {
   command?: string;
@@ -25,21 +25,20 @@ export type Args = {
 
 export type ProviderRunOptions = {
   repoRoot: string;
-  sandboxRepoRoot: string;
-  libraryIndex: string;
   goal: string;
   model: string;
   client: string;
   conversationId: string;
   sandboxWorkspace: string;
+  librarianContext: LibrarianContext;
 };
 
 export type PreparedRuntime = {
   localRoot: string;
   conversationsLibrary: string;
   memoryLibrary: string;
+  runtimeLibraryIndex: string;
   sandboxWorkspace: string;
-  sandboxRepoRoot: string;
 };
 
 export type StoragePrepareInput = {
@@ -47,24 +46,6 @@ export type StoragePrepareInput = {
   configuredLocalRoot: string;
   sandboxWorkspaceInput: string;
   conversationId: string;
-};
-
-export type LibraryIndexEntry = {
-  name: string;
-  relative_location?: string;
-  location?: string;
-};
-
-export type LibraryIndexEntries = {
-  path: string;
-  entries: LibraryIndexEntry[];
-};
-
-export type ResolvedLibrary = {
-  name: string;
-  sourcePath: string;
-  sandboxRelativeLocation: string;
-  fromLocalIndex: boolean;
 };
 
 export type OpenAISandboxRunOptions = ProviderRunOptions & {
@@ -80,10 +61,10 @@ export type KnowledgeAgentProvider = {
 
 export type KnowledgeAgentStorage = {
   prepareRuntime(input: StoragePrepareInput): Promise<PreparedRuntime>;
-  syncFromSandbox(
-    options: ProviderRunOptions,
+  createLibrarianContext(
+    input: { repoRootPath: string; libraryIndex: string; conversationId: string },
     runtime: PreparedRuntime,
-  ): Promise<void>;
+  ): LibrarianContext;
   recordConversation(
     options: ProviderRunOptions & { provider: string },
     runtime: PreparedRuntime,

@@ -1,0 +1,4 @@
+id = "librarian.actor-session-tool-context"
+title = "Actor identity and session id are tool context"
+source = "Human-listed requirement on 2026-06-19: actor identity and session IDs are tool context."
+text = "The current actor identity and session id are supplied to Librarian as runtime tool context."

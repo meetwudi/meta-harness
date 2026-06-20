@@ -1,0 +1,8 @@
+id = "knowledge-agent.library-scoped-access"
+title = "Library access is scoped through Librarian"
+source = "Human-listed requirement on 2026-06-18 and clarified on 2026-06-20: the Knowledge Agent should expose Library-scoped knowledge through Librarian and respect agent_excludes."
+text = "The Knowledge Agent uses Librarian for Library-scoped knowledge access. Librarian enforces indexed Libraries, governance, and agent_excludes from LIBRARY.toml."
+clarifications = [
+  "agent_excludes patterns are relative to the Library root.",
+  "The design must remain compatible with storage implementations backed by a user root, database, or other backend.",
+]

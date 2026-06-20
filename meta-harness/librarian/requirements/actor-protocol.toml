@@ -1,0 +1,4 @@
+id = "librarian.actor-protocol"
+title = "Actor identities use actor protocol"
+source = "Human-listed requirement on 2026-06-19: actor identities use the actor prefix."
+text = "Actor identities use the actor:// protocol."

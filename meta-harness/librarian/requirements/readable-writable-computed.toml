@@ -1,0 +1,4 @@
+id = "librarian.readable-writable-computed"
+title = "Readable and writable are computed"
+source = "Human-listed requirement on 2026-06-19: readable and writable are computed by code from governance and the actor."
+text = "Readable and writable are computed by code from Library governance and the current actor identity."

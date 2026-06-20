@@ -1,0 +1,4 @@
+id = "knowledge-agent.prompt-calls-librarian-intro"
+title = "Knowledge Agent prompt calls Librarian intro"
+source = "Human-listed requirement on 2026-06-19: the prompt should explicitly require calling the intro endpoint."
+text = "The Knowledge Agent prompt must explicitly require calling the Librarian intro tool."

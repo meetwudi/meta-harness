@@ -1,0 +1,4 @@
+id = "librarian.multi-library-search"
+title = "Search supports multiple Library patterns"
+source = "Human-listed requirement on 2026-06-20: Librarian search must support multi-Library search using a list of Library URI patterns."
+text = "Librarian search can search across multiple readable Libraries selected by a list of Library URI patterns."
