@@ -10,6 +10,7 @@ requirements = [
   "librarian.update-through-librarian",
   "librarian.direct-storage-updates",
   "librarian.tool-call-observability",
+  "librarian.actor-library-governance",
 ]
 procedure = [
   "Run the Librarian filesystem storage end-to-end integration test.",

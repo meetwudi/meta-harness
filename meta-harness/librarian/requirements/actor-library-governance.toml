@@ -1,0 +1,4 @@
+id = "librarian.actor-library-governance"
+title = "Library governance supports actors"
+source = "Observed schema/runtime drift on 2026-06-20: current Libraries use read_actors and runtime access already computes actor fields."
+text = "Library governance supports actor URI patterns through read_actors and update_actors in LIBRARY.toml."

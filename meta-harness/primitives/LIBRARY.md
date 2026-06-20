@@ -24,7 +24,7 @@ harness/libraries/
 Libraries must be indexed only in `LIBRARIES.toml` or `LIBRARIES.local.toml`, not in `AGENTS.md` or other docs.
 
 Every filesystem Library root must contain `LIBRARY.toml`. The index points to
-the place; `LIBRARY.toml` describes that place's task access.
+the place; `LIBRARY.toml` describes that place's access governance.
 
 ## Index
 
@@ -65,25 +65,37 @@ description = "Shared Meta Harness knowledge, primitives, setup guidance, templa
 read_tasks = ["library://*"]
 # update_tasks controls which primitive Tasks may update this Library.
 update_tasks = []
+# read_actors and update_actors are actor URI patterns.
+read_actors = ["actor://knowledge-agent"]
+update_actors = []
 ```
 
 Required fields:
 
 - `name`
-- `update_tasks`
 
-Optional fields:
+At least one update governance field must be present:
+
+- `update_tasks`
+- `update_actors`
+
+Other supported fields:
 
 - `description`
 - `read_tasks`
 - `agent_excludes`
+- `update_tasks`
+- `read_actors`
+- `update_actors`
 
 `description` is a concise human-readable summary of what the Library is for.
 Agents should use it when choosing among available Libraries.
 
 Task access entries are task identifier glob patterns expressed as
-`library://` URI patterns. Use an empty `update_tasks` list when no task may
-update the Library.
+`library://` URI patterns. Actor access entries are actor identity glob patterns
+expressed as `actor://` URI patterns.
+
+Use empty update lists when no task or actor may update the Library.
 
 Examples:
 
@@ -98,6 +110,7 @@ allow all tasks to read it:
 
 ```toml
 read_tasks = ["library://*"]
+read_actors = ["actor://knowledge-agent"]
 ```
 
 `agent_excludes` is an optional list of path patterns, relative to the Library

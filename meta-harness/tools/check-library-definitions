@@ -17,9 +17,15 @@ REQUIRED_LIBRARY_FIELDS = {
 DISALLOWED_LIBRARY_FIELDS = {"primitive_kind", "relative_to"}
 REQUIRED_LIBRARY_TOML_FIELDS = {
     "name": str,
-    "update_tasks": list,
 }
-OPTIONAL_LIBRARY_TOML_FIELDS = {"description", "read_tasks", "agent_excludes"}
+OPTIONAL_LIBRARY_TOML_FIELDS = {
+    "description",
+    "read_tasks",
+    "update_tasks",
+    "read_actors",
+    "update_actors",
+    "agent_excludes",
+}
 
 def fail(failures, message):
     failures.append(message)
@@ -140,6 +146,34 @@ def validate_task_uri_patterns(path, data, field, failures, require_task_path):
             )
 
 
+def validate_actor_uri_patterns(path, data, field, failures):
+    value = data.get(field)
+    if value is None:
+        return
+    if not isinstance(value, list):
+        fail(failures, f"{path}: {field} must be a list")
+        return
+
+    for pattern in value:
+        if not isinstance(pattern, str) or not pattern.strip():
+            fail(failures, f"{path}: {field} must contain only non-empty strings")
+            continue
+        if pattern != pattern.strip():
+            fail(failures, f"{path}: {field} pattern must not have surrounding whitespace: {pattern!r}")
+            continue
+        if not pattern.startswith("actor://"):
+            fail(failures, f"{path}: {field} pattern must use actor://: {pattern}")
+            continue
+        suffix = pattern.removeprefix("actor://")
+        if not suffix:
+            fail(failures, f"{path}: {field} pattern must include an actor name or glob: {pattern}")
+
+
+def validate_update_governance(path, data, failures):
+    if "update_tasks" not in data and "update_actors" not in data:
+        fail(failures, f"{path}: one of update_tasks or update_actors must be present")
+
+
 def validate_agent_excludes(path, data, failures):
     value = data.get("agent_excludes")
     if value is None:
@@ -205,6 +239,9 @@ def validate_library_toml(index_toml, entry, library_root, failures, validated_l
     validate_optional_string(library_toml, data, "description", failures)
     validate_task_uri_patterns(library_toml, data, "read_tasks", failures, require_task_path=False)
     validate_task_uri_patterns(library_toml, data, "update_tasks", failures, require_task_path=True)
+    validate_actor_uri_patterns(library_toml, data, "read_actors", failures)
+    validate_actor_uri_patterns(library_toml, data, "update_actors", failures)
+    validate_update_governance(library_toml, data, failures)
     validate_agent_excludes(library_toml, data, failures)
 
     entry_name = entry.get("name")

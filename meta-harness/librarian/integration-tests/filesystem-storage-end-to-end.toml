@@ -15,6 +15,7 @@ requirements = [
   "librarian.storage-abstraction",
   "librarian.tool-call-observability",
   "librarian.multi-library-search",
+  "librarian.actor-library-governance",
 ]
 procedure = [
   "Create a temporary storage root.",
