@@ -1,0 +1,4 @@
+id = "storage.storage-agent-guidance"
+title = "Storage knowledge is agent-readable"
+source = "Human-listed requirement on 2026-06-21: storage locations should be understandable directly from the Harness Library, not only runtime configuration."
+text = "Storage knowledge includes agent-readable guidance that explains storage locations, structured storage definitions, and how agents use them."

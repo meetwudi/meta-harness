@@ -20,4 +20,6 @@ Knowledge agent: [knowledge-agent/AGENTS.md](knowledge-agent/AGENTS.md)
 
 Librarian: [librarian/AGENTS.md](librarian/AGENTS.md)
 
+Storage: [storage/AGENTS.md](storage/AGENTS.md)
+
 Harness design: [HARNESS-DESIGN.md](HARNESS-DESIGN.md)

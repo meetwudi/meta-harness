@@ -11,8 +11,10 @@
   },
   "scripts": {
     "build": "../../knowledge-agent/impl/node_modules/.bin/tsc -p tsconfig.json",
+    "pretest": "npm run build",
+    "test": "node dist/filesystem-storage-end-to-end.test.js",
     "preintegration:filesystem-storage-end-to-end": "npm run build",
-    "integration:filesystem-storage-end-to-end": "node dist/filesystem-storage-end-to-end.js"
+    "integration:filesystem-storage-end-to-end": "node dist/filesystem-storage-end-to-end.test.js"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

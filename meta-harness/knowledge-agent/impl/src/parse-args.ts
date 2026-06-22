@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: reads the required Library index and goal CLI inputs.
+// Supports knowledge-agent.storage-discovery-runtime: reads storage-discovery CLI inputs.
 // Supports knowledge-agent.provider-interface: reads provider, model, and sandbox selection inputs.
 
 import {
@@ -7,6 +7,7 @@ import {
   DEFAULT_PROVIDER,
 } from "./constants.js";
 import { defaultConversationId } from "./default-conversation-id.js";
+import { defaultTurnId } from "./default-turn-id.js";
 import type { Args } from "./types.js";
 
 /**
@@ -19,6 +20,7 @@ export function parseArgs(argv: string[]): Args {
     model: process.env.KNOWLEDGE_AGENT_MODEL,
     client: process.env.KNOWLEDGE_AGENT_SANDBOX_CLIENT ?? DEFAULT_CLIENT,
     conversationId: defaultConversationId(),
+    turnId: defaultTurnId(),
     localRoot: "",
     sandboxWorkspace: "",
   };
@@ -35,9 +37,6 @@ export function parseArgs(argv: string[]): Args {
       case "--repo-root":
         args.repoRoot = value;
         break;
-      case "--library-index":
-        args.libraryIndex = value;
-        break;
       case "--goal":
         args.goal = value;
         break;
@@ -52,6 +51,9 @@ export function parseArgs(argv: string[]): Args {
         break;
       case "--conversation-id":
         args.conversationId = value;
+        break;
+      case "--turn-id":
+        args.turnId = value;
         break;
       case "--local-root":
         args.localRoot = value;

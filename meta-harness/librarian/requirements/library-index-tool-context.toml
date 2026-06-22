@@ -1,4 +1,0 @@
-id = "librarian.library-index-tool-context"
-title = "Library index is tool context"
-source = "Human-listed requirement on 2026-06-19: Library index is runtime tool context."
-text = "The Library index is supplied to Librarian as runtime tool context."

@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: finds the project root that contains the Library index.
+// Supports knowledge-agent.storage-discovery-runtime: finds the project root for storage discovery.
 
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";

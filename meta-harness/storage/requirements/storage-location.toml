@@ -1,0 +1,4 @@
+id = "storage.storage-location"
+title = "Storage locations are named configured places"
+source = "Human-listed requirement on 2026-06-20: define storage location instead of exposing storage as the main architecture concept."
+text = "A storage location is a named configured place backed by a storage driver."

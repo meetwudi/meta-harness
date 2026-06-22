@@ -1,7 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.library-writes-memory: prepares local writable Libraries for Librarian.
 // Supports knowledge-agent.openai-trace-conversation-history: prepares local conversation storage.
-// Supports knowledge-agent.library-index-only-agent-input: keeps local Library path setup outside main agent inputs.
+// Supports knowledge-agent.storage-discovery-runtime: keeps local Library path setup outside main agent inputs.
 // Supports knowledge-agent.storage-agnostic-runtime: implements the local filesystem storage preparation.
 
 import { mkdir } from "node:fs/promises";
@@ -10,10 +10,9 @@ import { ensureConversationsLibrary } from "./ensure-conversations-library.js";
 import { ensureMemoryLibrary } from "./ensure-memory-library.js";
 import { resolveLocalRoot } from "./resolve-local-root.js";
 import type { PreparedRuntime, StoragePrepareInput } from "./types.js";
-import { writeRuntimeLibraryIndex } from "./write-runtime-library-index.js";
 
 /**
- * Prepares host-local Knowledge Agent folders and Library indexes.
+ * Prepares host-local Knowledge Agent folders.
  */
 export async function prepareLocalRuntime(
   input: StoragePrepareInput,
@@ -34,24 +33,30 @@ export async function prepareLocalRuntime(
     repoRootPath,
     join(knowledgeAgentRoot, "memory"),
   );
-  const runtimeLibraryIndex = resolve(
+  const conversationRoot = join(conversationsLibrary, conversationId);
+  const sessionFile = join(conversationRoot, "session.jsonl");
+  const tmpStorageRoot = resolve(
     repoRootPath,
-    join(knowledgeAgentRoot, "LIBRARIES.local.toml"),
+    join(knowledgeAgentRoot, "tmp-local-storage"),
   );
+  const tmpStorageLibrariesRoot = join(tmpStorageRoot, "libraries");
   const sandboxWorkspace = resolve(
     repoRootPath,
     sandboxWorkspaceInput || join(knowledgeAgentRoot, "sandbox-workspaces", conversationId),
   );
   await ensureConversationsLibrary(conversationsLibrary);
   await ensureMemoryLibrary(memoryLibrary);
+  await mkdir(conversationRoot, { recursive: true });
+  await mkdir(tmpStorageLibrariesRoot, { recursive: true });
   await mkdir(sandboxWorkspace, { recursive: true });
   const runtime = {
     localRoot,
     conversationsLibrary,
     memoryLibrary,
-    runtimeLibraryIndex,
+    conversationRoot,
+    sessionFile,
+    tmpStorageLibrariesRoot,
     sandboxWorkspace,
   };
-  await writeRuntimeLibraryIndex(runtime);
   return runtime;
 }

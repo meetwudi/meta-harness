@@ -1,6 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: creates the prompt containing the goal.
-// Supports knowledge-agent.library-writes-memory: lets the agent discover writable memory through Library indexes.
+// Supports knowledge-agent.storage-discovery-runtime: creates the prompt containing the goal.
+// Supports knowledge-agent.library-writes-memory: lets the agent discover writable memory through storage discovery.
 // Supports knowledge-agent.prompt-calls-librarian-intro: renders the prompt instruction to call Librarian intro.
 
 import type { ProviderRunOptions } from "./types.js";

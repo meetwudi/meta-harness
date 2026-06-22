@@ -2,26 +2,30 @@
 // Supports librarian.shared-tool-context: creates a shared context for all Librarian tools.
 // Supports librarian.actor-protocol: enforces actor:// actor identities.
 
-import type { LibrarianContext, LibrarianStorage } from "./types.js";
+import type { LibrarianContext, LibrarianStorage, StorageLocation } from "./types.js";
 
 /**
  * Creates the shared Librarian runtime context.
  */
 export function createLibrarianContext(input: {
   storage: LibrarianStorage;
-  libraryIndexPaths: string[];
-  libraryIndexBasePaths?: Record<string, string>;
+  storageLocations?: StorageLocation[];
   actorUri: string;
+  actorUris?: string[];
   sessionId: string;
 }): LibrarianContext {
-  if (!input.actorUri.startsWith("actor://")) {
-    throw new Error(`Actor URI must use actor://: ${input.actorUri}`);
+  const actorUris = [input.actorUri, ...(input.actorUris ?? [])]
+    .filter((actorUri, index, values) => values.indexOf(actorUri) === index);
+  for (const actorUri of actorUris) {
+    if (!actorUri.startsWith("actor://")) {
+      throw new Error(`Actor URI must use actor://: ${actorUri}`);
+    }
   }
   return {
     storage: input.storage,
-    libraryIndexPaths: input.libraryIndexPaths,
-    libraryIndexBasePaths: input.libraryIndexBasePaths,
+    storageLocations: input.storageLocations ?? [],
     actorUri: input.actorUri,
+    actorUris,
     sessionId: input.sessionId,
     toolCallEvents: [],
   };

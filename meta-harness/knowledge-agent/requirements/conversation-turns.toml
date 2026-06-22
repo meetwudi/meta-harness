@@ -1,0 +1,4 @@
+id = "knowledge-agent.conversation-turns"
+title = "Conversations contain turns"
+source = "Human-listed requirement on 2026-06-20: conversation is not just one-off and should support multiple turns."
+text = "Knowledge Agent stores each run or interactive reply as a turn inside the conversation history."

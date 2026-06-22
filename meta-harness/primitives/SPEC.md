@@ -115,7 +115,7 @@ Requirement IDs are stable identifiers intended for implementation citation.
 Use lowercase dotted identifiers, such as:
 
 ```text
-knowledge-agent.library-index-goal-input
+knowledge-agent.storage-discovery-runtime
 ```
 
 ## Acceptance Tests

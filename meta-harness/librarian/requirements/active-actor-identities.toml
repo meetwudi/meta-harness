@@ -1,0 +1,4 @@
+id = "librarian.active-actor-identities"
+title = "Librarian evaluates active actor identities"
+source = "Human-listed requirement on 2026-06-22: task-backed agents should grant task actors while keeping Library governance actor-based."
+text = "Librarian evaluates Library governance against the active actor identities for the current run."

@@ -13,7 +13,7 @@ another place addressable by a Library.
 `designation` is only the prose word for marking a collection as a primitive.
 Do not write a `designation` field.
 
-Do not write `primitive_kind` in Library indexes. Libraries choose places;
+Do not write `primitive_kind` in Library discovery metadata. Libraries choose places;
 structured files inside those places identify contained primitives.
 
 For folder-scoped primitives, the structured file is the marker. For example,
@@ -27,6 +27,8 @@ Spec.
 Task: [TASK.md](TASK.md)
 
 Library: [LIBRARY.md](LIBRARY.md)
+
+Library creation: [LIBRARY-CREATION.md](LIBRARY-CREATION.md)
 
 Memory: [MEMORY.md](MEMORY.md)
 

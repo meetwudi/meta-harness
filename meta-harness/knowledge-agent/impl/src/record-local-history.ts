@@ -2,6 +2,7 @@
 // Supports knowledge-agent.openai-trace-conversation-history: stores local conversation history and trace references.
 // Supports knowledge-agent.storage-agnostic-runtime: implements local filesystem conversation record storage.
 // Supports librarian.tool-call-observability: stores only Librarian tool call events in librarian-trace.json.
+// Supports knowledge-agent.conversation-turns: stores each run as a conversation turn.
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -17,15 +18,26 @@ export async function recordLocalHistory(
   _result: unknown,
 ): Promise<void> {
   const recordedAt = new Date().toISOString();
-  const conversationRoot = join(localRuntime.conversationsLibrary, options.conversationId);
-  await mkdir(conversationRoot, { recursive: true });
-  await writeFile(join(conversationRoot, "prompt.md"), `${prompt}\n`);
+  const conversationRoot = localRuntime.conversationRoot;
+  const turnRoot = join(conversationRoot, "turns", options.turnId);
+  await mkdir(turnRoot, { recursive: true });
   await writeFile(
-    join(conversationRoot, "summary.md"),
+    join(conversationRoot, "CONVERSATION.toml"),
     [
-      `# Conversation ${options.conversationId}`,
+      `conversation_id = ${JSON.stringify(options.conversationId)}`,
+      `session_file = ${JSON.stringify("session.jsonl")}`,
+      "",
+    ].join("\n"),
+  );
+  await writeFile(join(turnRoot, "prompt.md"), `${prompt}\n`);
+  await writeFile(
+    join(turnRoot, "summary.md"),
+    [
+      `# Turn ${options.turnId}`,
       "",
       `Started: ${recordedAt}`,
+      "",
+      `Conversation: ${options.conversationId}`,
       "",
       `Goal: ${options.goal}`,
       "",
@@ -37,10 +49,12 @@ export async function recordLocalHistory(
       "",
       `Sandbox workspace: ${options.sandboxWorkspace}`,
       "",
+      `Session file: ${localRuntime.sessionFile}`,
+      "",
     ].join("\n"),
   );
   await writeFile(
-    join(conversationRoot, "librarian-trace.json"),
+    join(turnRoot, "librarian-trace.json"),
     `${JSON.stringify(options.librarianContext.toolCallEvents, null, 2)}\n`,
   );
 }

@@ -1,0 +1,4 @@
+id = "storage.location-library-placement"
+title = "Storage locations define Library placement"
+source = "Human-listed requirement on 2026-06-20: the unresolved creation question is where a new Library lives inside a storage location."
+text = "A storage location defines how a new Library is placed inside that location."

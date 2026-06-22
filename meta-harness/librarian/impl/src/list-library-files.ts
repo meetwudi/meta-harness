@@ -8,7 +8,7 @@ import { libraryResourceUri } from "./library-resource-uri.js";
 import { publicLibraryListing } from "./public-library-listing.js";
 import { resolveLibraryFilePath } from "./resolve-library-file-path.js";
 import { resolveLibraryLocation } from "./resolve-library-location.js";
-import type { LibrarianContext } from "./types.js";
+import type { LibrarianContext, LibrarianStorage } from "./types.js";
 import { walkLibraryFiles } from "./walk-library-files.js";
 
 /**
@@ -27,8 +27,8 @@ export async function listLibraryFiles(
   }
 
   const files = input.recursive
-    ? await walkLibraryFiles(context, library.rootPath, library.agentExcludes, path)
-    : await listDirectFiles(context, library.rootPath, library.agentExcludes, path);
+    ? await walkLibraryFiles(library.storage, library.rootPath, library.agentExcludes, path)
+    : await listDirectFiles(library.storage, library.rootPath, library.agentExcludes, path);
 
   return {
     library: publicLibraryListing(library),
@@ -44,13 +44,13 @@ export async function listLibraryFiles(
  * Lists direct file children below an internal Library-relative folder path.
  */
 async function listDirectFiles(
-  context: LibrarianContext,
+  storage: LibrarianStorage,
   rootPath: string,
   excludes: string[],
   currentPath: string,
 ): Promise<string[]> {
   const absolutePath = resolveLibraryFilePath(rootPath, currentPath);
-  const entries = await context.storage.listDirectory(absolutePath);
+  const entries = await storage.listDirectory(absolutePath);
   return entries.flatMap((entry) => {
     if (entry.name.startsWith(".")) {
       return [];

@@ -1,6 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports librarian.shamanistic-library-tools: exports the Librarian runtime surface.
 
+export { createLibraryInStorageLocation } from "./create-library-in-storage-location.js";
 export { createLibrarianContext } from "./create-librarian-context.js";
 export { createLocalFileSystemStorage } from "./create-local-file-system-storage.js";
 export { executeLibrarianTool } from "./execute-librarian-tool.js";
@@ -9,6 +10,7 @@ export { listLibraryFiles } from "./list-library-files.js";
 export { listLibraries } from "./list-libraries.js";
 export { introLibraries } from "./intro-libraries.js";
 export { libraryResourceUri } from "./library-resource-uri.js";
+export { parseToml } from "./parse-toml.js";
 export { readLibraryFile } from "./read-library-file.js";
 export { resolveLibraryLocation } from "./resolve-library-location.js";
 export { resolveLibraryResource } from "./resolve-library-resource.js";
@@ -22,4 +24,6 @@ export type {
   LibraryListResult,
   LibraryListing,
   ResolvedLibrary,
+  StorageLocation,
+  StorageDriverCapabilities,
 } from "./types.js";

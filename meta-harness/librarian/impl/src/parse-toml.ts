@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports librarian.library-index-tool-context: parses Library indexes supplied through tool context.
+// Supports librarian.storage-discovery-tool-context: parses structured storage and Library knowledge.
 
 import type { TomlRecord } from "./types.js";
 

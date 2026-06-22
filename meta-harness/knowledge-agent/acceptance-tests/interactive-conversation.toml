@@ -1,0 +1,19 @@
+id = "knowledge-agent.acceptance.interactive-conversation"
+title = "Interactive conversation"
+requirements = [
+  "knowledge-agent.harness-owned-session",
+  "knowledge-agent.resume-conversation",
+  "knowledge-agent.interactive-cli",
+  "knowledge-agent.conversation-turns",
+]
+procedure = [
+  "Start Knowledge Agent interactive mode with a conversation id.",
+  "Send a user message.",
+  "Send a follow-up user reply in the same interactive process.",
+  "Inspect the conversation Library for persisted session history and turn records.",
+]
+expected = [
+  "The same conversation id is used for both turns.",
+  "The Harness-owned session stores conversation history across turns.",
+  "Each user reply has its own turn record under the conversation.",
+]

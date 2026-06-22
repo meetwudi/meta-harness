@@ -1,7 +1,0 @@
-# Local Library index for this machine. Keep this file ignored by git.
-# During bootstrap, set .meta-harness.json project.localRoot and replace
-# <project.localRoot> below with that local root.
-
-[[libraries]]
-name = "task-memory"
-location = "<project.localRoot>/task-memory"

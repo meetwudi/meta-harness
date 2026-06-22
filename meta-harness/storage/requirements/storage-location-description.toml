@@ -1,0 +1,4 @@
+id = "storage.storage-location-description"
+title = "Storage locations describe their purpose"
+source = "Human-listed requirement on 2026-06-20: storage location can support a hint or description about what the storage location is for."
+text = "A storage location includes a description or purpose hint so humans, agents, and host runtimes can understand what the location is for."

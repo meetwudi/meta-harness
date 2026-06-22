@@ -1,7 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.provider-interface: defines the provider boundary used by implementations.
-// Supports knowledge-agent.library-index-goal-input: defines the required run input shape.
-// Supports knowledge-agent.library-index-only-agent-input: keeps local Library paths out of agent-facing run options.
+// Supports knowledge-agent.storage-discovery-runtime: defines the required run input shape.
+// Supports knowledge-agent.uses-librarian: keeps local Library paths out of agent-facing run options.
 // Supports knowledge-agent.storage-agnostic-runtime: defines the storage boundary for runtime persistence.
 
 import type {
@@ -9,16 +9,17 @@ import type {
   UnixLocalSandboxClient,
 } from "@openai/agents/sandbox/local";
 import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
+import type { KnowledgeAgentSession } from "./local-jsonl-session.js";
 
 export type Args = {
   command?: string;
   repoRoot: string;
-  libraryIndex?: string;
   goal?: string;
   provider: string;
   model?: string;
   client: string;
   conversationId: string;
+  turnId: string;
   localRoot: string;
   sandboxWorkspace: string;
 };
@@ -29,15 +30,19 @@ export type ProviderRunOptions = {
   model: string;
   client: string;
   conversationId: string;
+  turnId: string;
   sandboxWorkspace: string;
   librarianContext: LibrarianContext;
+  session: KnowledgeAgentSession;
 };
 
 export type PreparedRuntime = {
   localRoot: string;
   conversationsLibrary: string;
   memoryLibrary: string;
-  runtimeLibraryIndex: string;
+  conversationRoot: string;
+  sessionFile: string;
+  tmpStorageLibrariesRoot: string;
   sandboxWorkspace: string;
 };
 
@@ -62,9 +67,10 @@ export type KnowledgeAgentProvider = {
 export type KnowledgeAgentStorage = {
   prepareRuntime(input: StoragePrepareInput): Promise<PreparedRuntime>;
   createLibrarianContext(
-    input: { repoRootPath: string; libraryIndex: string; conversationId: string },
+    input: { repoRootPath: string; conversationId: string },
     runtime: PreparedRuntime,
   ): LibrarianContext;
+  createSession(runtime: PreparedRuntime, conversationId: string): KnowledgeAgentSession;
   recordConversation(
     options: ProviderRunOptions & { provider: string },
     runtime: PreparedRuntime,

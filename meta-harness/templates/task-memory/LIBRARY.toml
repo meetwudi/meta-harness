@@ -3,8 +3,5 @@
 
 name = "task-memory"
 description = "Local Memory Library for Harness primitive Task executions and durable task learnings."
-# read_tasks and update_tasks are Harness primitive Task URI patterns.
-# read_tasks controls which primitive Tasks may read this Library.
-read_tasks = ["library://*"]
-# update_tasks controls which primitive Tasks may update this Library.
-update_tasks = ["library://project-harness/tasks/*"]
+read_actors = ["actor://knowledge-agent", "actor://task/*"]
+update_actors = ["actor://task/project-harness/tasks/*"]

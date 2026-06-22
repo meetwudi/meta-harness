@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: stages the request for SDK sandbox discovery.
+// Supports knowledge-agent.storage-discovery-runtime: stages the request for SDK sandbox discovery.
 // Supports knowledge-agent.uses-librarian: leaves Library operations to Librarian tools.
 
 import {

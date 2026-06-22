@@ -5,7 +5,7 @@ that depends on Library discovery, governance computation, or update
 persistence.
 
 Use the local filesystem storage backend pointed at a temporary folder. Seed
-that folder with a small Library index and filesystem Libraries, run Librarian
+that folder with filesystem Libraries, run Librarian
 operations against it, and verify the underlying files changed through the
 storage backend. The test must not write into the repository, the user's home
 directory, or long-lived local memory.

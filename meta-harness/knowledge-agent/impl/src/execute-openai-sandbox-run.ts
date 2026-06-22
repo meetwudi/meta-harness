@@ -1,10 +1,12 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: delegates the actual goal work to the Agents SDK run loop.
+// Supports knowledge-agent.provider-interface: delegates the actual goal work to the Agents SDK run loop.
 // Supports knowledge-agent.openai-trace-conversation-history: returns the SDK trace metadata for local history.
+// Supports knowledge-agent.harness-owned-session: passes Harness-owned session history to the SDK.
 
 import { run } from "@openai/agents";
 import type { Trace } from "@openai/agents";
 import type { SandboxAgent } from "@openai/agents/sandbox";
+import { buildRequest } from "./build-request.js";
 import type { OpenAISandboxRunOptions } from "./types.js";
 
 /**
@@ -17,9 +19,10 @@ export async function executeOpenAISandboxRun(
 ): Promise<Record<string, unknown>> {
   const result = await run(
     agent,
-    "Open knowledge-agent/request.md and follow the goal.",
+    buildRequest(options),
     {
       maxTurns: 24,
+      session: options.session,
       sandbox: {
         client: options.sandboxClient,
         snapshot: {

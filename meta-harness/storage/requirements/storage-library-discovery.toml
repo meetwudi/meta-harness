@@ -1,0 +1,4 @@
+id = "storage.storage-library-discovery"
+title = "Storage locations discover Libraries"
+source = "Human-listed requirement on 2026-06-22: storage locations should be queryable discovery sources for Libraries."
+text = "A storage location defines how Libraries are discovered within its query scope."

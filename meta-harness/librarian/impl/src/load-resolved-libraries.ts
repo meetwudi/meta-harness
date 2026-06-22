@@ -1,43 +1,150 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports librarian.library-list-fields: resolves Library index entries into listed Libraries.
+// Supports librarian.library-list-fields: resolves discovered Libraries into listed Libraries.
 // Supports librarian.readable-writable-computed: attaches computed access to each Library.
+// Supports storage.all-known-storage-locations: associates resolved Libraries with storage locations.
+// Supports librarian.storage-discovery-tool-context: discovers Libraries from storage locations.
 
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 import { computeLibraryAccess } from "./compute-library-access.js";
 import { libraryUriFromName } from "./library-uri-from-name.js";
-import { loadLibraryIndexEntries } from "./load-library-index-entries.js";
 import { readTomlFile } from "./read-toml-file.js";
-import { resolveLibraryRoot } from "./resolve-library-root.js";
 import { stringArray } from "./string-array.js";
-import type { LibrarianContext, ResolvedLibrary } from "./types.js";
+import { wildcardPatternMatches } from "./wildcard-pattern-matches.js";
+import type {
+  LibrarianContext,
+  LibrarianStorage,
+  ResolvedLibrary,
+  StorageLocation,
+} from "./types.js";
 
 /**
- * Resolves all Libraries available from the context Library indexes.
+ * Resolves all Libraries discoverable from the context storage locations.
  */
 export async function loadResolvedLibraries(
   context: LibrarianContext,
 ): Promise<ResolvedLibrary[]> {
   const libraries = new Map<string, ResolvedLibrary>();
-  for (const indexPath of context.libraryIndexPaths) {
-    const index = await loadLibraryIndexEntries(context.storage, indexPath);
-    const basePath = context.libraryIndexBasePaths?.[indexPath] ?? index.basePath;
-    for (const entry of index.entries) {
-      const rootPath = resolveLibraryRoot(basePath, entry);
-      const manifestPath = join(rootPath, "LIBRARY.toml");
-      const manifest = await readTomlFile(context.storage, manifestPath);
-      const access = computeLibraryAccess(manifest, context.actorUri);
-      const name = typeof manifest.name === "string" ? manifest.name : entry.name;
-      const uri = libraryUriFromName(entry.name);
-      libraries.set(uri, {
-        name,
-        uri,
-        description: typeof manifest.description === "string" ? manifest.description : "",
-        readable: access.readable,
-        writable: access.writable,
-        rootPath,
-        agentExcludes: stringArray(manifest.agent_excludes),
-      });
+  for (const location of context.storageLocations) {
+    if (location.discoverLibraries === false) {
+      continue;
     }
+    await loadDiscoveredLibraries(
+      libraries,
+      location.storage,
+      await discoverLibraryRoots(location.storage, location.libraryRootPath, location),
+      context.actorUris,
+      location.name,
+    );
   }
   return [...libraries.values()];
+}
+
+async function loadDiscoveredLibraries(
+  libraries: Map<string, ResolvedLibrary>,
+  storage: LibrarianStorage,
+  roots: string[],
+  actorUris: string[],
+  storageLocationName: string,
+): Promise<void> {
+  for (const rootPath of roots) {
+    const manifestPath = join(rootPath, "LIBRARY.toml");
+    const manifest = await readTomlFile(storage, manifestPath);
+    const access = computeLibraryAccess(manifest, actorUris);
+    if (typeof manifest.name !== "string" || !manifest.name.trim()) {
+      throw new Error(`${manifestPath}: name must be a non-empty string`);
+    }
+    const name = manifest.name.trim();
+    const uri = libraryUriFromName(name);
+    libraries.set(uri, {
+      name,
+      uri,
+      description: typeof manifest.description === "string" ? manifest.description : "",
+      readable: access.readable,
+      writable: access.writable,
+      rootPath,
+      agentExcludes: stringArray(manifest.agent_excludes),
+      storage,
+      storageLocationName,
+    });
+  }
+}
+
+async function discoverLibraryRoots(
+  storage: LibrarianStorage,
+  rootPath: string,
+  location: { discoveryMode: StorageLocation["discoveryMode"]; discoveryExcludes: string[] },
+): Promise<string[]> {
+  if (!(await storage.exists(rootPath))) {
+    return [];
+  }
+  if (location.discoveryMode === "filesystem-root-and-direct-children") {
+    return discoverRootAndDirectChildren(storage, rootPath, location.discoveryExcludes);
+  }
+  return discoverRecursive(storage, rootPath, location.discoveryExcludes);
+}
+
+async function discoverRootAndDirectChildren(
+  storage: LibrarianStorage,
+  rootPath: string,
+  excludes: string[],
+): Promise<string[]> {
+  const roots: string[] = [];
+  if (await storage.exists(join(rootPath, "LIBRARY.toml"))) {
+    roots.push(rootPath);
+  }
+  for (const entry of await storage.listDirectory(rootPath)) {
+    if (!entry.isDirectory || entry.name.startsWith(".")) {
+      continue;
+    }
+    const childRoot = join(rootPath, entry.name);
+    if (isDiscoveryExcluded(rootPath, childRoot, excludes)) {
+      continue;
+    }
+    if (await storage.exists(join(childRoot, "LIBRARY.toml"))) {
+      roots.push(childRoot);
+    }
+  }
+  return roots;
+}
+
+async function discoverRecursive(
+  storage: LibrarianStorage,
+  rootPath: string,
+  excludes: string[],
+): Promise<string[]> {
+  const roots: string[] = [];
+  await walkDiscoveryRoot(storage, rootPath, rootPath, excludes, roots);
+  return roots;
+}
+
+async function walkDiscoveryRoot(
+  storage: LibrarianStorage,
+  rootPath: string,
+  currentPath: string,
+  excludes: string[],
+  roots: string[],
+): Promise<void> {
+  if (isDiscoveryExcluded(rootPath, currentPath, excludes)) {
+    return;
+  }
+  if (await storage.exists(join(currentPath, "LIBRARY.toml"))) {
+    roots.push(currentPath);
+    if (currentPath !== rootPath) {
+      return;
+    }
+  }
+  for (const entry of await storage.listDirectory(currentPath)) {
+    if (!entry.isDirectory || entry.name.startsWith(".")) {
+      continue;
+    }
+    await walkDiscoveryRoot(storage, rootPath, join(currentPath, entry.name), excludes, roots);
+  }
+}
+
+function isDiscoveryExcluded(rootPath: string, path: string, patterns: string[]): boolean {
+  const relativePath = relative(rootPath, path).split(sep).join("/");
+  if (!relativePath) {
+    return false;
+  }
+  return patterns.some((pattern) => wildcardPatternMatches(pattern, relativePath));
 }

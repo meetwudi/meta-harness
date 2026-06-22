@@ -19,7 +19,7 @@ The primitives compose:
 - Tasks read Libraries.
 - Tasks may update Libraries when allowed.
 - When a filesystem Library contains `LIBRARY.toml`, that file describes which
-  task URI patterns may read or update it.
+  actor URI patterns may read or update it.
 - Tasks use Memory without needing every task to restate that Memory exists.
 - When Memory contains `MEMORY.toml`, that file describes how the memory is
   organized and what agents may update.
@@ -28,6 +28,10 @@ The primitives compose:
 - Specs connect sourced requirements, acceptance tests, and implementation
   citations.
 - Libraries organize all primitives.
+- Library creation follows `library://meta-harness/primitives/LIBRARY-CREATION.md`.
+- Storage locations follow `library://meta-harness/storage/STORAGE.md`.
+- `library://...` references are Library resource URIs handled through
+  Librarian tools.
 
 Primitive TOML files for the five current primitives identify themselves with a
 short comment header:
@@ -40,7 +44,7 @@ short comment header:
 For `COMPLIANCE.toml`, the `# Harness-Compliance:` review notice remains the
 first content line; the primitive header follows that notice.
 
-Requirement files, acceptance-test files, and Library indexes are structured
-harness files, but they are not primitives.
+Requirement files and acceptance-test files are structured harness files, but
+they are not primitives.
 
 When starting work, first discover the relevant Libraries, then identify applicable tasks, memory, and compliance.

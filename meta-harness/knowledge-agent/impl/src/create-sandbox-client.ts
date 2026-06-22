@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: selects the OpenAI Agents SDK sandbox client used for goal execution.
+// Supports knowledge-agent.provider-interface: selects the OpenAI Agents SDK sandbox client used for goal execution.
 
 import {
   DockerSandboxClient,

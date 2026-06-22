@@ -1,0 +1,4 @@
+id = "knowledge-agent.storage-discovery-runtime"
+title = "Knowledge Agent uses storage discovery"
+source = "Human-listed requirement on 2026-06-22: Knowledge Agent should use storage locations to discover Libraries."
+text = "Knowledge Agent prepares storage locations and uses Librarian storage discovery to find Libraries."

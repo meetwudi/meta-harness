@@ -1,0 +1,4 @@
+id = "librarian.storage-discovery-tool-context"
+title = "Storage discovery is tool context"
+source = "Human-listed requirement on 2026-06-22: Librarian should discover Libraries from storage locations at runtime."
+text = "Librarian receives storage locations as runtime tool context and discovers Libraries by querying those storage locations."

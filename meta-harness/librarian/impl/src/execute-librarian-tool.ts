@@ -2,6 +2,7 @@
 // Supports librarian.shamanistic-library-tools: executes Librarian tools by name.
 // Supports librarian.tool-call-observability: records every Librarian tool call.
 
+import { createLibraryInStorageLocation } from "./create-library-in-storage-location.js";
 import { introLibraries } from "./intro-libraries.js";
 import { listLibraryFiles } from "./list-library-files.js";
 import { listLibraries } from "./list-libraries.js";
@@ -45,6 +46,12 @@ export async function executeLibrarianTool(
     output = await updateLibraryFile(context, {
       uri: String(input.uri),
       content: String(input.content),
+    });
+  } else if (toolName === "librarian_create_library") {
+    output = await createLibraryInStorageLocation(context, {
+      storageLocationName: String(input.storageLocationName),
+      name: String(input.name),
+      description: typeof input.description === "string" ? input.description : undefined,
     });
   } else {
     throw new Error(`Unknown Librarian tool: ${toolName}`);

@@ -1,10 +1,12 @@
 id = "knowledge-agent.acceptance.memory-round-trip"
 title = "Memory round trip across conversations"
 requirements = [
-  "knowledge-agent.library-index-goal-input",
+  "knowledge-agent.storage-discovery-runtime",
   "knowledge-agent.provider-interface",
   "knowledge-agent.library-writes-memory",
   "knowledge-agent.openai-trace-conversation-history",
+  "knowledge-agent.harness-owned-session",
+  "knowledge-agent.resume-conversation",
 ]
 procedure = [
   "Use the project local root containing Knowledge Agent conversations and memory Libraries.",

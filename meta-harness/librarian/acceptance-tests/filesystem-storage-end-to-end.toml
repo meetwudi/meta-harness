@@ -2,7 +2,7 @@ id = "librarian.acceptance.filesystem-storage-end-to-end"
 title = "Filesystem-backed Librarian end-to-end"
 requirements = [
   "librarian.shamanistic-library-tools",
-  "librarian.library-index-tool-context",
+  "librarian.storage-discovery-tool-context",
   "librarian.shared-tool-context",
   "librarian.intro-resource-interface",
   "librarian.resource-uri-tool-inputs",
@@ -11,12 +11,20 @@ requirements = [
   "librarian.direct-storage-updates",
   "librarian.tool-call-observability",
   "librarian.actor-library-governance",
+  "librarian.active-actor-identities",
+  "librarian.task-actor-governance",
+  "librarian.library-creation-knowledge",
+  "librarian.create-library-in-storage-location",
+  "storage.storage-agent-guidance",
+  "storage.library-creation-target-location",
+  "storage.all-known-storage-locations",
+  "storage.location-library-placement",
 ]
 procedure = [
   "Run the Librarian filesystem storage end-to-end integration test.",
 ]
 expected = [
   "The test completes using local filesystem storage pointed at a temporary folder.",
-  "The test verifies listing, primitive onboarding content, URI-native reads and updates, governance-derived readable and writable state, and direct update to the temporary storage root.",
+  "The test verifies storage-discovered listing, primitive onboarding content, Library creation protocol content, storage guidance content, storage location knowledge read through Library URIs, Library creation in tmp local storage, URI-native reads and updates, governance-derived readable and writable state, and direct update to the temporary storage root.",
   "The test verifies the recorded tool call sequence from runtime observability, with inputs present and file contents redacted from outputs.",
 ]

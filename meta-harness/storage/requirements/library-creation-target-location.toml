@@ -1,0 +1,4 @@
+id = "storage.library-creation-target-location"
+title = "Library creation targets a storage location"
+source = "Human-listed requirement on 2026-06-22: when an agent creates a Library, it should read storage location knowledge and ask the user to choose one."
+text = "Library creation targets a named storage location."

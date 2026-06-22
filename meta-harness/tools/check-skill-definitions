@@ -115,7 +115,7 @@ def validate_harness_use_library_skill(repo_root, skill_dir, failures):
     required = (
         "library://",
         "meta-harness/primitives/LIBRARY.md",
-        "Library index",
+        "storage discovery",
         "AGENTS.md",
     )
     for pattern in required:

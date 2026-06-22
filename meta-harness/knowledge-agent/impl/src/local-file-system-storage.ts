@@ -5,6 +5,7 @@
 // Supports knowledge-agent.uses-librarian: creates Librarian context for local storage.
 
 import { createLocalLibrarianContext } from "./create-local-librarian-context.js";
+import { LocalJsonlSession } from "./local-jsonl-session.js";
 import { prepareLocalRuntime } from "./prepare-local-runtime.js";
 import { recordLocalHistory } from "./record-local-history.js";
 import type { KnowledgeAgentStorage } from "./types.js";
@@ -16,6 +17,8 @@ export function localFileSystemStorage(): KnowledgeAgentStorage {
   return {
     prepareRuntime: prepareLocalRuntime,
     createLibrarianContext: createLocalLibrarianContext,
+    createSession: (runtime, conversationId) =>
+      new LocalJsonlSession(conversationId, runtime.sessionFile),
     recordConversation: recordLocalHistory,
   };
 }

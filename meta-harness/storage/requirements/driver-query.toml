@@ -1,0 +1,4 @@
+id = "storage.driver-query"
+title = "Storage drivers implement query"
+source = "Human-listed requirement on 2026-06-20: query mechanisms such as listing and finding should be implemented at the driver level."
+text = "Storage drivers implement query mechanisms for listing and finding stored resources."

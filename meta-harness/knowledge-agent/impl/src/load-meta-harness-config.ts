@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: reads project defaults from managed project metadata.
+// Supports knowledge-agent.storage-discovery-runtime: reads project defaults from managed project metadata.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

@@ -1,0 +1,48 @@
+# Local Knowledge Agent storage locations.
+
+[[storage_locations]]
+name = "repository"
+description = "Checked-in repository storage location for Libraries discovered from repository Library manifests."
+driver_name = "filesystem"
+readable = true
+writable = true
+deletable = true
+queryable = true
+library_root_path = "{{repoRootPath}}"
+discovery_mode = "filesystem-root-and-direct-children"
+discovery_excludes = ["node_modules/**", "dist/**"]
+discover_libraries = true
+source_uri = "library://meta-harness/storage/knowledge-agent-local-storage-locations.toml"
+guidance_uri = "library://meta-harness/storage/STORAGE.md"
+
+[[storage_locations]]
+name = "machine-local"
+description = "Machine-local storage location for local Libraries discovered under the configured local root."
+driver_name = "filesystem"
+readable = true
+writable = true
+deletable = true
+queryable = true
+library_root_path = "{{localRoot}}"
+discovery_mode = "filesystem-recursive"
+discovery_excludes = [
+  "knowledge-agent/sandbox-workspaces/**",
+]
+discover_libraries = true
+source_uri = "library://meta-harness/storage/knowledge-agent-local-storage-locations.toml"
+guidance_uri = "library://meta-harness/storage/STORAGE.md"
+
+[[storage_locations]]
+name = "tmp-local"
+description = "Temporary local filesystem storage location for creating local Libraries."
+driver_name = "filesystem"
+readable = true
+writable = true
+deletable = true
+queryable = true
+library_root_path = "{{tmpStorageLibrariesRoot}}"
+discovery_mode = "filesystem-root-and-direct-children"
+discovery_excludes = []
+discover_libraries = true
+source_uri = "library://meta-harness/storage/knowledge-agent-local-storage-locations.toml"
+guidance_uri = "library://meta-harness/storage/STORAGE.md"

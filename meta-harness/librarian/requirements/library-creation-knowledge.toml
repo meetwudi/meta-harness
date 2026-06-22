@@ -1,0 +1,4 @@
+id = "librarian.library-creation-knowledge"
+title = "Librarian intro surfaces Library creation knowledge"
+source = "Human-listed requirement on 2026-06-21: Library creation workflow should live in knowledge and be surfaced through intro or getting-started Library material."
+text = "Librarian intro surfaces Library creation protocol knowledge that tells agents which creation fields to collect and how to read storage location knowledge."

@@ -4,11 +4,7 @@
 name = "repository"
 description = "Repository-level project knowledge for a Meta Harness-managed project."
 read_actors = ["actor://knowledge-agent"]
-# read_tasks and update_tasks are Harness primitive Task URI patterns.
-# read_tasks controls which primitive Tasks may read this Library.
-read_tasks = ["library://*"]
-# update_tasks controls which primitive Tasks may update this Library.
-update_tasks = []
+update_actors = []
 agent_excludes = [
   "meta-harness/knowledge-agent/**",
 ]

@@ -43,16 +43,16 @@ id = "library-locations"
 text = "Verify Library definitions point to real places and filesystem Library roots contain LIBRARY.toml."
 
 [[items]]
-id = "library-index-valid"
-text = "Verify checked-in Library definitions are valid in LIBRARIES.toml."
+id = "library-definitions-valid"
+text = "Verify checked-in Library definitions are valid."
 
 [[items]]
 id = "shared-libraries"
-text = "Verify harness/libraries/LIBRARIES.toml lists shared repo-safe Libraries."
+text = "Verify shared repo-safe Libraries have valid LIBRARY.toml definitions."
 
 [[items]]
 id = "local-libraries"
-text = "Verify local Library entries belong in ignored harness/libraries/LIBRARIES.local.toml and do not weaken checked-in governance."
+text = "Verify local Libraries do not weaken checked-in governance."
 
 [[items]]
 id = "memory-libraries"

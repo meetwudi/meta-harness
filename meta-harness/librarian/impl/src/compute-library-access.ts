@@ -6,22 +6,20 @@ import { stringArray } from "./string-array.js";
 import type { TomlRecord } from "./types.js";
 
 /**
- * Computes readable and writable booleans from Library governance and actor identity.
+ * Computes readable and writable booleans from Library governance and active actor identities.
  */
 export function computeLibraryAccess(
   manifest: TomlRecord,
-  actorUri: string,
+  actorUris: string[],
 ): { readable: boolean; writable: boolean } {
-  const readActors = [
-    ...stringArray(manifest.read_actors),
-    ...stringArray(manifest.read_tasks),
-  ];
-  const updateActors = [
-    ...stringArray(manifest.update_actors),
-    ...stringArray(manifest.update_tasks),
-  ];
+  const readActors = stringArray(manifest.read_actors);
+  const updateActors = stringArray(manifest.update_actors);
   return {
-    readable: matchesAnyPattern(readActors, actorUri),
-    writable: matchesAnyPattern(updateActors, actorUri),
+    readable: matchesAnyActor(readActors, actorUris),
+    writable: matchesAnyActor(updateActors, actorUris),
   };
+}
+
+function matchesAnyActor(patterns: string[], actorUris: string[]): boolean {
+  return actorUris.some((actorUri) => matchesAnyPattern(patterns, actorUri));
 }

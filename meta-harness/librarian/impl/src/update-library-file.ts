@@ -22,8 +22,8 @@ export async function updateLibraryFile(
     throw new Error(`${input.uri} is not writable by ${context.actorUri}`);
   }
   const filePath = resolveLibraryFilePath(library.rootPath, path);
-  await context.storage.makeDirectory(dirname(filePath));
-  await context.storage.writeText(filePath, input.content);
+  await library.storage.makeDirectory(dirname(filePath));
+  await library.storage.writeText(filePath, input.content);
   return {
     library: publicLibraryListing(library),
     uri: libraryResourceUri(library.uri, path),

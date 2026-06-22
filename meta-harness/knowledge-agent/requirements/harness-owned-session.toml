@@ -1,0 +1,4 @@
+id = "knowledge-agent.harness-owned-session"
+title = "Knowledge Agent uses Harness-owned sessions"
+source = "Human-listed requirement on 2026-06-20: use a Harness-owned session for multi-turn Knowledge Agent conversations."
+text = "Knowledge Agent persists conversation history in a Harness-owned session store."

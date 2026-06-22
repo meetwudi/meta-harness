@@ -22,7 +22,7 @@ Capture early thinking as raw notes, captured direction, or close paraphrase. La
 
 ## Checkable Knowledge
 
-Prefer checkable authoritative files over duplicate prose indexes. Discovery and governance should live in the primitive's structured source when one exists, such as Library discovery in `LIBRARIES.toml` and task contracts in `TASK.toml`.
+Prefer checkable authoritative files over duplicate prose indexes. Discovery and governance should live in the primitive's structured source when one exists, such as Library governance in `LIBRARY.toml` and task contracts in `TASK.toml`.
 
 `AGENTS.md` should explain how to use nearby sources while leaving enumeration to the structured source of truth.
 

@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports librarian.library-index-tool-context: reads TOML through the configured storage backend.
+// Supports librarian.storage-discovery-tool-context: reads TOML through the configured storage backend.
 
 import { parseToml } from "./parse-toml.js";
 import type { LibrarianStorage, TomlRecord } from "./types.js";

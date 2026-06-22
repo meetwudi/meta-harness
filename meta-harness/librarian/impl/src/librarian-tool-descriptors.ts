@@ -20,7 +20,7 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
     },
     {
       name: "librarian_list_libraries",
-      description: "List Libraries available in the current Library index context with readable and writable access.",
+      description: "List storage-discovered Libraries with readable and writable access.",
       parameters: {
         type: "object",
         properties: {},
@@ -79,6 +79,20 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
           content: { type: "string" },
         },
         required: ["uri", "content"],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: "librarian_create_library",
+      description: "Create a Library in a named storage location.",
+      parameters: {
+        type: "object",
+        properties: {
+          storageLocationName: { type: "string" },
+          name: { type: "string" },
+          description: { type: "string" },
+        },
+        required: ["storageLocationName", "name"],
         additionalProperties: false,
       },
     },

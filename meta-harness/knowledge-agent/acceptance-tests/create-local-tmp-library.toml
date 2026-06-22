@@ -1,0 +1,20 @@
+id = "knowledge-agent.acceptance.create-local-tmp-library"
+title = "Create local tmp Library"
+requirements = [
+  "storage.library-creation-target-location",
+  "storage.location-library-placement",
+  "storage.storage-library-discovery",
+  "librarian.library-creation-knowledge",
+  "librarian.create-library-in-storage-location",
+]
+procedure = [
+  "Use a Knowledge Agent runtime that has a writable local tmp storage location.",
+  "Use Librarian intro knowledge for the Library creation protocol.",
+  "Ask the Knowledge Agent: `Create a Library in tmp locally.`",
+]
+expected = [
+  "The agent can use Library creation protocol knowledge to collect missing creation fields.",
+  "The agent can read storage knowledge and choose the tmp local storage location.",
+  "The agent creates a Library in that storage location.",
+  "The created Library has a LIBRARY.toml.",
+]

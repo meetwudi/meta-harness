@@ -1,0 +1,4 @@
+id = "knowledge-agent.interactive-cli"
+title = "Knowledge Agent supports interactive CLI"
+source = "Human-listed requirement on 2026-06-20: CLI can run interactively so the agent can ask questions and the user can reply."
+text = "Knowledge Agent CLI supports an interactive mode that keeps the same conversation session across user replies."

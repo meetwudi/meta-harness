@@ -1,0 +1,4 @@
+id = "librarian.create-library-in-storage-location"
+title = "Librarian creates Libraries in storage locations"
+source = "Human-listed requirement on 2026-06-20: ensure being able to create a Library in tmp locally by targeting a storage location."
+text = "Librarian provides a tool that creates a Library in a named storage location."

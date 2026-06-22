@@ -1,0 +1,4 @@
+id = "knowledge-agent.resume-conversation"
+title = "Knowledge Agent can resume conversations"
+source = "Human-listed requirement on 2026-06-20: one-off runs can start a new conversation or resume another conversation."
+text = "Knowledge Agent one-off runs can resume an existing conversation by conversation id."

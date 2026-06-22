@@ -2,7 +2,7 @@
 // Supports librarian.library-list-fields: creates Library URIs for listing results.
 
 /**
- * Converts a Library index name into its Library URI.
+ * Converts a Library name into its Library URI.
  */
 export function libraryUriFromName(name: string): string {
   return `library://${name}`;

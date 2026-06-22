@@ -10,18 +10,12 @@ except ModuleNotFoundError:
     tomllib = None
 
 
-REQUIRED_LIBRARY_FIELDS = {
-    "name": str,
-}
-
 DISALLOWED_LIBRARY_FIELDS = {"primitive_kind", "relative_to"}
 REQUIRED_LIBRARY_TOML_FIELDS = {
     "name": str,
 }
 OPTIONAL_LIBRARY_TOML_FIELDS = {
     "description",
-    "read_tasks",
-    "update_tasks",
     "read_actors",
     "update_actors",
     "agent_excludes",
@@ -117,35 +111,6 @@ def validate_required_fields(path, data, required_fields, failures):
             fail(failures, f"{path}: {field} must be a non-empty {expected_type.__name__}")
 
 
-def validate_task_uri_patterns(path, data, field, failures, require_task_path):
-    value = data.get(field)
-    if value is None:
-        return
-    if not isinstance(value, list):
-        fail(failures, f"{path}: {field} must be a list")
-        return
-
-    for pattern in value:
-        if not isinstance(pattern, str) or not pattern.strip():
-            fail(failures, f"{path}: {field} must contain only non-empty strings")
-            continue
-        if pattern != pattern.strip():
-            fail(failures, f"{path}: {field} pattern must not have surrounding whitespace: {pattern!r}")
-            continue
-        if not pattern.startswith("library://"):
-            fail(failures, f"{path}: {field} pattern must use library://: {pattern}")
-            continue
-        suffix = pattern.removeprefix("library://")
-        if not suffix:
-            fail(failures, f"{path}: {field} pattern must include a Library name or glob: {pattern}")
-            continue
-        if require_task_path and "/" not in suffix:
-            fail(
-                failures,
-                f"{path}: {field} pattern must identify tasks inside a URI: {pattern}",
-            )
-
-
 def validate_actor_uri_patterns(path, data, field, failures):
     value = data.get(field)
     if value is None:
@@ -169,9 +134,10 @@ def validate_actor_uri_patterns(path, data, field, failures):
             fail(failures, f"{path}: {field} pattern must include an actor name or glob: {pattern}")
 
 
-def validate_update_governance(path, data, failures):
-    if "update_tasks" not in data and "update_actors" not in data:
-        fail(failures, f"{path}: one of update_tasks or update_actors must be present")
+def validate_actor_governance_fields(path, data, failures):
+    for field in ("read_actors", "update_actors"):
+        if field not in data:
+            fail(failures, f"{path}: {field} must be present")
 
 
 def validate_agent_excludes(path, data, failures):
@@ -200,33 +166,18 @@ def validate_optional_string(path, data, field, failures):
         fail(failures, f"{path}: {field} must be a non-empty string")
 
 
-def resolve_filesystem_location(repo_root, entry):
-    location = entry.get("location")
-    relative_location = entry.get("relative_location")
-
-    if isinstance(relative_location, str):
-        return repo_root / relative_location
-    if not isinstance(location, str):
-        return None
-    if location.startswith("/") or location.startswith("~"):
-        return Path(location).expanduser()
-    return None
-
-
-def validate_library_toml(index_toml, entry, library_root, failures, validated_library_tomls):
+def validate_library_toml(library_toml, failures):
+    library_root = library_toml.parent
     if library_root is None:
         return
     if not library_root.exists():
         return
     if not library_root.is_dir():
-        fail(failures, f"{index_toml}: filesystem Library location must be a directory: {library_root}")
+        fail(failures, f"{library_toml}: filesystem Library location must be a directory: {library_root}")
         return
 
-    library_toml = library_root / "LIBRARY.toml"
     if not library_toml.is_file():
-        fail(failures, f"{index_toml}: missing LIBRARY.toml for Library {entry.get('name')}")
         return
-    validated_library_tomls.add(library_toml.resolve())
 
     data = load_toml(library_toml, failures)
     if data is None:
@@ -237,106 +188,23 @@ def validate_library_toml(index_toml, entry, library_root, failures, validated_l
 
     validate_required_fields(library_toml, data, REQUIRED_LIBRARY_TOML_FIELDS, failures)
     validate_optional_string(library_toml, data, "description", failures)
-    validate_task_uri_patterns(library_toml, data, "read_tasks", failures, require_task_path=False)
-    validate_task_uri_patterns(library_toml, data, "update_tasks", failures, require_task_path=True)
+    validate_actor_governance_fields(library_toml, data, failures)
     validate_actor_uri_patterns(library_toml, data, "read_actors", failures)
     validate_actor_uri_patterns(library_toml, data, "update_actors", failures)
-    validate_update_governance(library_toml, data, failures)
     validate_agent_excludes(library_toml, data, failures)
-
-    entry_name = entry.get("name")
-    marker_name = data.get("name")
-    if isinstance(entry_name, str) and isinstance(marker_name, str) and entry_name != marker_name:
-        fail(failures, f"{library_toml}: name must match Library index name {entry_name}")
 
     supported_fields = set(REQUIRED_LIBRARY_TOML_FIELDS) | OPTIONAL_LIBRARY_TOML_FIELDS
     for field in sorted(set(data) - supported_fields):
         fail(failures, f"{library_toml}: unsupported field {field}")
 
 
-def validate_library_entry(repo_root, index_toml, entry, seen_names, failures, validated_library_tomls):
-    if not isinstance(entry, dict):
-        fail(failures, f"{index_toml}: each libraries entry must be a table")
-        return
-
-    for field, expected_type in REQUIRED_LIBRARY_FIELDS.items():
-        value = entry.get(field)
-        if not isinstance(value, expected_type) or not value.strip():
-            fail(failures, f"{index_toml}: {field} must be a non-empty {expected_type.__name__}")
-
-    name = entry.get("name")
-    location = entry.get("location")
-    relative_location = entry.get("relative_location")
-
-    for field in sorted(DISALLOWED_LIBRARY_FIELDS & set(entry)):
-        if field == "relative_to":
-            fail(failures, f"{index_toml}: use relative_location instead of relative_to")
-        else:
-            fail(failures, f"{index_toml}: {field} belongs in the Library place, not the index")
-
-    if isinstance(name, str):
-        if name in seen_names:
-            fail(failures, f"{index_toml}: duplicate library name: {name}")
-        seen_names.add(name)
-
-    has_location = isinstance(location, str) and bool(location.strip())
-    has_relative_location = isinstance(relative_location, str) and bool(relative_location.strip())
-
-    if has_location == has_relative_location:
-        fail(failures, f"{index_toml}: each Library must set exactly one of location or relative_location")
-    elif "location" in entry and not has_location:
-        fail(failures, f"{index_toml}: location must be a non-empty string")
-    elif "relative_location" in entry and not has_relative_location:
-        fail(failures, f"{index_toml}: relative_location must be a non-empty string")
-
-    if has_relative_location:
-        resolved = repo_root / relative_location
-        if not resolved.exists():
-            fail(failures, f"{index_toml}: relative_location does not exist: {relative_location}")
-
-    validate_library_toml(
-        index_toml,
-        entry,
-        resolve_filesystem_location(repo_root, entry),
-        failures,
-        validated_library_tomls,
-    )
-
-
-def validate_index(repo_root, index_toml, seen_names, failures, validated_library_tomls):
-    if not index_toml.is_file():
-        fail(failures, "harness/libraries: missing LIBRARIES.toml")
-        return 0
-
-    data = load_toml(index_toml, failures)
-    if data is None:
-        return 0
-    if not isinstance(data, dict):
-        fail(failures, f"{index_toml}: top-level value must be a table")
-        return 0
-
-    libraries = data.get("libraries")
-    if not isinstance(libraries, list):
-        fail(failures, f"{index_toml}: libraries must be an array of tables")
-        return 0
-
-    for entry in libraries:
-        validate_library_entry(
-            repo_root,
-            index_toml,
-            entry,
-            seen_names,
-            failures,
-            validated_library_tomls,
-        )
-
-    return len(libraries)
-
-
 def repository_library_tomls(repo_root):
     ignored_roots = {".git"}
     for path in sorted(repo_root.rglob("LIBRARY.toml")):
-        if any(part in ignored_roots for part in path.relative_to(repo_root).parts):
+        parts = path.relative_to(repo_root).parts
+        if any(part in ignored_roots for part in parts):
+            continue
+        if parts[:2] == ("meta-harness", "templates"):
             continue
         yield path
 
@@ -347,43 +215,19 @@ def main():
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
-    libraries_root = repo_root / "harness" / "libraries"
     failures = []
 
-    if not libraries_root.exists():
-        print("Meta Harness library definitions passed: no harness/libraries directory.")
-        return 0
-
-    if not (libraries_root / "AGENTS.md").is_file():
-        fail(failures, "harness/libraries: missing AGENTS.md")
-
-    index_paths = [libraries_root / "LIBRARIES.toml"]
-    local_index = libraries_root / "LIBRARIES.local.toml"
-    if local_index.is_file():
-        index_paths.append(local_index)
-
     seen_names = set()
-    validated_library_tomls = set()
     count = 0
-    for index_toml in index_paths:
-        count += validate_index(
-            repo_root,
-            index_toml,
-            seen_names,
-            failures,
-            validated_library_tomls,
-        )
-
     for library_toml in repository_library_tomls(repo_root):
-        if library_toml.resolve() in validated_library_tomls:
-            continue
-        validate_library_toml(
-            library_toml,
-            {},
-            library_toml.parent,
-            failures,
-            validated_library_tomls,
-        )
+        data = load_toml(library_toml, failures)
+        if isinstance(data, dict) and isinstance(data.get("name"), str):
+            name = data["name"]
+            if name in seen_names:
+                fail(failures, f"{library_toml}: duplicate Library name: {name}")
+            seen_names.add(name)
+        validate_library_toml(library_toml, failures)
+        count += 1
 
     if failures:
         print("Meta Harness library definition check failed:", file=sys.stderr)

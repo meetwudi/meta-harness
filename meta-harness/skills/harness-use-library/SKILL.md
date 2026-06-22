@@ -10,7 +10,7 @@ Use this skill to resolve `library://` references and explore governed knowledge
 1. Read `meta-harness/setup/PRIMITIVE-ORIENTATION.md`.
 2. Read `meta-harness/primitives/LIBRARY.md`.
 3. Follow the repository `AGENTS.md` chain to Library discovery.
-4. Resolve requested or relevant Libraries through the checked-in and local Library indexes.
+4. Resolve requested or relevant Libraries through storage discovery.
 5. Explore each selected Library through its own `AGENTS.md` and governance.
 6. Return or use only the knowledge needed for the current task.
 

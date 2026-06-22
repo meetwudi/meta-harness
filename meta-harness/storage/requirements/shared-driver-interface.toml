@@ -1,0 +1,4 @@
+id = "storage.shared-driver-interface"
+title = "Storage drivers share an interface"
+source = "Human-listed requirement on 2026-06-20: storage driver should have a shared interface across all drivers."
+text = "Storage drivers share one interface so higher-level harness code can use different storage backends through the same driver boundary."

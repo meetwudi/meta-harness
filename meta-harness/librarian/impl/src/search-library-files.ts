@@ -36,14 +36,14 @@ export async function searchLibraryFiles(
   let matchCount = 0;
   for (const library of libraries) {
     const matches: Record<string, unknown>[] = [];
-    for (const path of await walkLibraryFiles(context, library.rootPath, library.agentExcludes)) {
+    for (const path of await walkLibraryFiles(library.storage, library.rootPath, library.agentExcludes)) {
       if (matchCount >= limit) {
         break;
       }
       const absolutePath = resolveLibraryFilePath(library.rootPath, path);
       let content = "";
       try {
-        content = await context.storage.readText(absolutePath);
+        content = await library.storage.readText(absolutePath);
       } catch {
         continue;
       }

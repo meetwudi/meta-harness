@@ -24,8 +24,6 @@ REQUIRED_REPO_FILES = (
 
 REQUIRED_PROJECT_HARNESS_FILES = (
     "harness/AGENTS.md",
-    "harness/libraries/AGENTS.md",
-    "harness/libraries/LIBRARIES.toml",
     "harness/tasks/AGENTS.md",
 )
 
@@ -194,35 +192,28 @@ def validate_required_files(repo_root, failures):
 
 
 def validate_required_libraries(repo_root, failures):
-    index = repo_root / "harness" / "libraries" / "LIBRARIES.toml"
-    if not index.is_file():
-        return
-
-    data = load_toml(index, failures)
-    if data is None:
-        return
-
-    libraries = data.get("libraries")
-    if not isinstance(libraries, list):
-        return
-
     by_name = {}
-    for entry in libraries:
-        if isinstance(entry, dict) and isinstance(entry.get("name"), str):
-            by_name[entry["name"]] = entry
+    for manifest in repo_root.rglob("LIBRARY.toml"):
+        parts = manifest.relative_to(repo_root).parts
+        if ".git" in parts or parts[:2] == ("meta-harness", "templates"):
+            continue
+        data = load_toml(manifest, failures)
+        if isinstance(data, dict) and isinstance(data.get("name"), str):
+            by_name[data["name"]] = manifest.parent
 
     for name, expected_location in REQUIRED_LIBRARY_LOCATIONS.items():
-        entry = by_name.get(name)
-        if entry is None:
-            fail(failures, f"harness/libraries/LIBRARIES.toml: missing required Library {name}")
+        root = by_name.get(name)
+        if root is None:
+            fail(failures, f"missing required Library {name}")
             continue
 
-        relative_location = entry.get("relative_location")
-        if relative_location != expected_location:
+        actual_location = root.relative_to(repo_root).as_posix()
+        if actual_location == "":
+            actual_location = "."
+        if actual_location != expected_location:
             fail(
                 failures,
-                "harness/libraries/LIBRARIES.toml: "
-                f"{name} relative_location must be {expected_location}",
+                f"Library {name} location must be {expected_location}",
             )
 
 

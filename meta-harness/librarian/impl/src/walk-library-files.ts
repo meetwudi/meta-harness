@@ -4,19 +4,19 @@
 
 import { join } from "node:path";
 import { isLibraryPathExcluded } from "./is-library-path-excluded.js";
-import type { LibrarianContext } from "./types.js";
+import type { LibrarianStorage } from "./types.js";
 
 /**
  * Walks Library files under a root and returns Library-relative paths.
  */
 export async function walkLibraryFiles(
-  context: LibrarianContext,
+  storage: LibrarianStorage,
   rootPath: string,
   excludes: string[] = [],
   currentPath = "",
 ): Promise<string[]> {
   const absolutePath = currentPath ? join(rootPath, currentPath) : rootPath;
-  const entries = await context.storage.listDirectory(absolutePath);
+  const entries = await storage.listDirectory(absolutePath);
   const files: string[] = [];
   for (const entry of entries) {
     if (entry.name.startsWith(".")) {
@@ -27,7 +27,7 @@ export async function walkLibraryFiles(
       continue;
     }
     if (entry.isDirectory) {
-      files.push(...await walkLibraryFiles(context, rootPath, excludes, relativePath));
+      files.push(...await walkLibraryFiles(storage, rootPath, excludes, relativePath));
     } else {
       files.push(relativePath);
     }

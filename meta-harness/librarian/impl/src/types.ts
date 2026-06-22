@@ -9,24 +9,40 @@ export type TomlRecord = Record<string, unknown>;
 export type LibrarianStorage = {
   readText(path: string): Promise<string>;
   writeText(path: string, content: string): Promise<void>;
+  deletePath(path: string): Promise<void>;
   makeDirectory(path: string): Promise<void>;
   listDirectory(path: string): Promise<{ name: string; isDirectory: boolean }[]>;
   exists(path: string): Promise<boolean>;
 };
 
-export type LibrarianContext = {
-  storage: LibrarianStorage;
-  libraryIndexPaths: string[];
-  libraryIndexBasePaths?: Record<string, string>;
-  actorUri: string;
-  sessionId: string;
-  toolCallEvents: LibrarianToolCallEvent[];
+export type StorageDriverCapabilities = {
+  readable: boolean;
+  writable: boolean;
+  deletable: boolean;
+  queryable: boolean;
 };
 
-export type LibraryIndexEntry = {
+export type StorageLocation = {
   name: string;
-  relative_location?: string;
-  location?: string;
+  description: string;
+  driverName: string;
+  storage: LibrarianStorage;
+  capabilities: StorageDriverCapabilities;
+  libraryRootPath: string;
+  discoveryMode: "filesystem-root-and-direct-children" | "filesystem-recursive";
+  discoveryExcludes: string[];
+  discoverLibraries?: boolean;
+  sourceUri?: string;
+  guidanceUri?: string;
+};
+
+export type LibrarianContext = {
+  storage: LibrarianStorage;
+  storageLocations: StorageLocation[];
+  actorUri: string;
+  actorUris: string[];
+  sessionId: string;
+  toolCallEvents: LibrarianToolCallEvent[];
 };
 
 export type ResolvedLibrary = {
@@ -37,6 +53,8 @@ export type ResolvedLibrary = {
   writable: boolean;
   rootPath: string;
   agentExcludes: string[];
+  storage: LibrarianStorage;
+  storageLocationName: string;
 };
 
 export type LibraryListing = {

@@ -5,7 +5,7 @@ Memory is agent-usable knowledge carried across time.
 A Library may contain Memory, point to it, or be primarily a Memory Library.
 
 Filesystem Memory Libraries are also Library roots and must include
-`LIBRARY.toml` for task access.
+`LIBRARY.toml` for actor access.
 
 `MEMORY.toml` marks a place as a structured Memory primitive and tells agents
 how to use that memory collection.
@@ -16,8 +16,7 @@ The default local task Memory Library is:
 library://task-memory
 ```
 
-Managed projects may register it in ignored local Library discovery at
-`harness/libraries/LIBRARIES.local.toml`.
+Managed projects may expose it through storage discovery.
 
 Unless otherwise specified, agents read `.meta-harness.json` `project.localRoot`
 and use `<project.localRoot>/task-memory` as the local default location.

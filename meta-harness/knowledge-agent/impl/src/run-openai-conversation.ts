@@ -1,8 +1,9 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.provider-interface: implements the OpenAI provider through the shared provider interface.
 // Supports knowledge-agent.openai-trace-conversation-history: wraps the SDK run in OpenAI Agents SDK tracing.
-// Supports knowledge-agent.library-index-only-agent-input: traces only agent-facing inputs, not host-local Library paths.
+// Supports knowledge-agent.uses-librarian: traces only agent-facing inputs, not host-local Library paths.
 // Supports knowledge-agent.uses-librarian: attaches Librarian tools to the OpenAI agent.
+// Supports knowledge-agent.harness-owned-session: runs with the session provided by the Harness runtime.
 
 import { getGlobalTraceProvider, withTrace } from "@openai/agents";
 import { Capabilities, SandboxAgent } from "@openai/agents/sandbox";

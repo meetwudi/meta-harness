@@ -73,10 +73,6 @@ harness/
     {task-name}/
       AGENTS.md
       TASK.toml
-  libraries/
-    AGENTS.md  # Library discovery instructions
-    LIBRARIES.toml  # checked-in Library index
-    LIBRARIES.local.toml  # ignored local Library index
   product/
     AGENTS.md
     CONTEXT.md

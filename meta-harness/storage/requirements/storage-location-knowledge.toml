@@ -1,0 +1,4 @@
+id = "storage.storage-location-knowledge"
+title = "Storage locations are defined as knowledge"
+source = "Human-listed requirement on 2026-06-21: storage locations are knowledge and should not be hard-coded in the local Knowledge Agent runtime."
+text = "Storage location definitions live in structured knowledge that runtime code materializes."

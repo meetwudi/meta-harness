@@ -1,0 +1,4 @@
+id = "storage.all-known-storage-locations"
+title = "Storage locations include known Library places"
+source = "Human-listed requirement on 2026-06-21: all Library places, including repo and local places, are storage locations visible to agents."
+text = "Storage location listing includes known places where Libraries live, including readable and writable locations."

@@ -28,6 +28,6 @@ export async function readLibraryFile(
   return {
     library: publicLibraryListing(library),
     uri: libraryResourceUri(library.uri, path),
-    content: await context.storage.readText(filePath),
+    content: await library.storage.readText(filePath),
   };
 }

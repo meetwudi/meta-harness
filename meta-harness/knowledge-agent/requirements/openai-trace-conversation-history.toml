@@ -6,6 +6,6 @@ clarifications = [
   "Default local Knowledge Agent artifacts live under the project local root from .meta-harness.json.",
   "The Knowledge Agent local root contains a conversations Library and a memory Library.",
   "Each conversation is stored under the conversations Library in a folder named with a sortable timestamped conversation id.",
-  "Conversation history storage should be discoverable through a Library index, not through direct prompt instructions.",
+  "Conversation history storage should be discoverable through storage discovery, not through direct prompt instructions.",
   "Local Librarian tool observability is stored in `librarian-trace.json` and contains only Librarian tool call events.",
 ]

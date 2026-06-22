@@ -1,6 +1,6 @@
 #!/usr/bin/env -S node --import tsx
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.library-index-goal-input: exposes the CLI entrypoint for Library index plus goal runs.
+// Supports knowledge-agent.storage-discovery-runtime: exposes the CLI entrypoint for storage-discovered Library runs.
 
 import { main } from "./main.js";
 

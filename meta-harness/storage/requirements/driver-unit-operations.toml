@@ -1,0 +1,4 @@
+id = "storage.driver-unit-operations"
+title = "Storage drivers expose unit operations"
+source = "Human-listed requirement on 2026-06-20: drivers should support read, list, delete, and the unit operations currently needed by storage."
+text = "Storage drivers expose the unit operations needed by harness storage, including read, write, list, exists or stat, delete, and container creation when the backend has a container or directory concept."
