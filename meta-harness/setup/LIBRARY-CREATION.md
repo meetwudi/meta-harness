@@ -1,6 +1,6 @@
 # Library Creation
 
-Library creation is a knowledge-guided workflow.
+Library creation is a knowledge-guided setup workflow.
 
 Librarian tools provide the mechanics for reading storage knowledge and creating
 Libraries. This protocol carries the creation practice agents follow before

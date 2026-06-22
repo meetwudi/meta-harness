@@ -28,7 +28,7 @@ The primitives compose:
 - Specs connect sourced requirements, acceptance tests, and implementation
   citations.
 - Libraries organize all primitives.
-- Library creation follows `library://meta-harness/primitives/LIBRARY-CREATION.md`.
+- Library creation follows `library://meta-harness/setup/LIBRARY-CREATION.md`.
 - Storage locations follow `library://meta-harness/storage/STORAGE.md`.
 - `library://...` references are Library resource URIs handled through
   Librarian tools.

@@ -13,7 +13,6 @@ const storageRoot = await mkdtemp(join(tmpdir(), "librarian-integration-"));
 const createdStorageRoot = await mkdtemp(join(tmpdir(), "librarian-created-"));
 const librariesRoot = join(storageRoot, "libraries");
 const metaHarnessRoot = join(librariesRoot, "meta-harness");
-const metaHarnessPrimitivesRoot = join(metaHarnessRoot, "primitives");
 const metaHarnessSetupRoot = join(metaHarnessRoot, "setup");
 const metaHarnessStorageRoot = join(metaHarnessRoot, "storage");
 const manualRoot = join(librariesRoot, "manual");
@@ -24,7 +23,6 @@ const createdRoot = join(createdLibrariesRoot, "tmp-created-library");
 const storage = createLocalFileSystemStorage();
 
 await storage.makeDirectory(metaHarnessSetupRoot);
-await storage.makeDirectory(metaHarnessPrimitivesRoot);
 await storage.makeDirectory(metaHarnessStorageRoot);
 await storage.makeDirectory(manualDocsRoot);
 await storage.makeDirectory(memoryRoot);
@@ -44,7 +42,7 @@ await writeFile(
   "Primitive orientation fixture.\n",
 );
 await writeFile(
-  join(metaHarnessPrimitivesRoot, "LIBRARY-CREATION.md"),
+  join(metaHarnessSetupRoot, "LIBRARY-CREATION.md"),
   "Library creation protocol fixture.\n",
 );
 await writeFile(
@@ -201,7 +199,7 @@ if (!introJson.includes('"libraryUriPatterns":["library://meta-harness"]')) {
 if (!introJson.includes('"uri":"library://meta-harness/setup/PRIMITIVE-ORIENTATION.md"')) {
   throw new Error("Intro did not point to primitive orientation");
 }
-if (!introJson.includes('"uri":"library://meta-harness/primitives/LIBRARY-CREATION.md"')) {
+if (!introJson.includes('"uri":"library://meta-harness/setup/LIBRARY-CREATION.md"')) {
   throw new Error("Intro did not point to Library creation protocol");
 }
 if (!introJson.includes('"uri":"library://meta-harness/storage/STORAGE.md"')) {

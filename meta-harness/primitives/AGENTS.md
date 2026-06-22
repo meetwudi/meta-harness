@@ -28,8 +28,6 @@ Task: [TASK.md](TASK.md)
 
 Library: [LIBRARY.md](LIBRARY.md)
 
-Library creation: [LIBRARY-CREATION.md](LIBRARY-CREATION.md)
-
 Memory: [MEMORY.md](MEMORY.md)
 
 Compliance: [COMPLIANCE.md](COMPLIANCE.md)

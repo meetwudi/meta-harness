@@ -125,6 +125,18 @@ def validate_harness_use_library_skill(repo_root, skill_dir, failures):
                 f"{relative(repo_root, skill_md)}: harness-use-library should mention {pattern}",
             )
 
+    stale_patterns = (
+        "harness/libraries indexes",
+        "checked-in and local Library indexes",
+        "indexes checked",
+    )
+    for pattern in stale_patterns:
+        if pattern in text:
+            fail(
+                failures,
+                f"{relative(repo_root, skill_md)}: harness-use-library must use storage discovery, not stale index wording: {pattern}",
+            )
+
 
 def validate_harness_run_task_skill(repo_root, skill_dir, failures):
     if skill_dir.name != "harness-run-task":

@@ -13,7 +13,7 @@ const primitiveOnboardingLibraryUri = "library://meta-harness";
 // Human explicit approval is required before changing this bootstrap knowledge list.
 const introPaths = [
   "setup/PRIMITIVE-ORIENTATION.md",
-  "primitives/LIBRARY-CREATION.md",
+  "setup/LIBRARY-CREATION.md",
   "storage/STORAGE.md",
 ];
 

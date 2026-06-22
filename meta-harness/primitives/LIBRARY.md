@@ -124,7 +124,7 @@ To use a Library:
 
 If a Library reference includes a suffix after the Library name, first resolve the Library name, then interpret the suffix inside that Library's own place and rules.
 
-Library creation follows [LIBRARY-CREATION.md](LIBRARY-CREATION.md).
+Library creation follows setup guidance in [LIBRARY-CREATION.md](../setup/LIBRARY-CREATION.md).
 
 ## Memory
 

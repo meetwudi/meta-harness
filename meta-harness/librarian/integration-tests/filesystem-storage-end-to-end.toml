@@ -28,7 +28,7 @@ requirements = [
 procedure = [
   "Create a temporary storage root.",
   "Create three filesystem Libraries: `library://meta-harness` at `libraries/meta-harness`, `library://fixture/manual` at `libraries/manual`, and `library://fixture/memory` at `libraries/memory`.",
-  "Create `libraries/meta-harness/LIBRARY.toml`, `libraries/meta-harness/setup/PRIMITIVE-ORIENTATION.md`, `libraries/meta-harness/primitives/LIBRARY-CREATION.md`, `libraries/meta-harness/storage/STORAGE.md`, and `libraries/meta-harness/storage/knowledge-agent-local-storage-locations.toml` for primitive onboarding, Library creation protocol knowledge, storage guidance, and storage location knowledge.",
+  "Create `libraries/meta-harness/LIBRARY.toml`, `libraries/meta-harness/setup/PRIMITIVE-ORIENTATION.md`, `libraries/meta-harness/setup/LIBRARY-CREATION.md`, `libraries/meta-harness/storage/STORAGE.md`, and `libraries/meta-harness/storage/knowledge-agent-local-storage-locations.toml` for primitive onboarding, Library creation protocol knowledge, storage guidance, and storage location knowledge.",
   "Create `libraries/manual/LIBRARY.toml` with a description, read_actors for `actor://knowledge-agent`, and empty update_actors.",
   "Create `libraries/memory/LIBRARY.toml` with a description, read_actors for `actor://knowledge-agent`, and update_actors for `actor://knowledge-agent`.",
   "Configure Librarian with local filesystem storage pointed at the temporary storage root.",
