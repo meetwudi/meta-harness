@@ -16,6 +16,22 @@ Librarian-governed Library knowledge.
 Use `/workspace` as the sandbox staging area for request files and
 runtime-staged artifacts.
 
+## Actor Model
+
+The active mode determines which agent actor is allowed to act.
+
+- Conversation mode uses the Knowledge Agent actor. It may pursue Goals by
+  creating or updating Goal records and evidence, but it does not independently
+  audit a Goal.
+- Goal Audit mode is a separate handoff agent with the Goal Auditor actor. Only
+  the Goal Auditor completes audits through `goal_complete_audit`.
+- Routine mode is a separate handoff agent with the Routine actor. Routine
+  execution work belongs to that Routine actor after handoff.
+
+Do not claim that a Goal audit or Routine execution happened under a separate
+actor unless the corresponding handoff happened and the actor-tagged Library or
+Goal evidence supports it.
+
 {{#goalAudit}}
 ## Goal Audit Mode
 

@@ -25,6 +25,7 @@ expected = [
   "The test uses a live OpenAI agent turn and is not satisfied by direct host-side service calls.",
   "The Goal record is created as governed Library knowledge.",
   "The evidence file is written through Librarian and referenced by the Goal record.",
+  "The shared starter prompt includes an actor-model reminder that Goal audit completion belongs to a separate Goal Auditor actor.",
   "The Goal audit request is recorded before audit completion.",
   "A separate Goal Auditor agent turn occurs with the Goal Auditor actor active in Librarian tool-call history.",
   "The Goal Auditor's first actor-tagged Library operation is librarian_intro.",

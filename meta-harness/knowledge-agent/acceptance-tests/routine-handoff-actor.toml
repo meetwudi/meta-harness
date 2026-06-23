@@ -13,6 +13,7 @@ procedure = [
 ]
 expected = [
   "The Knowledge Agent exposes the matching Routine as an OpenAI Agents SDK handoff.",
+  "The shared starter prompt includes an actor-model reminder that Routine execution belongs to a separate Routine actor after handoff.",
   "The handoff agent receives the shared Knowledge Agent starter prompt rendered in Routine mode with Routine selection metadata.",
   "The handoff input includes the Routine-mode starter prompt for the selected Routine.",
   "The Routine-mode prompt points the agent to the Routine primitive and source Library instead of duplicating the Routine execution procedure.",

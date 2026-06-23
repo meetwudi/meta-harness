@@ -4,6 +4,7 @@ source = "Human-listed requirement on 2026-06-22 and clarified on 2026-06-23: Kn
 text = "Knowledge Agent exposes Meta Harness Routines as handoff agents and starts each Routine-backed agent with the corresponding Routine actor identity."
 clarifications = [
   "Routine-backed handoff agents use the shared Knowledge Agent starter prompt rendered in Routine mode.",
+  "The shared Knowledge Agent starter prompt should remind agents that Routine execution belongs to a separate Routine handoff actor.",
   "Routine handoff input includes the Routine-mode starter prompt so the downstream agent starts from the selected Routine identity and source Library.",
   "Routine mode includes Routine selection metadata and points the agent to the Routine primitive and source Library instead of duplicating Routine execution procedure in the prompt.",
 ]
