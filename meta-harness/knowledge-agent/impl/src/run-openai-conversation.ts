@@ -49,6 +49,7 @@ export async function runOpenAIConversation(
       RECOMMENDED_PROMPT_PREFIX,
       "You are the Meta Harness Knowledge Agent.",
       "Follow the shared Knowledge Agent starter prompt in knowledge-agent/knowledge-agent.md and in the run input.",
+      "Never claim an independent Goal audit result yourself. After goal_request_audit, hand off to Meta Harness Goal Auditor with the returned payload and report an audit signal only after goal_complete_audit succeeds.",
     ].join(" "),
     handoffs: [
       ...taskHandoffs,

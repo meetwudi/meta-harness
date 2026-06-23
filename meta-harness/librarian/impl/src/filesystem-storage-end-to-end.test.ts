@@ -311,6 +311,9 @@ if (callOrder !== "librarian_intro,librarian_list_libraries,librarian_read,libra
 if (!context.toolCallEvents.every((event) => event.input)) {
   throw new Error("A recorded tool call event is missing input");
 }
+if (!context.toolCallEvents.every((event) => event.actorUri === "actor://knowledge-agent")) {
+  throw new Error("A recorded tool call event is missing the active actor URI");
+}
 if (!JSON.stringify(context.toolCallEvents).includes("<redacted file contents from the server>")) {
   throw new Error("Recorded tool call events did not redact file contents");
 }

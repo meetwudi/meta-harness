@@ -7,4 +7,5 @@ clarifications = [
   "Goal updates should write governed Goal knowledge through Library-backed mechanisms.",
   "Goal updates may request an independent audit when the Goal appears ready for judgment.",
   "A Goal audit request should not itself declare the Goal met.",
+  "The Goal update interface should not mark a Goal met; met is recorded by independent Goal audit completion.",
 ]

@@ -221,6 +221,9 @@ export async function updateGoal(
   const record = await readGoalRecord(context, requiredInputString(input.goalUri, "goalUri"));
   const now = new Date().toISOString();
   if (input.state) {
+    if (input.state === "met") {
+      throw new Error("Goal state 'met' must be set by goal_complete_audit after independent Goal Auditor review");
+    }
     record.state = input.state;
   }
   if (input.currentStateSummary) {
@@ -302,6 +305,15 @@ export async function requestGoalAudit(
   return {
     goalUri: record.uri,
     auditRequest,
+    requiresGoalAuditorHandoff: true,
+    goalAuditorHandoff: {
+      toolName: "transfer_to_Meta_Harness_Goal_Auditor",
+      goalUri: record.uri,
+      auditRequestId: auditRequest.id,
+      requestSummary: auditRequest.summary,
+      evidenceRefs: auditRequest.evidenceRefs,
+      instruction: "Hand off to the independent Goal Auditor now. Do not report an audit signal until goal_complete_audit has updated the Goal record.",
+    },
     goal: publicGoal(record),
   };
 }

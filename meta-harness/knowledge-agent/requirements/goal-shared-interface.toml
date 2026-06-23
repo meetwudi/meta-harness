@@ -6,5 +6,6 @@ clarifications = [
   "The shared interface should be usable by CLI, backend services, conversations, routines, and sub-agents.",
   "Goal creation through the interface should write governed Goal knowledge through Library-backed mechanisms.",
   "Goal updates through the interface should read or update Goal state, evidence, progress, blockers, clarifications, audit requests, or audit records when actor governance allows it.",
+  "The shared update interface should not let the pursuing agent mark a Goal met; met is backed by independent Goal audit completion.",
   "The interface should not depend on one storage backend or one conversation driver.",
 ]

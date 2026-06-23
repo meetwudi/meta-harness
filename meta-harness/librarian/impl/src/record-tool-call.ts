@@ -16,6 +16,8 @@ export function recordToolCall(
   context.toolCallEvents.push({
     order: context.toolCallEvents.length + 1,
     sessionId: context.sessionId,
+    actorUri: context.actorUri,
+    actorUris: context.actorUris,
     toolName,
     input,
     output: redactToolOutput(output),

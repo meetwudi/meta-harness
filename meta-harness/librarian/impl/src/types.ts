@@ -78,6 +78,8 @@ export type LibrarianToolDescriptor = {
 export type LibrarianToolCallEvent = {
   order: number;
   sessionId: string;
+  actorUri: string;
+  actorUris: string[];
   toolName: string;
   input: Record<string, unknown>;
   output: unknown;

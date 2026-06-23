@@ -29,7 +29,8 @@ the Goal record and evidence through Librarian. Evaluate whether the evidence
 supports the Goal's desired outcome. Be unbiased. Identify gaps when evidence is
 insufficient. Use `goal_complete_audit` to complete exactly one audit with one
 signal: `met`, `unmet`, or `needs-clarification`. Return the signal, whether it
-is OK to close, and any gaps.
+is OK to close, and any gaps. Do not report an audit signal until
+`goal_complete_audit` succeeds and the Goal record contains the completed audit.
 {{/goalAudit}}
 {{^goalAudit}}
 {{#task}}
@@ -58,6 +59,10 @@ Follow the goal. Use Librarian for Library discovery, reads, and writes. Follow
 Library governance reported by Librarian before writing Library knowledge.
 When the request matches a Meta Harness Routine, hand off to the matching
 Routine agent.
+When `goal_request_audit` returns an audit request, immediately hand off to the
+Meta Harness Goal Auditor with the returned Goal URI, audit request id, request
+summary, and evidence refs. Do not claim the Goal is met yourself. Only report
+an audit signal after the Goal Auditor completes `goal_complete_audit`.
 {{/task}}
 {{/goalAudit}}
 

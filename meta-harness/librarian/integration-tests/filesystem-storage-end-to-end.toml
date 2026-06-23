@@ -65,7 +65,7 @@ expected = [
   "`tmp-created-library/note.md` exists under the temporary local storage location and contains `created in tmp locally`.",
   "Search returns matches grouped by matching readable Library, including full resource URIs.",
   "Recorded tool call events show the call order: intro, list_libraries, read, list_files, list_files, create_library, update, update, read, read, search, list_libraries.",
-  "Each recorded tool call event includes the tool input.",
+  "Each recorded tool call event includes the active actor URI and tool input.",
   "Recorded output summaries include metadata needed to verify the result.",
   "Recorded output summaries redact file contents as `<redacted file contents from the server>`.",
   "No repository file, home-directory file, or long-lived local memory file is created or updated.",
