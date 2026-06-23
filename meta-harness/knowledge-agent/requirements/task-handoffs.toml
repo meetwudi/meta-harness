@@ -1,0 +1,9 @@
+id = "knowledge-agent.task-handoffs"
+title = "Knowledge Agent can trigger Tasks"
+source = "Human-listed requirement on 2026-06-22 and clarified on 2026-06-23: Knowledge Agent should be able to hand off to another agent that runs a Task, the Task should run with its actor, and Task agents should use the shared starter prompt in Task mode."
+text = "Knowledge Agent exposes Meta Harness Tasks as handoff agents and runs each Task-backed agent with the corresponding task actor identity."
+clarifications = [
+  "Task-backed handoff agents use the shared Knowledge Agent starter prompt rendered in Task mode.",
+  "Task handoff input includes the Task-mode starter prompt so the downstream agent starts from the selected task identity and source Library.",
+  "Task mode includes task selection metadata and points the agent to the Task primitive and source Library instead of duplicating task execution procedure in the prompt.",
+]

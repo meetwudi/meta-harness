@@ -6,7 +6,7 @@
 // Supports knowledge-agent.storage-agnostic-runtime: uses storage through an implementation interface.
 // Supports knowledge-agent.uses-librarian: routes Library operations through Librarian.
 
-import { buildRequest } from "./build-request.js";
+import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
 import { defaultTurnId } from "./default-turn-id.js";
 import { findRepoRoot } from "./find-repo-root.js";
 import { loadMetaHarnessConfig } from "./load-meta-harness-config.js";
@@ -164,7 +164,7 @@ async function runKnowledgeAgentTurn(input: {
     librarianContext,
     session: input.session,
   };
-  const prompt = buildRequest(options);
+  const prompt = buildKnowledgeAgentPrompt(options);
   const result = await input.provider.runConversation(options);
   await input.storage.recordConversation(
     { ...options, provider: input.provider.name },

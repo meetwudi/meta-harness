@@ -5,4 +5,5 @@ text = "The Knowledge Agent uses Librarian for Library-scoped knowledge access. 
 clarifications = [
   "agent_excludes patterns are relative to the Library root.",
   "The design must remain compatible with storage implementations backed by a user root, database, or other backend.",
+  "Library resource reads and updates use Librarian tools. Sandbox filesystem tools are only for sandbox workspace artifacts.",
 ]

@@ -6,7 +6,7 @@
 import { run } from "@openai/agents";
 import type { Trace } from "@openai/agents";
 import type { SandboxAgent } from "@openai/agents/sandbox";
-import { buildRequest } from "./build-request.js";
+import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
 import type { OpenAISandboxRunOptions } from "./types.js";
 
 /**
@@ -19,7 +19,7 @@ export async function executeOpenAISandboxRun(
 ): Promise<Record<string, unknown>> {
   const result = await run(
     agent,
-    buildRequest(options),
+    buildKnowledgeAgentPrompt(options),
     {
       maxTurns: 24,
       session: options.session,
