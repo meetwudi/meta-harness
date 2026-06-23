@@ -44,6 +44,7 @@ Draft supported fields:
 - `progress`
 - `blockers`
 - `clarifications`
+- `audit_requests`
 - `audits`
 
 Example:
@@ -93,8 +94,17 @@ status = "open"
 asked_at = "2026-06-23T00:00:00Z"
 asked_by_actor = "actor://knowledge-agent"
 
+[[audit_requests]]
+id = "audit-request-1"
+requested_by_actor = "actor://knowledge-agent"
+summary = "Evidence appears ready for independent audit."
+evidence_refs = ["evidence-1"]
+status = "open"
+requested_at = "2026-06-23T00:00:00Z"
+
 [[audits]]
 id = "audit-1"
+audit_request_id = "audit-request-1"
 auditor_actor = "actor://goal-auditor/project-harness/goals/example-goal"
 signal = "unmet"
 summary = "Auditor judgment grounded in the Goal record and evidence."
@@ -132,7 +142,8 @@ actor://goal-auditor/{library-name}/goals/{goal-name}
 
 The Goal Auditor uses the shared Knowledge Agent starter prompt rendered in Goal
 Audit mode. The auditor reads the Goal record, relevant Library evidence, and
-selected goal-setting framework knowledge. It then returns an audit signal:
+selected goal-setting framework knowledge. A Goal audit is usually requested
+before the auditor completes it. The auditor then returns an audit signal:
 
 - `met`
 - `unmet`

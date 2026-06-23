@@ -3,6 +3,8 @@
 // Supports knowledge-agent.library-writes-memory: lets the agent discover writable memory through storage discovery.
 // Supports knowledge-agent.prompt-calls-librarian-intro: renders the prompt instruction to call Librarian intro.
 // Supports knowledge-agent.task-handoffs: renders the shared prompt in Task Agent mode.
+// Supports knowledge-agent.goal-auditor-agent: renders the shared prompt in Goal Audit mode.
+// Supports knowledge-agent.goal-shared-interface: tells agents to use shared Goal tools.
 
 import type { ProviderRunOptions } from "./types.js";
 import type { TaskDefinition } from "./task-definition.js";
@@ -15,6 +17,9 @@ export type KnowledgeAgentPromptOptions = Pick<
   "goal" | "repoRoot"
 > & {
   task?: TaskDefinition;
+  goalAudit?: {
+    actorUri: string;
+  };
 };
 
 /**
@@ -42,6 +47,11 @@ export function buildKnowledgeAgentPrompt(
         sourceLibrary: options.task.sourceLibrary,
         purpose: options.task.purpose,
         actorUri: options.task.actorUri,
+      }
+      : false,
+    goalAudit: options.goalAudit
+      ? {
+        actorUri: options.goalAudit.actorUri,
       }
       : false,
   });

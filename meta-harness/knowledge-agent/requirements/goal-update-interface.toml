@@ -1,0 +1,10 @@
+id = "knowledge-agent.goal-update-interface"
+title = "Goal update interface"
+source = "Human-listed requirement on 2026-06-23: updating Goals should use a shared Goal update tool/interface, and audit requests should be explicit Goal updates rather than hidden side effects."
+text = "Knowledge Agent exposes a shared driver-independent Goal update interface for recording Goal state, evidence, progress, blockers, clarifications, and audit requests."
+clarifications = [
+  "The Goal update interface should be usable by CLI, backend services, conversations, routines, and sub-agents.",
+  "Goal updates should write governed Goal knowledge through Library-backed mechanisms.",
+  "Goal updates may request an independent audit when the Goal appears ready for judgment.",
+  "A Goal audit request should not itself declare the Goal met.",
+]

@@ -1,0 +1,10 @@
+id = "knowledge-agent.goal-audit-lifecycle"
+title = "Goal audit lifecycle"
+source = "Human-listed requirement on 2026-06-23: Goal auditing should have explicit request and completion steps with clear Goal update and audit completion naming."
+text = "Goal auditing has an explicit lifecycle: a Goal audit can be requested, and an independent Goal Auditor can complete the audit with a signal."
+clarifications = [
+  "A Goal audit request records that the Goal is ready for independent judgment.",
+  "A Goal audit request can reference evidence that should be evaluated.",
+  "Only the Goal Auditor should complete the audit by returning met, unmet, or needs-clarification.",
+  "Completing an audit records the auditor actor, signal, gaps, evidence references, and whether the Goal is OK to close.",
+]

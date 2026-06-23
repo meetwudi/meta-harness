@@ -5,11 +5,15 @@
 // Supports knowledge-agent.uses-librarian: attaches Librarian tools to the OpenAI agent.
 // Supports knowledge-agent.harness-owned-session: runs with the session provided by the Harness runtime.
 // Supports knowledge-agent.task-handoffs: exposes Meta Harness Tasks as task-scoped handoff agents.
+// Supports knowledge-agent.goal-auditor-agent: exposes an independent Goal Auditor handoff agent.
+// Supports knowledge-agent.goal-shared-interface: exposes shared Goal tools to the Knowledge Agent.
 
 import { getGlobalTraceProvider, withTrace } from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
 import { SandboxAgent } from "@openai/agents/sandbox";
 import { buildManifest } from "./build-manifest.js";
+import { createGoalAuditorHandoffAgent } from "./create-goal-auditor-handoff-agent.js";
+import { createGoalOpenAITools } from "./create-goal-openai-tools.js";
 import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
 import { createSandboxClient } from "./create-sandbox-client.js";
 import { createTaskHandoffAgents } from "./create-task-handoff-agents.js";
@@ -31,6 +35,13 @@ export async function runOpenAIConversation(
     manifest,
     librarianContext: options.librarianContext,
   });
+  const goalAuditorHandoff = createGoalAuditorHandoffAgent({
+    repoRoot: options.repoRoot,
+    goal: options.goal,
+    model: options.model,
+    manifest,
+    librarianContext: options.librarianContext,
+  });
   const agent = new SandboxAgent({
     name: "Meta Harness Knowledge Agent",
     model: options.model,
@@ -39,8 +50,14 @@ export async function runOpenAIConversation(
       "You are the Meta Harness Knowledge Agent.",
       "Follow the shared Knowledge Agent starter prompt in knowledge-agent/knowledge-agent.md and in the run input.",
     ].join(" "),
-    handoffs: taskHandoffs,
-    tools: createLibrarianOpenAITools(options.librarianContext),
+    handoffs: [
+      ...taskHandoffs,
+      goalAuditorHandoff,
+    ],
+    tools: [
+      ...createLibrarianOpenAITools(options.librarianContext),
+      ...createGoalOpenAITools(options.librarianContext),
+    ],
     defaultManifest: manifest,
     capabilities: knowledgeAgentCapabilities(),
   });

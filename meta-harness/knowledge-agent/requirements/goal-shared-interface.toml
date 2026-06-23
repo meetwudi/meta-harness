@@ -1,10 +1,10 @@
 id = "knowledge-agent.goal-shared-interface"
 title = "Goal shared interface"
-source = "Human-listed requirement on 2026-06-23: creating a Goal and checking in on a Goal should use a shared interface usable by routines, sub-agents, and other drivers."
-text = "Knowledge Agent exposes shared driver-independent interfaces for creating Goals and checking in on Goal state."
+source = "Human-listed requirement on 2026-06-23: creating a Goal and updating a Goal should use a shared interface usable by routines, sub-agents, and other drivers."
+text = "Knowledge Agent exposes shared driver-independent interfaces for creating Goals and updating Goal state."
 clarifications = [
   "The shared interface should be usable by CLI, backend services, conversations, routines, and sub-agents.",
   "Goal creation through the interface should write governed Goal knowledge through Library-backed mechanisms.",
-  "Goal check-ins through the interface should read or update Goal state, evidence, progress, blockers, clarifications, or audit records when actor governance allows it.",
+  "Goal updates through the interface should read or update Goal state, evidence, progress, blockers, clarifications, audit requests, or audit records when actor governance allows it.",
   "The interface should not depend on one storage backend or one conversation driver.",
 ]
