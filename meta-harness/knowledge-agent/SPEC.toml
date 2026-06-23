@@ -4,7 +4,7 @@
 # This file marks this folder as a Spec primitive.
 name = "knowledge-agent"
 version = "v0.0.0"
-source = "Human-listed Knowledge Agent requirements captured on 2026-06-17."
+source = "Human-listed Knowledge Agent requirements captured starting on 2026-06-17, including Goal primitive and Routine naming requirements captured on 2026-06-23."
 
 [[requirement_collections]]
 name = "requirements"

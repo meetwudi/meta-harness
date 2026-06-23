@@ -1,0 +1,9 @@
+id = "knowledge-agent.goal-location-knowledge-driven"
+title = "Goal location is knowledge driven"
+source = "Human-listed requirement on 2026-06-23: do not hard code Goal locations; Knowledge Agent should decide where a Goal lives through knowledge and Library governance."
+text = "Knowledge Agent chooses or confirms where Goal knowledge lives by using Library, storage, and governance knowledge instead of hard-coded Goal paths."
+clarifications = [
+  "Goal storage can be conversation-associated, independent, repository-backed, machine-local, temporary, or backend-backed when the available Library knowledge allows it.",
+  "The Goal primitive record is authoritative for where Goal state, evidence, blockers, progress, and clarifications live.",
+  "Knowledge Agent orchestration code must not assume one fixed Goal folder or storage backend.",
+]

@@ -1,0 +1,12 @@
+id = "knowledge-agent.goal-auditor-agent"
+title = "Goal auditor agent"
+source = "Human-listed requirement on 2026-06-23: an independent Goal Auditor agent with its own actor declares whether a Goal is met, uses the shared prompt, remains unbiased, points out gaps, and returns a signal for whether the Goal is met and OK to close."
+text = "Knowledge Agent supports an independent Goal Auditor agent that evaluates Goal evidence and returns an audit signal."
+clarifications = [
+  "The agent pursuing a Goal should not declare that Goal met.",
+  "The Goal Auditor uses its own actor identity.",
+  "The Goal Auditor uses the shared Knowledge Agent starter prompt rendered for Goal Audit mode.",
+  "The Goal Auditor should be unbiased and identify gaps when evidence does not support the desired outcome.",
+  "The Goal Auditor returns a signal indicating whether the Goal is met, unmet, or needs clarification.",
+  "The Goal Auditor may return an OK-to-close signal when the Goal is met.",
+]

@@ -1,0 +1,9 @@
+id = "knowledge-agent.goal-clarification-loop"
+title = "Goal clarification loop"
+source = "Human-listed requirement on 2026-06-23: Knowledge Agent should be able to ask human clarification questions when setting a Goal; the first version can focus clarification at Goal creation and iterate later."
+text = "Knowledge Agent can ask human clarification questions while setting a Goal when outcome, scope, timeline, or framework knowledge is ambiguous."
+clarifications = [
+  "The first Goal primitive version focuses clarification before or during Goal creation.",
+  "Clarification results become part of the Goal knowledge record or are referenced from it.",
+  "Knowledge Agent should continue with the best available Goal knowledge when clarification is useful but not required for safe progress.",
+]

@@ -1,0 +1,12 @@
+id = "knowledge-agent.goal-primitive"
+title = "Goal primitive"
+source = "Human-listed requirement on 2026-06-23: Goal should be a primitive with a primitive doc and draft schema; it can be created at any time, is not required as initial conversation input, is outcome oriented, and tracks desired outcome, evidence, current state, progress, blockers, and clarifications."
+text = "Knowledge Agent treats Goals as Library-backed, outcome-oriented primitives for durable desired outcomes and their pursuit state."
+clarifications = [
+  "The Goal primitive has a primitive documentation file with a draft schema for human critique.",
+  "A Goal can be created at any time, including after a conversation has already begun.",
+  "A Goal is not required as an initial input to a Knowledge Agent conversation.",
+  "A Goal has an authoritative primitive record that stores or references its desired outcome, evidence, current state, progress, blockers, and clarifications.",
+  "A Goal's current state should support distinguishing met and unmet Goals.",
+  "A Goal can be independent, conversation-associated, or connected to other Goals through knowledge references.",
+]

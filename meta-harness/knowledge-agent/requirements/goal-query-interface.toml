@@ -1,0 +1,10 @@
+id = "knowledge-agent.goal-query-interface"
+title = "Goal query interface"
+source = "Human-listed requirement on 2026-06-23: at any point in time, the system should be able to list unmet Goals and met Goals through an interface independent of the driver."
+text = "Knowledge Agent exposes a driver-independent interface for querying met and unmet Goals."
+clarifications = [
+  "Goal queries should work independently of whether the caller is a CLI, backend service, conversation driver, or another agent.",
+  "Goal query results should be grounded in Goal primitive records and related Library knowledge.",
+  "Goal primitive records should expose enough current-state knowledge for the interface to distinguish met and unmet Goals.",
+  "The interface should support listing unmet Goals and met Goals.",
+]

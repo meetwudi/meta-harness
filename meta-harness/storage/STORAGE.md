@@ -16,7 +16,7 @@ placement information.
 - Library root: the place where a Library's files or records live.
 
 Storage capabilities describe what the location's driver can do. Library
-governance still determines whether a particular actor or task may read or
+governance still determines whether a particular actor or Routine may read or
 update a particular Library.
 
 ## Knowledge Agent Local Locations

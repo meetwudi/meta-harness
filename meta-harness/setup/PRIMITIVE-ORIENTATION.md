@@ -9,22 +9,28 @@ Libraries are where knowledge lives. A Library points to a place. The agent expl
 Some knowledge is a primitive:
 
 - Library: a governed place to explore.
-- Task: a countable unit of execution with required outcomes.
+- Routine: reusable composable workflow knowledge.
+- Goal: an outcome-oriented primitive with evidence, state, progress, blockers,
+  clarifications, and independent audit.
 - Memory: agent-usable knowledge carried across time.
 - Compliance: human-approved obligations and explicit checks used to govern and verify work.
 - Spec: a modular requirement map with separate acceptance tests.
 
 The primitives compose:
 
-- Tasks read Libraries.
-- Tasks may update Libraries when allowed.
+- Routines read Libraries.
+- Routines may update Libraries when allowed.
 - When a filesystem Library contains `LIBRARY.toml`, that file describes which
   actor URI patterns may read or update it.
-- Tasks use Memory without needing every task to restate that Memory exists.
+- Routines use Memory without needing every Routine to restate that Memory
+  exists.
 - When Memory contains `MEMORY.toml`, that file describes how the memory is
   organized and what agents may update.
-- The default local task Memory Library is `library://task-memory` when registered.
-- Tasks use Compliance to make procedure and outcomes verifiable.
+- The default local Routine Memory Library is `library://routine-memory` when
+  registered.
+- Routines use Compliance to make procedure and outcomes verifiable.
+- Goals may be created by conversations, Routines, or other governed agents.
+- Goals are declared met by independent Goal Auditor agents.
 - Specs connect sourced requirements, acceptance tests, and implementation
   citations.
 - Libraries organize all primitives.
@@ -33,7 +39,7 @@ The primitives compose:
 - `library://...` references are Library resource URIs handled through
   Librarian tools.
 
-Primitive TOML files for the five current primitives identify themselves with a
+Primitive TOML files for the six current primitives identify themselves with a
 short comment header:
 
 ```toml
@@ -47,4 +53,5 @@ first content line; the primitive header follows that notice.
 Requirement files and acceptance-test files are structured harness files, but
 they are not primitives.
 
-When starting work, first discover the relevant Libraries, then identify applicable tasks, memory, and compliance.
+When starting work, first discover the relevant Libraries, then identify
+applicable Routines, Goals, Memory, and Compliance.

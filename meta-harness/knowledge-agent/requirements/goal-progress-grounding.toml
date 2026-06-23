@@ -1,0 +1,9 @@
+id = "knowledge-agent.goal-progress-grounding"
+title = "Goal progress grounding"
+source = "Human-listed requirement on 2026-06-23: Progress updates should be grounded in the Goal primitive record and related Library evidence."
+text = "Knowledge Agent grounds Goal progress updates in the Goal primitive record and related Library evidence."
+clarifications = [
+  "Progress updates should distinguish evidence, current state, progress, blockers, and clarifications when the Goal knowledge supports that distinction.",
+  "Blockers should identify what prevents meaningful progress and what clarification or external change would unblock the Goal.",
+  "Goal progress updates should not add prescriptive action planning to the Goal primitive shape.",
+]

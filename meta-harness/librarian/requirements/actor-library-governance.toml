@@ -1,4 +1,4 @@
 id = "librarian.actor-library-governance"
 title = "Library governance supports actors"
-source = "Human-listed requirement on 2026-06-22: use actors throughout Library governance and remove task-specific governance fields."
+source = "Human-listed requirement on 2026-06-22 and renamed on 2026-06-23: use actors throughout Library governance and remove workflow-specific governance fields."
 text = "Library governance uses actor URI patterns through read_actors and update_actors in LIBRARY.toml."

@@ -1,0 +1,10 @@
+id = "knowledge-agent.goal-routine-relationship"
+title = "Goal routine relationship"
+source = "Human-listed requirement on 2026-06-23: Routine is the preferred word for reusable composable workflow; workflow-related specs should use Routine naming; Routines can fulfill Goals, can be loosely associated with Goals, and can create Goals, but a Routine does not always come with a Goal."
+text = "Goals and Routines relate through knowledge references: a Routine can fulfill a Goal, a Routine can create a Goal, and a Routine does not require a Goal."
+clarifications = [
+  "Routine language describes reusable composable workflow knowledge.",
+  "Routine execution language describes one concrete instance of applying Routine knowledge.",
+  "Routine-to-Goal association is loose and should be represented through knowledge references rather than a required ownership relationship.",
+  "A Routine execution can create a Goal and then continue pursuit of that Goal when the Routine knowledge calls for it.",
+]

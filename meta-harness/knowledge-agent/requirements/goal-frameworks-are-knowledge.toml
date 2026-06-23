@@ -1,0 +1,12 @@
+id = "knowledge-agent.goal-frameworks-are-knowledge"
+title = "Goal frameworks are knowledge"
+source = "Human-listed requirement on 2026-06-23: Goal-setting frameworks such as SMART can help clarify Goals, but Knowledge is code, SMART is knowledge rather than part of the Goal primitive itself, and framework knowledge lives in Libraries."
+text = "Goal-setting frameworks are Library knowledge that can be used to clarify or evaluate Goals without being hard-coded into the Goal primitive."
+clarifications = [
+  "SMART is one possible Goal-setting framework, not a required primitive field set.",
+  "Goal-setting frameworks live in Libraries.",
+  "For the first Goal primitive version, framework knowledge may live in the Goal primitive documentation inside the Meta Harness Library.",
+  "When SMART knowledge is selected, it can help evaluate whether a Goal is specific, measurable, achievable, relevant, and time-bounded.",
+  "Time-boundedness can be represented as timeline knowledge when the selected Goal framework calls for it.",
+  "The Goal primitive should be able to reference framework knowledge instead of embedding any one framework as primitive law.",
+]

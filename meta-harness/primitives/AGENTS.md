@@ -17,14 +17,16 @@ Do not write `primitive_kind` in Library discovery metadata. Libraries choose pl
 structured files inside those places identify contained primitives.
 
 For folder-scoped primitives, the structured file is the marker. For example,
-`LIBRARY.toml` marks a Library root, `TASK.toml` marks a folder as a Task,
-`MEMORY.toml` marks a Memory collection, `COMPLIANCE.toml` marks
-compliance rules for that folder and its descendants, and `SPEC.toml` marks a
-Spec.
+`LIBRARY.toml` marks a Library root, `ROUTINE.toml` marks a folder as a
+Routine, `GOAL.toml` marks a Goal, `MEMORY.toml` marks a Memory collection,
+`COMPLIANCE.toml` marks compliance rules for that folder and its descendants,
+and `SPEC.toml` marks a Spec.
 
 ## Primitive docs
 
-Task: [TASK.md](TASK.md)
+Routine: [ROUTINE.md](ROUTINE.md)
+
+Goal: [GOAL.md](GOAL.md)
 
 Library: [LIBRARY.md](LIBRARY.md)
 

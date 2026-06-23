@@ -7,7 +7,7 @@ A Library may point to a repository folder, local folder outside the repo, cloud
 Storage discovery says where the place is. The place itself carries the
 knowledge.
 
-Libraries organize knowledge, including tasks, memory, and compliance.
+Libraries organize knowledge, including Routines, Goals, Memory, and Compliance.
 
 ## Discovery
 
@@ -17,7 +17,7 @@ Library manifests.
 Every filesystem Library root must contain `LIBRARY.toml`. The manifest names
 the Library and describes that place's access governance.
 
-A Library may contain Tasks, Memory, Compliance, references, and other
+A Library may contain Routines, Goals, Memory, Compliance, references, and other
 Libraries; the place's own files define what is inside.
 
 ## Definition
@@ -57,8 +57,8 @@ Examples:
 ```toml
 update_actors = []
 update_actors = ["actor://knowledge-agent"]
-update_actors = ["actor://task/project-harness/tasks/*"]
-update_actors = ["actor://task/daily-gmail-learning-digest/tasks/*"]
+update_actors = ["actor://routine/project-harness/routines/*"]
+update_actors = ["actor://routine/daily-gmail-learning-digest/routines/*"]
 ```
 
 Read access is configurable per Library. For example:
@@ -67,13 +67,13 @@ Read access is configurable per Library. For example:
 read_actors = ["actor://knowledge-agent"]
 ```
 
-Task-scoped authority is represented by task actor identities, not task
-governance fields. A task-backed agent may run with both a base actor and a task
-actor:
+Routine-scoped authority is represented by Routine actor identities, not Routine
+governance fields. A Routine-backed agent may operate with both a base actor and
+a Routine actor:
 
 ```text
 actor://knowledge-agent
-actor://task/project-harness/tasks/concise-cleanup
+actor://routine/project-harness/routines/concise-cleanup
 ```
 
 `agent_excludes` is an optional list of path patterns, relative to the Library
@@ -105,7 +105,7 @@ Examples:
 ```text
 library://meta-harness
 library://project-harness
-library://task-memory
+library://routine-memory
 ```
 
 A Library reference selects a place to explore. Storage discovery does not
@@ -131,7 +131,7 @@ Library creation follows setup guidance in [LIBRARY-CREATION.md](../setup/LIBRAR
 
 ## Memory
 
-Task memory uses a local or external memory Library.
+Routine memory uses a local or external memory Library.
 
 When no suitable Memory Library exists, create or organize one using
 [MEMORY.md](MEMORY.md).

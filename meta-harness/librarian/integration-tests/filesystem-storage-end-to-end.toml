@@ -17,7 +17,7 @@ requirements = [
   "librarian.multi-library-search",
   "librarian.actor-library-governance",
   "librarian.active-actor-identities",
-  "librarian.task-actor-governance",
+  "librarian.routine-actor-governance",
   "librarian.library-creation-knowledge",
   "librarian.library-name-format",
   "librarian.create-library-in-storage-location",

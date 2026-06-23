@@ -1,4 +1,0 @@
-id = "librarian.task-actor-governance"
-title = "Task authority uses task actors"
-source = "Human-listed requirement on 2026-06-22: tasks remain a useful concept, but they should grant task actor identities instead of using task governance fields."
-text = "Task-scoped authority is represented by actor URI patterns such as actor://task/project-harness/tasks/concise-cleanup."
