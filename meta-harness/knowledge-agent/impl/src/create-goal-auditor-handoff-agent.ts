@@ -25,6 +25,7 @@ type GoalAuditHandoffInput = {
   auditRequestId: string;
   requestSummary: string;
   evidenceRefs: string[];
+  evidenceUris: string[];
 };
 
 /**
@@ -61,7 +62,7 @@ export function createGoalAuditorHandoffAgent(input: {
       ...createGoalOpenAITools(auditorContext, { includeAuditTool: true }),
     ],
     defaultManifest: input.manifest,
-    capabilities: knowledgeAgentCapabilities(),
+    capabilities: knowledgeAgentCapabilities({ allowShell: false }),
   });
   let auditInput: GoalAuditHandoffInput | undefined;
   return handoff(auditorAgent, {
@@ -78,8 +79,9 @@ export function createGoalAuditorHandoffAgent(input: {
         auditRequestId: { type: "string" },
         requestSummary: { type: "string" },
         evidenceRefs: { type: "array", items: { type: "string" } },
+        evidenceUris: { type: "array", items: { type: "string" } },
       },
-      required: ["goalUri", "auditRequestId", "requestSummary", "evidenceRefs"],
+      required: ["goalUri", "auditRequestId", "requestSummary", "evidenceRefs", "evidenceUris"],
       additionalProperties: false,
     },
     onHandoff: (_context, parsedInput) => {
@@ -115,6 +117,9 @@ function parseGoalAuditHandoffInput(input: unknown): GoalAuditHandoffInput {
     evidenceRefs: Array.isArray(data.evidenceRefs)
       ? data.evidenceRefs.filter((item): item is string => typeof item === "string")
       : [],
+    evidenceUris: Array.isArray(data.evidenceUris)
+      ? data.evidenceUris.filter((item): item is string => typeof item === "string")
+      : [],
   };
 }
 
@@ -133,10 +138,12 @@ function formatGoalAuditInput(input: GoalAuditHandoffInput | undefined): string 
     `Audit request id: ${input.auditRequestId}`,
     `Request summary: ${input.requestSummary}`,
     `Evidence refs: ${input.evidenceRefs.join(", ") || "(none provided)"}`,
+    `Evidence Library URIs: ${input.evidenceUris.join(", ") || "(none provided)"}`,
     "",
     "First call librarian_intro.",
     "Then read library://meta-harness/primitives/GOAL.md.",
-    "Then read the Goal record through Librarian, read referenced evidence through Librarian, and call goal_complete_audit.",
+    "Then read the Goal record through Librarian, read the Evidence Library URIs through Librarian, and call goal_complete_audit.",
+    "Do not use shell or sandbox filesystem tools to inspect Goal evidence.",
     "Return only the recorded signal, whether it is OK to close, gaps if any, and the Goal URI.",
   ].join("\n");
 }

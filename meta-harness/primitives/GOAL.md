@@ -5,6 +5,11 @@ A Goal is an outcome-oriented primitive.
 Goals live in a Library. The Library points to the place that contains the Goal
 record and related evidence.
 
+Auditable Goal evidence uses `library://...` resource URIs. Sandbox workspace
+paths are staging locations, not durable Goal evidence. When an artifact starts
+in a sandbox workspace, write it into a governed Library through Librarian before
+recording it as Goal evidence or requesting audit.
+
 A Goal can be created at any time. A Goal is not required as an initial input to
 a Knowledge Agent conversation.
 
@@ -151,6 +156,10 @@ before the auditor completes it. The auditor then returns an audit signal:
 
 The auditor should be unbiased, point out gaps when any exist, and return an
 OK-to-close signal only when the evidence supports the desired outcome.
+
+The auditor reads Goal evidence through Librarian. A raw filesystem path or
+external URL is not auditable Goal evidence unless it has first been represented
+as governed Library knowledge and referenced by `library://...`.
 
 ## Clarification
 

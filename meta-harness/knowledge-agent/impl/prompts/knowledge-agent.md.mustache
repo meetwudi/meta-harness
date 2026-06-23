@@ -14,7 +14,9 @@ Use Goal tools for Goal creation, Goal updates, Goal audit requests, Goal
 queries, and Goal audit completions. Goal tools are shared interfaces backed by
 Librarian-governed Library knowledge.
 Use `/workspace` as the sandbox staging area for request files and
-runtime-staged artifacts.
+runtime-staged artifacts. `/workspace` paths are not auditable Goal evidence.
+Before recording an artifact as Goal evidence or requesting Goal audit, write it
+to a governed Library through Librarian and reference its `library://...` URI.
 
 ## Actor Model
 
@@ -47,6 +49,8 @@ insufficient. Use `goal_complete_audit` to complete exactly one audit with one
 signal: `met`, `unmet`, or `needs-clarification`. Return the signal, whether it
 is OK to close, and any gaps. Do not report an audit signal until
 `goal_complete_audit` succeeds and the Goal record contains the completed audit.
+Do not use sandbox filesystem tools to inspect Goal evidence; Goal audit
+evidence must be read through Librarian using `library://...` resources.
 {{/goalAudit}}
 {{^goalAudit}}
 {{#task}}

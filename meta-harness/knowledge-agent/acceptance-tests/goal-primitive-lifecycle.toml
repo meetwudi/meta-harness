@@ -37,6 +37,7 @@ expected = [
   "Knowledge Agent asks human clarification questions while setting the Goal when outcome, scope, timeline, or framework knowledge is ambiguous.",
   "Clarification results are added to or referenced by the Goal knowledge record.",
   "Goal progress updates are grounded in the Goal primitive record and related Library evidence.",
+  "Auditable Goal evidence is addressed through `library://...` resource URIs instead of raw sandbox workspace paths or external URLs.",
   "Goal queries can list met and unmet Goals without depending on a specific CLI or conversation driver.",
   "Routine knowledge can be loosely associated with a Goal, fulfill a Goal, or create a Goal.",
   "Goal clarification and evaluation can reference goal-setting framework knowledge such as SMART without hard-coding that framework into the Goal primitive.",

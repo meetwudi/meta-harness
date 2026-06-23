@@ -7,6 +7,7 @@ clarifications = [
   "The Goal Auditor uses its own actor identity.",
   "The Goal Auditor uses the shared Knowledge Agent starter prompt rendered for Goal Audit mode.",
   "The shared Knowledge Agent starter prompt should remind agents that Goal audit completion belongs to the separate Goal Auditor actor after handoff.",
+  "The Goal Auditor should evaluate Goal records and evidence through Librarian and Goal interfaces, not sandbox filesystem reads.",
   "The Goal Auditor should be unbiased and identify gaps when evidence does not support the desired outcome.",
   "The Goal Auditor returns a signal indicating whether the Goal is met, unmet, or needs clarification.",
   "The Goal Auditor may return an OK-to-close signal when the Goal is met.",

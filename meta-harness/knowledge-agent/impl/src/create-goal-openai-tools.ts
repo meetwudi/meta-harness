@@ -65,7 +65,7 @@ export function createGoalOpenAITools(
     }),
     tool({
       name: "goal_update",
-      description: "Update Goal current state, evidence, progress, blockers, or clarifications through the Goal primitive record. Do not use this to mark a Goal met; met is set only by goal_complete_audit.",
+      description: "Update Goal current state, evidence, progress, blockers, or clarifications through the Goal primitive record. Evidence URIs must use library:// resources; write workspace artifacts through Librarian before recording them. Do not use this to mark a Goal met; met is set only by goal_complete_audit.",
       parameters: {
         type: "object",
         properties: {
@@ -78,7 +78,7 @@ export function createGoalOpenAITools(
               type: "object",
               properties: {
                 id: { type: "string" },
-                uri: { type: "string" },
+                uri: { type: "string", pattern: "^library://" },
                 summary: { type: "string" },
               },
               required: ["uri", "summary"],
@@ -122,7 +122,7 @@ export function createGoalOpenAITools(
     }),
     tool({
       name: "goal_request_audit",
-      description: "Request independent Goal Auditor judgment for a Goal and record the request in the Goal primitive record. After this succeeds, immediately hand off to Meta Harness Goal Auditor with the returned handoff payload; do not provide the audit signal yourself.",
+      description: "Request independent Goal Auditor judgment for a Goal and record the request in the Goal primitive record. Evidence refs must be Goal evidence ids or library:// resources, not raw paths or URLs. After this succeeds, immediately hand off to Meta Harness Goal Auditor with the returned handoff payload; do not provide the audit signal yourself.",
       parameters: {
         type: "object",
         properties: {
@@ -158,7 +158,7 @@ export function createGoalOpenAITools(
   if (options.includeAuditTool) {
     tools.push(tool({
       name: "goal_complete_audit",
-      description: "Complete an independent Goal Auditor audit for a Goal after evaluating the Goal record and evidence. Only the independent Goal Auditor agent should use this tool.",
+      description: "Complete an independent Goal Auditor audit for a Goal after evaluating the Goal record and Library evidence through Librarian. Only the independent Goal Auditor agent should use this tool.",
       parameters: {
         type: "object",
         properties: {

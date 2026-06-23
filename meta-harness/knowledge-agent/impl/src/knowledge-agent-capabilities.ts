@@ -8,6 +8,10 @@ import {
   type Capability,
 } from "@openai/agents/sandbox";
 
+export type KnowledgeAgentCapabilityOptions = {
+  allowShell?: boolean;
+};
+
 /**
  * Returns sandbox capabilities for Knowledge Agent runs.
  *
@@ -15,9 +19,12 @@ import {
  * filesystem patch tools. The sandbox remains available for shell-based
  * inspection of staged runtime artifacts.
  */
-export function knowledgeAgentCapabilities(): Capability[] {
-  return [
-    shell(),
-    compaction(),
-  ];
+export function knowledgeAgentCapabilities(
+  options: KnowledgeAgentCapabilityOptions = {},
+): Capability[] {
+  const capabilities: Capability[] = [compaction()];
+  if (options.allowShell ?? true) {
+    capabilities.unshift(shell());
+  }
+  return capabilities;
 }

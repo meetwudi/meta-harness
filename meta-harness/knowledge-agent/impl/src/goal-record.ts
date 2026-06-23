@@ -220,6 +220,7 @@ export async function updateGoal(
 ): Promise<Record<string, unknown>> {
   const record = await readGoalRecord(context, requiredInputString(input.goalUri, "goalUri"));
   const now = new Date().toISOString();
+  const newEvidence: GoalEvidence[] = [];
   if (input.state) {
     if (input.state === "met") {
       throw new Error("Goal state 'met' must be set by goal_complete_audit after independent Goal Auditor review");
@@ -234,19 +235,20 @@ export async function updateGoal(
     };
   }
   for (const evidence of input.evidence ?? []) {
-    record.evidence.push({
-      id: evidence.id?.trim() || nextId("evidence", record.evidence.length),
-      uri: evidence.uri,
+    newEvidence.push({
+      id: evidence.id?.trim() || nextId("evidence", record.evidence.length + newEvidence.length),
+      uri: requiredLibraryUri(evidence.uri, "evidence.uri"),
       summary: evidence.summary,
       recordedAt: now,
       recordedByActor: context.actorUri,
     });
   }
+  record.evidence.push(...newEvidence);
   if (input.progressSummary) {
     record.progress.push({
       id: nextId("progress", record.progress.length),
       summary: input.progressSummary,
-      evidenceRefs: input.progressEvidenceRefs ?? [],
+      evidenceRefs: normalizeEvidenceRefs(record, input.progressEvidenceRefs ?? [], "progressEvidenceRefs"),
       recordedAt: now,
       recordedByActor: context.actorUri,
     });
@@ -256,7 +258,7 @@ export async function updateGoal(
       id: input.blocker.id?.trim() || nextId("blocker", record.blockers.length),
       summary: input.blocker.summary,
       status: input.blocker.status ?? "open",
-      evidenceRefs: input.blocker.evidenceRefs ?? [],
+      evidenceRefs: normalizeEvidenceRefs(record, input.blocker.evidenceRefs ?? [], "blocker.evidenceRefs"),
       recordedAt: now,
       recordedByActor: context.actorUri,
     });
@@ -287,11 +289,17 @@ export async function requestGoalAudit(
 ): Promise<Record<string, unknown>> {
   const record = await readGoalRecord(context, requiredInputString(input.goalUri, "goalUri"));
   const now = new Date().toISOString();
+  const evidenceRefs = normalizeEvidenceRefs(
+    record,
+    input.evidenceRefs?.length ? input.evidenceRefs : record.evidence.map((item) => item.id),
+    "evidenceRefs",
+  );
+  const evidenceUris = resolveEvidenceUris(record, evidenceRefs);
   const auditRequest: GoalAuditRequest = {
     id: input.id?.trim() || nextId("audit-request", record.auditRequests.length),
     requestedByActor: context.actorUri,
     summary: requiredInputString(input.summary, "summary"),
-    evidenceRefs: input.evidenceRefs ?? [],
+    evidenceRefs,
     status: "open",
     requestedAt: now,
   };
@@ -312,6 +320,7 @@ export async function requestGoalAudit(
       auditRequestId: auditRequest.id,
       requestSummary: auditRequest.summary,
       evidenceRefs: auditRequest.evidenceRefs,
+      evidenceUris,
       instruction: "Hand off to the independent Goal Auditor now. Do not report an audit signal until goal_complete_audit has updated the Goal record.",
     },
     goal: publicGoal(record),
@@ -330,6 +339,7 @@ export async function completeGoalAudit(
   const summary = requiredInputString(input.summary, "summary");
   const now = new Date().toISOString();
   const okToClose = input.okToClose ?? signal === "met";
+  const evidenceRefs = normalizeEvidenceRefs(record, input.evidenceRefs ?? [], "evidenceRefs");
   record.audits.push({
     id: nextId("audit", record.audits.length),
     auditRequestId: input.auditRequestId?.trim() || "",
@@ -337,7 +347,7 @@ export async function completeGoalAudit(
     signal,
     summary,
     gaps: input.gaps ?? [],
-    evidenceRefs: input.evidenceRefs ?? [],
+    evidenceRefs,
     okToClose,
     recordedAt: now,
   });
@@ -629,6 +639,43 @@ function requiredInputString(value: string | undefined, label: string): string {
 
 function nextId(prefix: string, existingCount: number): string {
   return `${prefix}-${existingCount + 1}`;
+}
+
+function requiredLibraryUri(value: string | undefined, label: string): string {
+  const uri = requiredInputString(value, label);
+  if (!uri.startsWith("library://")) {
+    throw new Error(`${label} must use a library:// resource URI; write workspace files or external artifacts into a governed Library through Librarian before recording them as Goal evidence: ${uri}`);
+  }
+  return uri;
+}
+
+function normalizeEvidenceRefs(
+  record: GoalRecord,
+  refs: string[],
+  label: string,
+): string[] {
+  return refs.map((ref, index) => {
+    const value = requiredInputString(ref, `${label}[${index}]`);
+    if (value.startsWith("library://")) {
+      return value;
+    }
+    const evidence = record.evidence.find((item) => item.id === value);
+    if (!evidence) {
+      throw new Error(`${label}[${index}] must be a Goal evidence id or library:// resource URI, not a raw path, URL, or unresolved reference: ${value}`);
+    }
+    requiredLibraryUri(evidence.uri, `evidence ${value} uri`);
+    return value;
+  });
+}
+
+function resolveEvidenceUris(record: GoalRecord, refs: string[]): string[] {
+  const uris = refs.map((ref) => {
+    if (ref.startsWith("library://")) {
+      return ref;
+    }
+    return record.evidence.find((item) => item.id === ref)?.uri ?? "";
+  }).filter((uri) => uri.startsWith("library://"));
+  return uris.filter((uri, index, values) => values.indexOf(uri) === index);
 }
 
 function matchesUriPattern(uri: string, pattern: string): boolean {
