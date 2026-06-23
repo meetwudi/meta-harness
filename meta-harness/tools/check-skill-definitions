@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 MAX_SKILL_NAME_LENGTH = 64
+EXPECTED_SKILL_NAMES = ("meta-harness",)
 
 
 def fail(failures, message):
@@ -103,8 +104,8 @@ def validate_openai_yaml(repo_root, skill_dir, failures):
         )
 
 
-def validate_harness_use_library_skill(repo_root, skill_dir, failures):
-    if skill_dir.name != "harness-use-library":
+def validate_meta_harness_skill(repo_root, skill_dir, failures):
+    if skill_dir.name != "meta-harness":
         return
 
     skill_md = skill_dir / "SKILL.md"
@@ -113,63 +114,34 @@ def validate_harness_use_library_skill(repo_root, skill_dir, failures):
 
     text = skill_md.read_text()
     required = (
-        "library://",
+        "meta-harness/knowledge-agent/impl/prompts/knowledge-agent.md.mustache",
+        "meta-harness/setup/PRIMITIVE-ORIENTATION.md",
         "meta-harness/primitives/LIBRARY.md",
-        "storage discovery",
-        "AGENTS.md",
+        "meta-harness/primitives/ROUTINE.md",
+        "meta-harness/primitives/GOAL.md",
+        "meta-harness/primitives/TAGS.md",
+        "library://",
+        "Librarian",
     )
     for pattern in required:
         if pattern not in text:
             fail(
                 failures,
-                f"{relative(repo_root, skill_md)}: harness-use-library should mention {pattern}",
+                f"{relative(repo_root, skill_md)}: meta-harness should mention {pattern}",
             )
 
     stale_patterns = (
-        "harness/libraries indexes",
-        "checked-in and local Library indexes",
-        "indexes checked",
+        "TASK.md",
+        "Task primitive",
+        "harness-run-task",
+        "$harness-use-library",
+        "$harness-execute-routine",
     )
     for pattern in stale_patterns:
         if pattern in text:
             fail(
                 failures,
-                f"{relative(repo_root, skill_md)}: harness-use-library must use storage discovery, not stale index wording: {pattern}",
-            )
-
-
-def validate_harness_execute_routine_skill(repo_root, skill_dir, failures):
-    if skill_dir.name != "harness-execute-routine":
-        return
-
-    skill_md = skill_dir / "SKILL.md"
-    if not skill_md.is_file():
-        return
-
-    text = skill_md.read_text()
-    required = (
-        "$harness-use-library",
-        "meta-harness/primitives/ROUTINE.md",
-        "library://",
-        "source Library",
-    )
-    for pattern in required:
-        if pattern not in text:
-            fail(
-                failures,
-                f"{relative(repo_root, skill_md)}: harness-execute-routine should mention {pattern}",
-            )
-
-    path_first_patterns = (
-        "under harness/routines",
-        "harness/routines/{routine-name}",
-        "harness/routines/{routine-name}/ROUTINE.toml",
-    )
-    for pattern in path_first_patterns:
-        if pattern in text:
-            fail(
-                failures,
-                f"{relative(repo_root, skill_md)}: harness-execute-routine must not use path-first Routine selection: {pattern}",
+                f"{relative(repo_root, skill_md)}: meta-harness must not use stale skill/task wording: {pattern}",
             )
 
 
@@ -189,12 +161,20 @@ def main():
     if not (skills_root / "AGENTS.md").is_file():
         fail(failures, "meta-harness/skills: missing AGENTS.md")
 
+    skill_dirs = sorted(path for path in skills_root.iterdir() if path.is_dir())
+    skill_names = tuple(path.name for path in skill_dirs)
+    if skill_names != EXPECTED_SKILL_NAMES:
+        fail(
+            failures,
+            "meta-harness/skills: expected exactly these skill directories: "
+            + ", ".join(EXPECTED_SKILL_NAMES),
+        )
+
     count = 0
-    for skill_dir in sorted(path for path in skills_root.iterdir() if path.is_dir()):
+    for skill_dir in skill_dirs:
         validate_skill_md(repo_root, skill_dir, failures)
         validate_openai_yaml(repo_root, skill_dir, failures)
-        validate_harness_use_library_skill(repo_root, skill_dir, failures)
-        validate_harness_execute_routine_skill(repo_root, skill_dir, failures)
+        validate_meta_harness_skill(repo_root, skill_dir, failures)
         count += 1
 
     if failures:

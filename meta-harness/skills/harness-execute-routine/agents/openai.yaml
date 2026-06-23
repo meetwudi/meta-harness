@@ -1,4 +1,0 @@
-interface:
-  display_name: "Harness: Execute Routine"
-  short_description: "Execute Meta Harness Routines through Libraries"
-  default_prompt: "Use $harness-execute-routine to execute a Meta Harness Routine in this repository."

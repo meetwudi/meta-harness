@@ -2,8 +2,8 @@
 
 This folder contains installable Codex skills shipped with Meta Harness.
 
-Use [harness-use-library/SKILL.md](harness-use-library/SKILL.md) for Library discovery and `library://` resolution.
-
-Use [harness-execute-routine/SKILL.md](harness-execute-routine/SKILL.md) for Routine execution through the Routine primitive.
+Use [meta-harness/SKILL.md](meta-harness/SKILL.md) as the single Codex-facing
+entrypoint for Library discovery, `library://` resolution, Routine execution,
+Goals, Memory, Compliance, Specs, Tags, and Meta Harness tool use.
 
 Install skills with [../tools/install-skills](../tools/install-skills).

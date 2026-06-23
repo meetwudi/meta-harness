@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meta Harness"
+  short_description: "Use Meta Harness knowledge and primitives"
+  default_prompt: "Use $meta-harness to work with Meta Harness knowledge in this repository."

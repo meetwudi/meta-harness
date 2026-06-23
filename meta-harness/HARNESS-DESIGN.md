@@ -134,17 +134,21 @@ Use [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md) when a human asks to cr
 
 Use [primitives/SPEC.md](primitives/SPEC.md) when a human asks to structure specs as modular requirements, acceptance tests, and implementation citations.
 
-## Installable Skills
+## Installable Skill
 
-Meta Harness may ship Codex skills under [skills/](skills/). These skills make shared harness behavior available through Codex's skill system while still reading the local repository's own harness docs.
+Meta Harness ships a Codex skill under [skills/](skills/). The
+`meta-harness` skill makes shared harness behavior available through Codex's
+skill system while still reading the local repository's own harness docs and
+the Knowledge Agent prompt.
 
-Install bundled skills into the current repository with:
+Install the bundled skill into the current repository with:
 
 ```text
 python3 meta-harness/tools/install-skills
 ```
 
-By default this copies skills to `.codex/skills/` in the repository. Use `--codex-home` to install into `${CODEX_HOME:-~/.codex}/skills` instead.
+By default this copies the skill to `.codex/skills/` in the repository. Use
+`--codex-home` to install into `${CODEX_HOME:-~/.codex}/skills` instead.
 
 ## Compliance Docs
 

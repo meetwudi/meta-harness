@@ -79,7 +79,7 @@ newer Meta Harness ref.
 This repository's checked-in Routine surfaces have been migrated to Routine
 naming: `harness/routines`, `ROUTINE.toml`, `routine-memory`,
 `actor://routine/...`, `knowledge-agent.routine-handoffs`,
-`librarian.routine-actor-governance`, `harness-execute-routine`, and
+`librarian.routine-actor-governance`, the `meta-harness` Codex skill, and
 `check-routine-definitions`.
 
 Local or external memory roots may still contain old Task-shaped data from

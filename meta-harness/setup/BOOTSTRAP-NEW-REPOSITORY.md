@@ -8,7 +8,7 @@ Copy `meta-harness/` into the repository as-is.
 
 Do not change copied files under `meta-harness/` for project-specific needs.
 
-Optionally install bundled Codex skills into the repository:
+Optionally install the bundled Codex skill into the repository:
 
 ```text
 python3 meta-harness/tools/install-skills
