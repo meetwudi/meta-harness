@@ -15,9 +15,9 @@ jobs:
         run: |
           python3 meta-harness/tools/check-library-definitions
 
-      - name: Verify task definitions
+      - name: Verify Routine definitions
         run: |
-          python3 meta-harness/tools/check-task-definitions
+          python3 meta-harness/tools/check-routine-definitions
 
       - name: Verify memory definitions
         run: |

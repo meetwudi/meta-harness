@@ -12,7 +12,7 @@ Apply this migration when:
 
 - the old Meta Harness source ref does not include `MEMORY.toml`
 - the new Meta Harness source ref includes `MEMORY.toml`
-- the managed repository has a Memory Library such as `library://task-memory`
+- the managed repository has a Memory Library such as `library://routine-memory`
 
 ## Check
 
@@ -33,7 +33,7 @@ otherwise present `MEMORY.toml` files under the checked repository path.
 Use these source files instead of duplicating instructions here:
 
 - `meta-harness/primitives/MEMORY.md`
-- `meta-harness/templates/task-memory/MEMORY.toml`
+- `meta-harness/templates/routine-memory/MEMORY.toml`
 - `meta-harness/tools/check-memory-definitions`
 - `meta-harness/templates/git-hooks/commit-msg`
 - `meta-harness/github/workflows/meta-harness-compliance.yml`
@@ -47,7 +47,7 @@ For each Memory Library:
 
 1. Resolve its Library location from checked-in and local Library indexes.
 2. If the memory place does not contain `MEMORY.toml`, propose copying
-   `meta-harness/templates/task-memory/MEMORY.toml` there or creating a
+   `meta-harness/templates/routine-memory/MEMORY.toml` there or creating a
    project-specific `MEMORY.toml` with top-level `instructions` and any needed
    `[[collections]]`.
 3. If the memory place already contains `MEMORY.toml`, verify it satisfies

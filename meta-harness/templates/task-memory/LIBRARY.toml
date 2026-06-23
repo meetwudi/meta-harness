@@ -1,7 +1,0 @@
-# This is a Harness primitive.
-# See also: library://meta-harness
-
-name = "task-memory"
-description = "Local Memory Library for Harness primitive Task executions and durable task learnings."
-read_actors = ["actor://knowledge-agent", "actor://task/*"]
-update_actors = ["actor://task/project-harness/tasks/*"]

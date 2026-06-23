@@ -22,7 +22,7 @@ Capture early thinking as raw notes, captured direction, or close paraphrase. La
 
 ## Checkable Knowledge
 
-Prefer checkable authoritative files over duplicate prose indexes. Discovery and governance should live in the primitive's structured source when one exists, such as Library governance in `LIBRARY.toml` and task contracts in `TASK.toml`.
+Prefer checkable authoritative files over duplicate prose indexes. Discovery and governance should live in the primitive's structured source when one exists, such as Library governance in `LIBRARY.toml` and Routine contracts in `ROUTINE.toml`.
 
 `AGENTS.md` should explain how to use nearby sources while leaving enumeration to the structured source of truth.
 
@@ -34,14 +34,15 @@ Describe a thing by what it is for, not by accumulating exclusions about every
 wrong use an agent has attempted.
 
 When an agent misuses a Library, primitive, or workflow, fix the source of
-confusion: improve the positive description, governing rules, task identity,
+confusion: improve the positive description, governing rules, Routine identity,
 selection logic, or sync behavior. Do not patch unclear guidance by adding
 strings like "not this", "not that", or "do not use for X" to every nearby
 description.
 
-Example: if a Knowledge Agent conversation writes a magic number into task
-memory, describe task memory as memory for Harness primitive Task executions.
-Do not define task memory by saying it is not Knowledge Agent memory. Then fix
+Example: if a Knowledge Agent conversation writes a magic number into Routine
+memory, describe Routine memory as memory for Harness primitive Routine
+executions. Do not define Routine memory by saying it is not Knowledge Agent
+memory. Then fix
 the Knowledge Agent's conversation identity, Library selection, or storage sync
 so future agents choose the right Library from positive descriptions and
 governance.

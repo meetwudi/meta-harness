@@ -1,6 +1,6 @@
 ---
 name: harness-use-library
-description: Resolve and use Meta Harness Libraries in the current repository. Use when the user provides a library:// reference, asks to find relevant project knowledge, needs task memory or compliance context, or wants Codex to discover governed knowledge through storage discovery, Librarian tools, and a Library's own AGENTS.md.
+description: Resolve and use Meta Harness Libraries in the current repository. Use when the user provides a library:// reference, asks to find relevant project knowledge, needs Routine memory or compliance context, or wants Codex to discover governed knowledge through storage discovery, Librarian tools, and a Library's own AGENTS.md.
 ---
 
 # Harness: Find and Use Library

@@ -12,12 +12,12 @@ libraries = [
   "library://project-harness",
 ]
 
-per_execution_memory_library = "library://task-memory/project-harness-compliance/executions/"
-cross_execution_memory_library = "library://task-memory/project-harness-compliance/common/"
+per_execution_memory_library = "library://routine-memory/project-harness-compliance/executions/"
+cross_execution_memory_library = "library://routine-memory/project-harness-compliance/common/"
 
 procedure = [
   "Read the applicable AGENTS.md discovery chain.",
-  "Read this TASK.toml.",
+  "Read this ROUTINE.toml.",
   "Read relevant Meta Harness design, primitive, and compliance docs.",
   "Run meta-harness/tools/check-project-harness-compliance from the repository root.",
   "Inspect any failures against the corresponding Meta Harness docs before changing files.",
@@ -29,7 +29,7 @@ procedure = [
 outcomes = [
   "Project-specific harness files keep the required Meta Harness entry points.",
   "Required Libraries identify meta-harness and project-harness by Library reference.",
-  "Task, Library, and harness file metadata definitions pass their validators.",
+  "Routine, Library, and harness file metadata definitions pass their validators.",
   "Project-specific needs stay under harness/ instead of copied meta-harness/ files.",
 ]
 

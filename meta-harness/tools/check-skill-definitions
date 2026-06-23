@@ -138,8 +138,8 @@ def validate_harness_use_library_skill(repo_root, skill_dir, failures):
             )
 
 
-def validate_harness_run_task_skill(repo_root, skill_dir, failures):
-    if skill_dir.name != "harness-run-task":
+def validate_harness_execute_routine_skill(repo_root, skill_dir, failures):
+    if skill_dir.name != "harness-execute-routine":
         return
 
     skill_md = skill_dir / "SKILL.md"
@@ -149,7 +149,7 @@ def validate_harness_run_task_skill(repo_root, skill_dir, failures):
     text = skill_md.read_text()
     required = (
         "$harness-use-library",
-        "meta-harness/primitives/TASK.md",
+        "meta-harness/primitives/ROUTINE.md",
         "library://",
         "source Library",
     )
@@ -157,19 +157,19 @@ def validate_harness_run_task_skill(repo_root, skill_dir, failures):
         if pattern not in text:
             fail(
                 failures,
-                f"{relative(repo_root, skill_md)}: harness-run-task should mention {pattern}",
+                f"{relative(repo_root, skill_md)}: harness-execute-routine should mention {pattern}",
             )
 
     path_first_patterns = (
-        "under harness/tasks",
-        "harness/tasks/{task-name}",
-        "harness/tasks/{task-name}/TASK.toml",
+        "under harness/routines",
+        "harness/routines/{routine-name}",
+        "harness/routines/{routine-name}/ROUTINE.toml",
     )
     for pattern in path_first_patterns:
         if pattern in text:
             fail(
                 failures,
-                f"{relative(repo_root, skill_md)}: harness-run-task must not use path-first task selection: {pattern}",
+                f"{relative(repo_root, skill_md)}: harness-execute-routine must not use path-first Routine selection: {pattern}",
             )
 
 
@@ -194,7 +194,7 @@ def main():
         validate_skill_md(repo_root, skill_dir, failures)
         validate_openai_yaml(repo_root, skill_dir, failures)
         validate_harness_use_library_skill(repo_root, skill_dir, failures)
-        validate_harness_run_task_skill(repo_root, skill_dir, failures)
+        validate_harness_execute_routine_skill(repo_root, skill_dir, failures)
         count += 1
 
     if failures:

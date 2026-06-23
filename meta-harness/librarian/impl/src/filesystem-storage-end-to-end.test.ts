@@ -33,7 +33,7 @@ await writeFile(
     'name = "meta-harness"',
     'description = "Fixture Meta Harness Library."',
     'read_actors = ["actor://knowledge-agent"]',
-    'update_actors = ["actor://task/project-harness/tasks/concise-cleanup"]',
+    'update_actors = ["actor://routine/project-harness/routines/concise-cleanup"]',
     "",
   ].join("\n"),
 );
@@ -149,7 +149,7 @@ const context = createLibrarianContext({
     },
   ],
   actorUri: "actor://knowledge-agent",
-  actorUris: ["actor://task/project-harness/tasks/concise-cleanup"],
+  actorUris: ["actor://routine/project-harness/routines/concise-cleanup"],
   sessionId: "integration-session",
 });
 
@@ -246,7 +246,7 @@ const listedLibraries = (list as {
   libraries: Array<{ uri: string; writable: boolean }>;
 }).libraries;
 if (!listedLibraries.find((library) => library.uri === "library://meta-harness")?.writable) {
-  throw new Error("Task actor governance did not grant Meta Harness update access");
+  throw new Error("Routine actor governance did not grant Meta Harness update access");
 }
 const storageDefinitionsContent = String(
   (storageDefinitions as { content?: unknown }).content,

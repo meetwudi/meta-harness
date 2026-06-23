@@ -1,0 +1,16 @@
+id = "librarian.acceptance.query-by-tags"
+title = "Query by tags"
+requirements = [
+  "librarian.query-by-tags",
+  "storage.query-by-tags",
+]
+procedure = [
+  "Create readable Library scopes that contain TAGS.toml records with simple tags and slash-separated tag values.",
+  "Run a structured Librarian query by tags against readable Library URI patterns.",
+  "Inspect the query results.",
+]
+expected = [
+  "The query uses structured tag filters rather than free-text search.",
+  "The query reads tag data from TAGS.toml records rather than tag fields embedded in other primitive schemas.",
+  "The results identify matching scoped knowledge with Library resource URIs.",
+]

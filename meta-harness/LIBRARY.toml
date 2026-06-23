@@ -4,7 +4,7 @@
 name = "meta-harness"
 description = "Shared Meta Harness knowledge, primitives, setup guidance, templates, and tools."
 read_actors = ["actor://knowledge-agent"]
-update_actors = ["actor://task/project-harness/tasks/concise-cleanup"]
+update_actors = ["actor://routine/project-harness/routines/concise-cleanup"]
 agent_excludes = [
   "knowledge-agent/**",
 ]

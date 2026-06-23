@@ -1,0 +1,9 @@
+id = "librarian.query-by-tags"
+title = "Librarian supports query by tags"
+source = "Human-listed requirement on 2026-06-23: Tags are an independent primitive using TAGS.toml, query by tags should be structured, tags should not be embedded in each primitive schema, and tag values may use namespace-like slash strings."
+text = "Librarian exposes query by tags across readable Library scopes using independent TAGS.toml records."
+clarifications = [
+  "Query by tags uses TAGS.toml records rather than tag fields embedded in Routine, Goal, Memory, Compliance, Spec, or Library schemas.",
+  "Tag values may include slash-separated namespace-like strings without making Tags an ontology.",
+  "Query-by-tags results identify matching scoped knowledge so agents can read the matched knowledge before acting.",
+]

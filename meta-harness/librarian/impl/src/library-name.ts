@@ -3,7 +3,7 @@
 
 export const LIBRARY_NAME_PATTERN = "^[a-z0-9]+(?:[-_][a-z0-9]+)*$";
 export const LIBRARY_NAME_FORMAT =
-  "lowercase letters and digits separated by hyphens or underscores, such as anxiety-relief";
+  "lowercase letters and digits separated by hyphens or underscores, such as example-library";
 
 const libraryNamePattern = new RegExp(LIBRARY_NAME_PATTERN);
 

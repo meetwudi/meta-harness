@@ -1,24 +1,24 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.task-handoffs: runs task handoff agents with task-scoped actor identity.
+// Supports knowledge-agent.routine-handoffs: uses the Routine actor identity for Routine handoff agents.
 
 import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
 
 /**
- * Creates a task-scoped Librarian context that shares conversation trace events.
+ * Creates a Routine-scoped Librarian context that shares conversation trace events.
  */
-export function createTaskLibrarianContext(
+export function createRoutineLibrarianContext(
   baseContext: LibrarianContext,
-  taskActorUri: string,
+  routineActorUri: string,
 ): LibrarianContext {
   const actorUris = [
     baseContext.actorUri,
     ...baseContext.actorUris,
-    taskActorUri,
+    routineActorUri,
   ].filter((actorUri, index, values) => values.indexOf(actorUri) === index);
 
   return {
     ...baseContext,
-    actorUri: taskActorUri,
+    actorUri: routineActorUri,
     actorUris,
     toolCallEvents: baseContext.toolCallEvents,
   };

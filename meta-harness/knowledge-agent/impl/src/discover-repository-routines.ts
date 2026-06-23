@@ -1,31 +1,31 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.task-handoffs: discovers repository Tasks that can be exposed as handoff agents.
+// Supports knowledge-agent.routine-handoffs: discovers repository Routines that can be exposed as handoff agents.
 
 import { parseToml } from "../../../librarian/impl/dist/index.js";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import type { TaskDefinition } from "./task-definition.js";
+import type { RoutineDefinition } from "./routine-definition.js";
 
 /**
- * Discovers checked-in Meta Harness task definitions from the repository harness.
+ * Discovers checked-in Meta Harness Routine definitions from the repository harness.
  */
-export function discoverRepositoryTasks(repoRoot: string): TaskDefinition[] {
-  const tasksRoot = join(repoRoot, "harness", "tasks");
-  if (!existsSync(tasksRoot)) {
+export function discoverRepositoryRoutines(repoRoot: string): RoutineDefinition[] {
+  const routinesRoot = join(repoRoot, "harness", "routines");
+  if (!existsSync(routinesRoot)) {
     return [];
   }
-  return readdirSync(tasksRoot)
-    .map((entry) => join(tasksRoot, entry))
+  return readdirSync(routinesRoot)
+    .map((entry) => join(routinesRoot, entry))
     .filter((entryPath) => statSync(entryPath).isDirectory())
-    .flatMap((taskRoot) => loadTaskDefinition(taskRoot));
+    .flatMap((routineRoot) => loadRoutineDefinition(routineRoot));
 }
 
-function loadTaskDefinition(taskRoot: string): TaskDefinition[] {
-  const taskTomlPath = join(taskRoot, "TASK.toml");
-  if (!existsSync(taskTomlPath)) {
+function loadRoutineDefinition(routineRoot: string): RoutineDefinition[] {
+  const routineTomlPath = join(routineRoot, "ROUTINE.toml");
+  if (!existsSync(routineTomlPath)) {
     return [];
   }
-  const data = parseToml(readFileSync(taskTomlPath, "utf8"));
+  const data = parseToml(readFileSync(routineTomlPath, "utf8"));
   const name = stringField(data, "name");
   const sourceLibrary = stringField(data, "source_library");
   const purpose = stringField(data, "purpose");
@@ -41,7 +41,7 @@ function loadTaskDefinition(taskRoot: string): TaskDefinition[] {
     sourceLibrary,
     sourceLibraryName,
     purpose,
-    actorUri: `actor://task/${sourceLibraryName}/tasks/${name}`,
+    actorUri: `actor://routine/${sourceLibraryName}/routines/${name}`,
   }];
 }
 

@@ -53,7 +53,7 @@ Do not use sandbox filesystem tools to inspect Goal evidence; Goal audit
 evidence must be read through Librarian using `library://...` resources.
 {{/goalAudit}}
 {{^goalAudit}}
-{{#task}}
+{{#routine}}
 ## Routine Mode
 
 You are a Meta Harness Routine Agent.
@@ -69,8 +69,8 @@ Read and follow `library://meta-harness/primitives/ROUTINE.md`. Resolve
 discovery to the Routine representation for `{{name}}`. The Routine primitive,
 source Library, Routine-local instructions, and Routine definition are
 authoritative. Use the metadata above only to select the Routine and actor.
-{{/task}}
-{{^task}}
+{{/routine}}
+{{^routine}}
 ## Conversation Mode
 
 You are the Meta Harness Knowledge Agent.
@@ -88,7 +88,7 @@ When `goal_request_audit` returns an audit request, immediately hand off to the
 Meta Harness Goal Auditor with the returned Goal URI, audit request id, request
 summary, and evidence refs. Do not claim the Goal is met yourself. Only report
 an audit signal after the Goal Auditor completes `goal_complete_audit`.
-{{/task}}
+{{/routine}}
 {{/goalAudit}}
 
 Goal: {{{goal}}}

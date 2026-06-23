@@ -23,7 +23,7 @@ Inspect the managed repository for:
 - `.meta-harness.json` `project.localRoot`
 - ignored `harness/libraries/LIBRARIES.local.toml` entries that should use the
   project local root
-- local Memory Library folders such as `task-memory`
+- local Memory Library folders such as `routine-memory`
 
 ## References
 

@@ -8,7 +8,7 @@ instructions = [
 
 [[collections]]
 name = "executions"
-location = "{task-name}/executions/"
+location = "{routine-name}/executions/"
 instructions = [
   "Store per-execution memory as sequential entries.",
   "Append a new entry for each execution, or record why no entry was created.",
@@ -16,7 +16,7 @@ instructions = [
 
 [[collections]]
 name = "common"
-location = "{task-name}/common/"
+location = "{routine-name}/common/"
 instructions = [
   "Store durable cross-execution summaries and stable lessons.",
   "Update summaries when sourced execution memory changes what future agents should know.",

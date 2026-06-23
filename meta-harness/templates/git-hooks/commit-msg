@@ -12,7 +12,7 @@ git diff --cached --name-only --diff-filter=ACMR > "$changed_files"
 python3 "$repo_root/meta-harness/tools/check-library-definitions" \
   --repo-root "$repo_root"
 
-python3 "$repo_root/meta-harness/tools/check-task-definitions" \
+python3 "$repo_root/meta-harness/tools/check-routine-definitions" \
   --repo-root "$repo_root"
 
 python3 "$repo_root/meta-harness/tools/check-memory-definitions" \

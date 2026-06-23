@@ -1,0 +1,4 @@
+id = "storage.query-by-tags"
+title = "Storage supports query by tags"
+source = "Human-listed requirement on 2026-06-23: query by tags should be structured, and storage should be able to help with query by tags."
+text = "Storage query behavior supports structured tag filters over tag records such as TAGS.toml."

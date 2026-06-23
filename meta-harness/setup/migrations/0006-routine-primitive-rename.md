@@ -76,8 +76,12 @@ newer Meta Harness ref.
 
 ## Current Repository Note
 
-As of this migration note, this repository has not fully migrated existing
-Task-shaped data. The Goal/Routine requirements and primitive docs use Routine
-naming, but the repository still contains checked-in Task-shaped definitions,
-validators, skills, templates, actor URIs, and local-memory references. Treat
-those remaining Task surfaces as migration debt, not as completed Routine data.
+This repository's checked-in Routine surfaces have been migrated to Routine
+naming: `harness/routines`, `ROUTINE.toml`, `routine-memory`,
+`actor://routine/...`, `knowledge-agent.routine-handoffs`,
+`librarian.routine-actor-governance`, `harness-execute-routine`, and
+`check-routine-definitions`.
+
+Local or external memory roots may still contain old Task-shaped data from
+previous source refs. Migrate those roots only when the owning human approves
+writing outside the managed repository.

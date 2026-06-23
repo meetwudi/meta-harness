@@ -12,12 +12,12 @@ libraries = [
   "library://project-harness",
 ]
 
-per_execution_memory_library = "library://task-memory/concise-cleanup/executions/"
-cross_execution_memory_library = "library://task-memory/concise-cleanup/common/"
+per_execution_memory_library = "library://routine-memory/concise-cleanup/executions/"
+cross_execution_memory_library = "library://routine-memory/concise-cleanup/common/"
 
 procedure = [
   "Read the applicable AGENTS.md discovery chain.",
-  "Read this TASK.toml.",
+  "Read this ROUTINE.toml.",
   "Read relevant Libraries and compliance.",
   "Create memory for this execution.",
   "Find duplicated, defensive, vague, or over-expanded wording.",

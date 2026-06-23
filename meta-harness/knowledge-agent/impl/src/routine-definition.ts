@@ -1,7 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.task-handoffs: defines Task metadata used to create task handoff agents.
+// Supports knowledge-agent.routine-handoffs: defines Routine metadata used to create Routine handoff agents.
 
-export type TaskDefinition = {
+export type RoutineDefinition = {
   name: string;
   sourceLibrary: string;
   sourceLibraryName: string;

@@ -1,0 +1,7 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "routine-memory"
+description = "Local Memory Library for Harness primitive Routine executions and durable Routine learnings."
+read_actors = ["actor://knowledge-agent", "actor://routine/*"]
+update_actors = ["actor://routine/project-harness/routines/*"]

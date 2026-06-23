@@ -23,11 +23,11 @@ Choose a filesystem-safe project name from the repository name. Add
 `.meta-harness.json` with `project.name` and `project.localRoot`; the default
 local root is `~/.<project-name>`.
 
-Create `<project.localRoot>/task-memory` for the `task-memory` Library. Copy
-`meta-harness/templates/task-memory/LIBRARY.toml` and
-`meta-harness/templates/task-memory/MEMORY.toml` into that memory directory and
-adjust them if the project needs a different access policy or memory structure.
-Because local task memory is ignored or external,
+Create `<project.localRoot>/routine-memory` for the `routine-memory` Library.
+Copy `meta-harness/templates/routine-memory/LIBRARY.toml` and
+`meta-harness/templates/routine-memory/MEMORY.toml` into that memory directory
+and adjust them if the project needs a different access policy or memory
+structure. Because local Routine memory is ignored or external,
 repository PR checks validate the template and any checked-in `LIBRARY.toml` or
 `MEMORY.toml` files, not the live local memory directory.
 
@@ -43,11 +43,11 @@ Ask Codex or Claude Code:
 > `.meta-harness.json`, and create project-specific harness content under
 > `harness/`. Choose a filesystem-safe project name from the repository name,
 > set `.meta-harness.json` `project.name` and `project.localRoot`, create
-> `<project.localRoot>/task-memory`. Copy
+> `<project.localRoot>/routine-memory`. Copy
 > `meta-harness/templates/LIBRARY.toml` to the repository root,
 > `meta-harness/templates/harness/LIBRARY.toml` to `harness/LIBRARY.toml`, and
-> `meta-harness/templates/task-memory/LIBRARY.toml` plus
-> `meta-harness/templates/task-memory/MEMORY.toml` into the task-memory
+> `meta-harness/templates/routine-memory/LIBRARY.toml` plus
+> `meta-harness/templates/routine-memory/MEMORY.toml` into the routine-memory
 > directory. Use
 > `meta-harness/setup/BOOTSTRAP-NEW-REPOSITORY.md` and
 > `meta-harness/HARNESS-DESIGN.md` as the source docs.

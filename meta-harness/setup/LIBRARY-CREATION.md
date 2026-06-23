@@ -12,7 +12,7 @@ Gather these fields for a Library creation request:
 
 - Library name: the stable name used in `library://{name}`. Use lowercase
   letters and digits separated by hyphens or underscores, such as
-  `anxiety-relief`.
+  `example-library`.
 - Library description: the purpose of the Library and the knowledge it should
   hold.
 - Storage location: the named place where the Library will live.

@@ -2,6 +2,6 @@
 # See also: library://meta-harness
 
 name = "project-harness"
-description = "Project-specific harness knowledge, Library discovery, Tasks, and compliance for this repository."
+description = "Project-specific harness knowledge, Library discovery, Routines, and compliance for this repository."
 read_actors = ["actor://knowledge-agent"]
-update_actors = ["actor://task/project-harness/tasks/concise-cleanup"]
+update_actors = ["actor://routine/project-harness/routines/concise-cleanup"]

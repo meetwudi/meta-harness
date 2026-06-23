@@ -4,7 +4,7 @@
 // Supports knowledge-agent.uses-librarian: traces only agent-facing inputs, not host-local Library paths.
 // Supports knowledge-agent.uses-librarian: attaches Librarian tools to the OpenAI agent.
 // Supports knowledge-agent.harness-owned-session: runs with the session provided by the Harness runtime.
-// Supports knowledge-agent.task-handoffs: exposes Meta Harness Tasks as task-scoped handoff agents.
+// Supports knowledge-agent.routine-handoffs: exposes Meta Harness Routines as Routine-scoped handoff agents.
 // Supports knowledge-agent.goal-auditor-agent: exposes an independent Goal Auditor handoff agent.
 // Supports knowledge-agent.goal-shared-interface: exposes shared Goal tools to the Knowledge Agent.
 
@@ -16,7 +16,7 @@ import { createGoalAuditorHandoffAgent } from "./create-goal-auditor-handoff-age
 import { createGoalOpenAITools } from "./create-goal-openai-tools.js";
 import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
 import { createSandboxClient } from "./create-sandbox-client.js";
-import { createTaskHandoffAgents } from "./create-task-handoff-agents.js";
+import { createRoutineHandoffAgents } from "./create-routine-handoff-agents.js";
 import { executeOpenAISandboxRun } from "./execute-openai-sandbox-run.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
 import type { ProviderRunOptions } from "./types.js";
@@ -28,7 +28,7 @@ export async function runOpenAIConversation(
   options: ProviderRunOptions,
 ): Promise<unknown> {
   const manifest = buildManifest(options);
-  const taskHandoffs = createTaskHandoffAgents({
+  const routineHandoffs = createRoutineHandoffAgents({
     repoRoot: options.repoRoot,
     goal: options.goal,
     model: options.model,
@@ -52,7 +52,7 @@ export async function runOpenAIConversation(
       "Never claim an independent Goal audit result yourself. After goal_request_audit, hand off to Meta Harness Goal Auditor with the returned payload and report an audit signal only after goal_complete_audit succeeds.",
     ].join(" "),
     handoffs: [
-      ...taskHandoffs,
+      ...routineHandoffs,
       goalAuditorHandoff,
     ],
     tools: [

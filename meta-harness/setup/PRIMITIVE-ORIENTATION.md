@@ -15,6 +15,7 @@ Some knowledge is a primitive:
 - Memory: agent-usable knowledge carried across time.
 - Compliance: human-approved obligations and explicit checks used to govern and verify work.
 - Spec: a modular requirement map with separate acceptance tests.
+- Tags: independent retrieval metadata for scoped knowledge.
 
 The primitives compose:
 
@@ -33,14 +34,15 @@ The primitives compose:
 - Goals are declared met by independent Goal Auditor agents.
 - Specs connect sourced requirements, acceptance tests, and implementation
   citations.
+- Tags help agents query by tags without requiring every primitive schema to
+  include tag fields.
 - Libraries organize all primitives.
 - Library creation follows `library://meta-harness/setup/LIBRARY-CREATION.md`.
 - Storage locations follow `library://meta-harness/storage/STORAGE.md`.
 - `library://...` references are Library resource URIs handled through
   Librarian tools.
 
-Primitive TOML files for the six current primitives identify themselves with a
-short comment header:
+Primitive TOML files identify themselves with a short comment header:
 
 ```toml
 # This is a Harness primitive.
@@ -54,4 +56,4 @@ Requirement files and acceptance-test files are structured harness files, but
 they are not primitives.
 
 When starting work, first discover the relevant Libraries, then identify
-applicable Routines, Goals, Memory, and Compliance.
+applicable Routines, Goals, Memory, Compliance, Specs, and Tags.

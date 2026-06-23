@@ -151,74 +151,74 @@ def validate_memory_reference(path, field, value, failures):
         fail(failures, f"{path}: {field} Library name must use {LIBRARY_NAME_FORMAT}: {value}")
 
 
-def validate_task(task_dir, failures):
-    agents = task_dir / "AGENTS.md"
-    task_toml = task_dir / "TASK.toml"
+def validate_routine(routine_dir, failures):
+    agents = routine_dir / "AGENTS.md"
+    routine_toml = routine_dir / "ROUTINE.toml"
 
-    for required in (agents, task_toml):
+    for required in (agents, routine_toml):
         if not required.is_file():
-            fail(failures, f"{task_dir}: missing {required.name}")
+            fail(failures, f"{routine_dir}: missing {required.name}")
             return
 
-    data = load_toml(task_toml, failures)
+    data = load_toml(routine_toml, failures)
     if data is None:
         return
     if not isinstance(data, dict):
-        fail(failures, f"{task_toml}: top-level value must be a table")
+        fail(failures, f"{routine_toml}: top-level value must be a table")
         return
 
     for field, expected_type in REQUIRED_FIELDS.items():
         value = data.get(field)
         if not isinstance(value, expected_type) or (expected_type is str and not value.strip()):
-            fail(failures, f"{task_toml}: {field} must be a non-empty {expected_type.__name__}")
+            fail(failures, f"{routine_toml}: {field} must be a non-empty {expected_type.__name__}")
 
     for field in LIST_FIELDS:
-        validate_string_list(task_toml, data, field, failures)
+        validate_string_list(routine_toml, data, field, failures)
 
     name = data.get("name")
-    if isinstance(name, str) and name != task_dir.name:
-        fail(failures, f"{task_toml}: name must match directory name {task_dir.name}")
+    if isinstance(name, str) and name != routine_dir.name:
+        fail(failures, f"{routine_toml}: name must match directory name {routine_dir.name}")
 
     for field in LIBRARY_REFERENCE_FIELDS:
         value = data.get(field)
         if isinstance(value, list):
             for item in value:
-                validate_library_reference(task_toml, field, item, failures)
+                validate_library_reference(routine_toml, field, item, failures)
         else:
-            validate_library_reference(task_toml, field, value, failures)
+            validate_library_reference(routine_toml, field, value, failures)
 
     for field in MEMORY_REFERENCE_FIELDS:
-        validate_memory_reference(task_toml, field, data.get(field), failures)
+        validate_memory_reference(routine_toml, field, data.get(field), failures)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Verify Meta Harness Task definitions.")
+    parser = argparse.ArgumentParser(description="Verify Meta Harness Routine definitions.")
     parser.add_argument("--repo-root", default=".")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
-    tasks_root = repo_root / "harness" / "tasks"
+    routines_root = repo_root / "harness" / "routines"
     failures = []
 
-    if not tasks_root.exists():
-        print("Meta Harness task definitions passed: no harness/tasks directory.")
+    if not routines_root.exists():
+        print("Meta Harness Routine definitions passed: no harness/routines directory.")
         return 0
 
-    if not (tasks_root / "AGENTS.md").is_file():
-        fail(failures, "harness/tasks: missing AGENTS.md")
+    if not (routines_root / "AGENTS.md").is_file():
+        fail(failures, "harness/routines: missing AGENTS.md")
 
     count = 0
-    for task_dir in sorted(path for path in tasks_root.iterdir() if path.is_dir()):
-        validate_task(task_dir, failures)
+    for routine_dir in sorted(path for path in routines_root.iterdir() if path.is_dir()):
+        validate_routine(routine_dir, failures)
         count += 1
 
     if failures:
-        print("Meta Harness task definition check failed:", file=sys.stderr)
+        print("Meta Harness Routine definition check failed:", file=sys.stderr)
         for failure in failures:
             print(f"- {failure}", file=sys.stderr)
         return 1
 
-    print(f"Meta Harness task definitions passed for {count} task(s).")
+    print(f"Meta Harness Routine definitions passed for {count} routine(s).")
     return 0
 
 

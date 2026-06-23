@@ -1,4 +1,0 @@
-interface:
-  display_name: "Harness: Run Task"
-  short_description: "Run Meta Harness tasks through Libraries"
-  default_prompt: "Use $harness-run-task to run a Meta Harness task in this repository."

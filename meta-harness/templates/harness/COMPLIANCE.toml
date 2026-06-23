@@ -63,8 +63,8 @@ id = "library-memory-source-discipline"
 text = "Verify Library memory updates preserve source discipline and do not invent product content."
 
 [[items]]
-id = "task-definitions"
-text = "Verify task definitions include valid TASK.toml."
+id = "routine-definitions"
+text = "Verify Routine definitions include valid ROUTINE.toml."
 
 [[items]]
 id = "compliance-notice"

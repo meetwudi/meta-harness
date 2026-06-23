@@ -58,7 +58,7 @@ meta-harness/
     LIBRARY.toml
     git-hooks/
     gitignore
-    task-memory/
+    routine-memory/
       LIBRARY.toml
       MEMORY.toml
   tools/
@@ -68,11 +68,11 @@ harness/
   AGENTS.md
   LIBRARY.toml
   COMPLIANCE.toml
-  tasks/
+  routines/
     AGENTS.md
-    {task-name}/
+    {routine-name}/
       AGENTS.md
-      TASK.toml
+      ROUTINE.toml
   product/
     AGENTS.md
     CONTEXT.md
@@ -119,9 +119,10 @@ Managed projects should place their own harness content under `harness/`, not by
 
 Standard operational primitive designs live under [primitives/](primitives/).
 
-Primitives are named kinds of knowledge places organized by Libraries. A managed codebase is itself a Library, and its harness files can mark knowledge inside it as Task, Memory, Compliance, Spec, or another primitive kind.
+Primitives are named kinds of knowledge places organized by Libraries. A managed codebase is itself a Library, and its harness files can mark knowledge inside it as Routine, Goal, Memory, Compliance, Spec, or another primitive kind.
 
-- Task: [primitives/TASK.md](primitives/TASK.md)
+- Routine: [primitives/ROUTINE.md](primitives/ROUTINE.md)
+- Goal: [primitives/GOAL.md](primitives/GOAL.md)
 - Library: [primitives/LIBRARY.md](primitives/LIBRARY.md)
 - Memory: [primitives/MEMORY.md](primitives/MEMORY.md)
 - Compliance: [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md)
@@ -156,4 +157,4 @@ Managed projects should review repository-wide compliance with root `COMPLIANCE.
 
 Managed projects should review harness-specific compliance with `harness/COMPLIANCE.toml` or a more specific descendant compliance file. They may copy the template from `meta-harness/templates/harness/COMPLIANCE.toml`.
 
-Library definitions, task definitions, memory definitions, skill definitions, harness file metadata, and compliance attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.
+Library definitions, Routine definitions, memory definitions, skill definitions, harness file metadata, and compliance attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.
