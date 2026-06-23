@@ -135,6 +135,17 @@ agent does not declare the Goal met.
 
 `met` is backed by an independent Goal Auditor signal.
 
+## Audit Readiness
+
+When the agent pursuing a Goal believes governed Library evidence satisfies the
+desired outcome, it may request an independent audit through the Goal audit
+request interface without waiting for a separate human prompt.
+
+Requesting audit is not declaring the Goal met. It records that the pursuing
+agent considers the Goal ready for independent judgment. The request should cite
+Goal evidence ids or `library://...` evidence URIs that the Goal Auditor can
+read through Librarian.
+
 ## Goal Auditor
 
 A Goal Auditor is an independent agent that evaluates whether a Goal is met.

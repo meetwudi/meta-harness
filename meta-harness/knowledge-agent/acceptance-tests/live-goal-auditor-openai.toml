@@ -17,7 +17,7 @@ procedure = [
   "Require the Knowledge Agent to create the Goal through the Goal creation interface.",
   "Require the Knowledge Agent to write the current date/time file through Librarian.",
   "Require the Knowledge Agent to update the Goal with evidence through the Goal update interface.",
-  "Require the Knowledge Agent to request an independent audit through the Goal audit request interface.",
+  "Let the Knowledge Agent request independent audit through the Goal audit request interface once it considers the Library evidence sufficient.",
   "Require the Knowledge Agent to hand off to the Goal Auditor agent.",
   "Inspect the conversation trace, Goal record, and actor-tagged Librarian tool-call history.",
 ]
@@ -27,6 +27,7 @@ expected = [
   "The evidence file is written through Librarian and referenced by the Goal record.",
   "The Goal record and audit request use `library://...` evidence references instead of raw workspace paths or external URLs.",
   "The shared starter prompt includes an actor-model reminder that Goal audit completion belongs to a separate Goal Auditor actor.",
+  "The Knowledge Agent may proactively request audit when the Goal appears ready, but does not declare the Goal met.",
   "The Goal audit request is recorded before audit completion.",
   "A separate Goal Auditor agent turn occurs with the Goal Auditor actor active in Librarian tool-call history.",
   "The Goal Auditor's first actor-tagged Library operation is librarian_intro.",

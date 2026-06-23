@@ -5,6 +5,7 @@ text = "Knowledge Agent grounds Goal progress updates in the Goal primitive reco
 clarifications = [
   "Progress updates should distinguish evidence, current state, progress, blockers, and clarifications when the Goal knowledge supports that distinction.",
   "Auditable Goal evidence should be Library evidence addressed by `library://...`; sandbox workspace paths are staging artifacts and must be written through Librarian before they are recorded as Goal evidence.",
+  "When progress evidence appears to satisfy the desired outcome, the pursuing agent may record audit readiness by requesting independent audit.",
   "Blockers should identify what prevents meaningful progress and what clarification or external change would unblock the Goal.",
   "Goal progress updates should not add prescriptive action planning to the Goal primitive shape.",
 ]

@@ -4,6 +4,7 @@ source = "Human-listed requirement on 2026-06-23: Goal auditing should have expl
 text = "Goal auditing has an explicit lifecycle: a Goal audit can be requested, and an independent Goal Auditor can complete the audit with a signal."
 clarifications = [
   "A Goal audit request records that the Goal is ready for independent judgment.",
+  "When the agent pursuing a Goal believes governed Library evidence satisfies the desired outcome, it may request independent audit without waiting for a separate human prompt.",
   "A Goal audit request can reference evidence ids from the Goal record or `library://...` evidence URIs that should be evaluated.",
   "A Goal audit request should reject raw filesystem paths or external URLs as evidence refs; those artifacts must be written into a governed Library first.",
   "Only the Goal Auditor should complete the audit by returning met, unmet, or needs-clarification.",

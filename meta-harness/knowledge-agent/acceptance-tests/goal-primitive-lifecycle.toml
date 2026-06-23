@@ -38,6 +38,7 @@ expected = [
   "Clarification results are added to or referenced by the Goal knowledge record.",
   "Goal progress updates are grounded in the Goal primitive record and related Library evidence.",
   "Auditable Goal evidence is addressed through `library://...` resource URIs instead of raw sandbox workspace paths or external URLs.",
+  "When the pursuing agent records evidence that appears to satisfy the desired outcome, it may request independent audit without a separate human audit prompt.",
   "Goal queries can list met and unmet Goals without depending on a specific CLI or conversation driver.",
   "Routine knowledge can be loosely associated with a Goal, fulfill a Goal, or create a Goal.",
   "Goal clarification and evaluation can reference goal-setting framework knowledge such as SMART without hard-coding that framework into the Goal primitive.",
