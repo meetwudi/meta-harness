@@ -1,0 +1,4 @@
+id = "librarian.library-name-format"
+title = "Library names use a canonical slug format"
+source = "Human-listed requirement on 2026-06-22: Library names should be standardized and must not contain spaces or miscellaneous punctuation; use names like `a-b-c_d`."
+text = "Library names use lowercase letters and digits separated by hyphens or underscores."

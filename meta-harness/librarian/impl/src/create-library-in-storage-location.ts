@@ -4,6 +4,7 @@
 // Supports storage.location-library-placement: uses the storage location's Library root for placement.
 
 import { join } from "node:path";
+import { validateLibraryName } from "./library-name.js";
 import { libraryUriFromName } from "./library-uri-from-name.js";
 import { loadResolvedLibraries } from "./load-resolved-libraries.js";
 import { publicLibraryListing } from "./public-library-listing.js";
@@ -31,7 +32,7 @@ export async function createLibraryInStorageLocation(
     throw new Error(`Library already exists: ${libraryUriFromName(name)}`);
   }
 
-  const libraryRoot = join(location.libraryRootPath, safeLibraryFolderName(name));
+  const libraryRoot = join(location.libraryRootPath, name);
   const libraryToml = join(libraryRoot, "LIBRARY.toml");
   if (await location.storage.exists(libraryToml)) {
     throw new Error(`Library definition already exists: ${libraryUriFromName(name)}`);
@@ -68,22 +69,6 @@ function findStorageLocation(
     throw new Error(`Unknown storage location: ${name}`);
   }
   return location;
-}
-
-function validateLibraryName(rawName: string): string {
-  const name = rawName.trim();
-  if (!name || name.startsWith("library://") || name.includes("\\") || name.startsWith("/")) {
-    throw new Error(`Invalid Library name: ${rawName}`);
-  }
-  const parts = name.split("/");
-  if (parts.some((part) => !part || part === "." || part === "..")) {
-    throw new Error(`Invalid Library name: ${rawName}`);
-  }
-  return name;
-}
-
-function safeLibraryFolderName(name: string): string {
-  return name.replace(/[^A-Za-z0-9._-]+/g, "-");
 }
 
 function renderLibraryToml(

@@ -14,6 +14,7 @@ requirements = [
   "librarian.active-actor-identities",
   "librarian.task-actor-governance",
   "librarian.library-creation-knowledge",
+  "librarian.library-name-format",
   "librarian.create-library-in-storage-location",
   "storage.storage-agent-guidance",
   "storage.library-creation-target-location",
@@ -25,6 +26,6 @@ procedure = [
 ]
 expected = [
   "The test completes using local filesystem storage pointed at a temporary folder.",
-  "The test verifies storage-discovered listing, primitive onboarding content, Library creation protocol content, storage guidance content, storage location knowledge read through Library URIs, Library creation in tmp local storage, URI-native reads and updates, governance-derived readable and writable state, and direct update to the temporary storage root.",
+  "The test verifies storage-discovered listing, primitive onboarding content, Library creation protocol content, storage guidance content, storage location knowledge read through Library URIs, Library creation in tmp local storage with a canonical Library name, URI-native reads and updates, governance-derived readable and writable state, and direct update to the temporary storage root.",
   "The test verifies the recorded tool call sequence from runtime observability, with inputs present and file contents redacted from outputs.",
 ]

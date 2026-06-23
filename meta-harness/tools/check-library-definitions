@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import ast
+import re
 import sys
 from pathlib import Path
 
@@ -20,6 +21,8 @@ OPTIONAL_LIBRARY_TOML_FIELDS = {
     "update_actors",
     "agent_excludes",
 }
+LIBRARY_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$")
+LIBRARY_NAME_FORMAT = "lowercase letters and digits separated by hyphens or underscores"
 
 def fail(failures, message):
     failures.append(message)
@@ -111,6 +114,14 @@ def validate_required_fields(path, data, required_fields, failures):
             fail(failures, f"{path}: {field} must be a non-empty {expected_type.__name__}")
 
 
+def validate_library_name(path, data, failures):
+    value = data.get("name")
+    if not isinstance(value, str):
+        return
+    if not LIBRARY_NAME_PATTERN.fullmatch(value):
+        fail(failures, f"{path}: name must use {LIBRARY_NAME_FORMAT}: {value!r}")
+
+
 def validate_actor_uri_patterns(path, data, field, failures):
     value = data.get(field)
     if value is None:
@@ -187,6 +198,7 @@ def validate_library_toml(library_toml, failures):
         return
 
     validate_required_fields(library_toml, data, REQUIRED_LIBRARY_TOML_FIELDS, failures)
+    validate_library_name(library_toml, data, failures)
     validate_optional_string(library_toml, data, "description", failures)
     validate_actor_governance_fields(library_toml, data, failures)
     validate_actor_uri_patterns(library_toml, data, "read_actors", failures)

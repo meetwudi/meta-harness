@@ -5,6 +5,7 @@ requirements = [
   "storage.location-library-placement",
   "storage.storage-library-discovery",
   "librarian.library-creation-knowledge",
+  "librarian.library-name-format",
   "librarian.create-library-in-storage-location",
 ]
 procedure = [
@@ -14,6 +15,7 @@ procedure = [
 ]
 expected = [
   "The agent can use Library creation protocol knowledge to collect missing creation fields.",
+  "The agent collects or confirms a canonical Library name that uses lowercase letters and digits separated by hyphens or underscores.",
   "The agent can read storage knowledge and choose the tmp local storage location.",
   "The agent creates a Library in that storage location.",
   "The created Library has a LIBRARY.toml.",

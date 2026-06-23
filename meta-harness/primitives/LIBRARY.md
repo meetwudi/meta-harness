@@ -97,6 +97,9 @@ Reference a Library by name:
 library://{library-name}
 ```
 
+Library names use lowercase letters and digits separated by hyphens or
+underscores.
+
 Examples:
 
 ```text

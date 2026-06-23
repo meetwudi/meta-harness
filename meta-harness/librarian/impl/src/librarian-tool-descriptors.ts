@@ -3,6 +3,7 @@
 // Supports librarian.tool-comments: gives each tool a concise description.
 
 import type { LibrarianToolDescriptor } from "./types.js";
+import { LIBRARY_NAME_PATTERN } from "./library-name.js";
 
 /**
  * Returns the Librarian tool descriptors exposed to an agent.
@@ -84,12 +85,13 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
     },
     {
       name: "librarian_create_library",
-      description: "Create a Library in a named storage location.",
+      description:
+        "Create a Library in a named storage location. Library names use lowercase letters and digits separated by hyphens or underscores.",
       parameters: {
         type: "object",
         properties: {
           storageLocationName: { type: "string" },
-          name: { type: "string" },
+          name: { type: "string", pattern: LIBRARY_NAME_PATTERN },
           description: { type: "string" },
         },
         required: ["storageLocationName", "name"],

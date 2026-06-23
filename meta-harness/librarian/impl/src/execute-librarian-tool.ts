@@ -49,8 +49,8 @@ export async function executeLibrarianTool(
     });
   } else if (toolName === "librarian_create_library") {
     output = await createLibraryInStorageLocation(context, {
-      storageLocationName: String(input.storageLocationName),
-      name: String(input.name),
+      storageLocationName: typeof input.storageLocationName === "string" ? input.storageLocationName : "",
+      name: typeof input.name === "string" ? input.name : "",
       description: typeof input.description === "string" ? input.description : undefined,
     });
   } else {

@@ -10,7 +10,9 @@ calling creation tools.
 
 Gather these fields for a Library creation request:
 
-- Library name: the stable name used in `library://{name}`.
+- Library name: the stable name used in `library://{name}`. Use lowercase
+  letters and digits separated by hyphens or underscores, such as
+  `anxiety-relief`.
 - Library description: the purpose of the Library and the knowledge it should
   hold.
 - Storage location: the named place where the Library will live.
@@ -45,6 +47,9 @@ target, and ask for confirmation.
 
 When the request gives the Library name, use that name after validating it with
 the creation tool.
+
+When the requested name is not in the canonical format, ask the human to
+confirm a canonical replacement before creating the Library.
 
 When the request describes the desired Library but gives no name, ask for the
 name.

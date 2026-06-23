@@ -6,6 +6,7 @@
 
 import { join, relative, sep } from "node:path";
 import { computeLibraryAccess } from "./compute-library-access.js";
+import { validateLibraryName } from "./library-name.js";
 import { libraryUriFromName } from "./library-uri-from-name.js";
 import { readTomlFile } from "./read-toml-file.js";
 import { stringArray } from "./string-array.js";
@@ -53,7 +54,7 @@ async function loadDiscoveredLibraries(
     if (typeof manifest.name !== "string" || !manifest.name.trim()) {
       throw new Error(`${manifestPath}: name must be a non-empty string`);
     }
-    const name = manifest.name.trim();
+    const name = validateLibraryName(manifest.name, `${manifestPath}: name`);
     const uri = libraryUriFromName(name);
     libraries.set(uri, {
       name,

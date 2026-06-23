@@ -84,7 +84,7 @@ await writeFile(
 await writeFile(
   join(manualRoot, "LIBRARY.toml"),
   [
-    'name = "fixture/manual"',
+    'name = "fixture-manual"',
     'description = "Fixture manual Library."',
     'read_actors = ["actor://knowledge-agent"]',
     'update_actors = []',
@@ -102,7 +102,7 @@ await writeFile(
 await writeFile(
   join(memoryRoot, "LIBRARY.toml"),
   [
-    'name = "fixture/memory"',
+    'name = "fixture-memory"',
     'description = "Fixture writable memory Library."',
     'read_actors = ["actor://knowledge-agent"]',
     'update_actors = ["actor://knowledge-agent"]',
@@ -159,11 +159,11 @@ const storageDefinitions = await executeLibrarianTool(context, "librarian_read",
   uri: "library://meta-harness/storage/knowledge-agent-local-storage-locations.toml",
 });
 const directFiles = await executeLibrarianTool(context, "librarian_list_files", {
-  uri: "library://fixture/manual",
+  uri: "library://fixture-manual",
   recursive: false,
 });
 const recursiveFiles = await executeLibrarianTool(context, "librarian_list_files", {
-  uri: "library://fixture/manual",
+  uri: "library://fixture-manual",
   recursive: true,
 });
 await executeLibrarianTool(context, "librarian_create_library", {
@@ -171,8 +171,21 @@ await executeLibrarianTool(context, "librarian_create_library", {
   name: "tmp-created-library",
   description: "Library created in tmp local storage.",
 });
+let invalidNameRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_create_library", {
+    storageLocationName: "tmp-local",
+    name: "spaced library",
+    description: "Invalid Library created in tmp local storage.",
+  });
+} catch (error) {
+  invalidNameRejected = String((error as Error).message).includes("Library name must use");
+}
+if (!invalidNameRejected) {
+  throw new Error("Spaced Library name was not rejected");
+}
 await executeLibrarianTool(context, "librarian_update", {
-  uri: "library://fixture/memory/magic-number.md",
+  uri: "library://fixture-memory/magic-number.md",
   content: "12345",
 });
 await executeLibrarianTool(context, "librarian_update", {
@@ -180,13 +193,13 @@ await executeLibrarianTool(context, "librarian_update", {
   content: "created in tmp locally",
 });
 await executeLibrarianTool(context, "librarian_read", {
-  uri: "library://fixture/memory/magic-number.md",
+  uri: "library://fixture-memory/magic-number.md",
 });
 await executeLibrarianTool(context, "librarian_read", {
   uri: "library://tmp-created-library/note.md",
 });
 await executeLibrarianTool(context, "librarian_search", {
-  libraryUriPatterns: ["library://fixture/*"],
+  libraryUriPatterns: ["library://fixture-*"],
   query: "12345",
   limit: 5,
 });
@@ -217,10 +230,10 @@ if (!introJson.includes("Storage guidance fixture.")) {
 if (!listJson.includes('"uri":"library://meta-harness"')) {
   throw new Error("Meta Harness Library was not listed");
 }
-if (!listJson.includes('"uri":"library://fixture/manual"')) {
+if (!listJson.includes('"uri":"library://fixture-manual"')) {
   throw new Error("Manual Library was not listed");
 }
-if (!listJson.includes('"uri":"library://fixture/memory"')) {
+if (!listJson.includes('"uri":"library://fixture-memory"')) {
   throw new Error("Memory Library was not listed");
 }
 if (!listJson.includes('"writable":false')) {
@@ -250,13 +263,13 @@ if (!storageDefinitionsContent.includes('name = "tmp-local"')) {
 if (!storageDefinitionsContent.includes("writable = true")) {
   throw new Error("Storage knowledge did not include a writable location");
 }
-if (!JSON.stringify(directFiles).includes("library://fixture/manual/README.md")) {
+if (!JSON.stringify(directFiles).includes("library://fixture-manual/README.md")) {
   throw new Error("Direct file listing did not return the root file URI");
 }
-if (JSON.stringify(directFiles).includes("library://fixture/manual/docs/deep.md")) {
+if (JSON.stringify(directFiles).includes("library://fixture-manual/docs/deep.md")) {
   throw new Error("Direct file listing included a nested file URI");
 }
-if (!JSON.stringify(recursiveFiles).includes("library://fixture/manual/docs/deep.md")) {
+if (!JSON.stringify(recursiveFiles).includes("library://fixture-manual/docs/deep.md")) {
   throw new Error("Recursive file listing did not return the nested file URI");
 }
 
@@ -268,6 +281,9 @@ const listAfterCreate = await executeLibrarianTool(context, "librarian_list_libr
 if (!JSON.stringify(listAfterCreate).includes('"uri":"library://tmp-created-library"')) {
   throw new Error("Created tmp Library was not discovered from storage");
 }
+if (await storage.exists(join(createdLibrariesRoot, "spaced library"))) {
+  throw new Error("Invalid spaced Library folder was created");
+}
 const stored = await readFile(join(memoryRoot, "magic-number.md"), "utf8");
 if (stored !== "12345") {
   throw new Error("Direct storage update did not write the expected value");
@@ -278,10 +294,10 @@ if (createdStored !== "created in tmp locally") {
 }
 
 const searchEvent = context.toolCallEvents.find((event) => event.toolName === "librarian_search");
-if (!JSON.stringify(searchEvent).includes("library://fixture/memory")) {
+if (!JSON.stringify(searchEvent).includes("library://fixture-memory")) {
   throw new Error("Multi-Library search did not return the matching Library");
 }
-if (!JSON.stringify(searchEvent).includes("library://fixture/memory/magic-number.md")) {
+if (!JSON.stringify(searchEvent).includes("library://fixture-memory/magic-number.md")) {
   throw new Error("Multi-Library search did not return the matching resource URI");
 }
 if (JSON.stringify(context.toolCallEvents).includes('"path"')) {
