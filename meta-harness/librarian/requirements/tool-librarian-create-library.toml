@@ -1,0 +1,9 @@
+id = "librarian.tool-librarian-create-library"
+title = "`librarian_create_library` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `librarian_create_library`."
+text = "`librarian_create_library` creates a filesystem Library in a named writable storage location."
+clarifications = [
+  "Input requires `storageLocationName` and canonical Library `name`, accepts optional `description`, and disallows additional properties.",
+  "The tool validates the Library name, checks that the target storage location can create Libraries, prevents duplicate Library URIs, and writes `LIBRARY.toml`.",
+  "Output returns the target storage location summary and the public listing for the created Library.",
+]

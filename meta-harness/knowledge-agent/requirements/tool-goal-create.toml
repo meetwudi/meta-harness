@@ -1,0 +1,9 @@
+id = "knowledge-agent.tool-goal-create"
+title = "`goal_create` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `goal_create`."
+text = "`goal_create` creates a Library-backed Goal primitive record in a writable Library chosen through Library knowledge."
+clarifications = [
+  "Input requires `libraryUri` and `desiredOutcome`, and may include name, source Library, summary, framework references, timeline, and clarifications.",
+  "The tool writes the Goal primitive record through Librarian-governed Library mechanisms.",
+  "Output returns the Goal resource URI and public Goal record summary.",
+]

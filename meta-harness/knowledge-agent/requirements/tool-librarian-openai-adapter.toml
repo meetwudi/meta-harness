@@ -1,0 +1,9 @@
+id = "knowledge-agent.tool-librarian-openai-adapter"
+title = "Librarian OpenAI tool adapter"
+source = "Human request on 2026-06-23 to spec each provided agent tool and the file that puts the tools together, applied to the observed adapter that converts Librarian descriptors to OpenAI tools."
+text = "Knowledge Agent exposes Librarian tool descriptors as OpenAI agent tools through a Spec-backed adapter."
+clarifications = [
+  "The adapter preserves each Librarian descriptor's name, description, and parameter schema.",
+  "The adapter routes execution to the Librarian tool router with the current Librarian context and descriptor name.",
+  "The adapter treats non-object agent input as an empty object before routing.",
+]

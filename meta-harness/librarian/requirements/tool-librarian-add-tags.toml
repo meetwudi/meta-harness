@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-add-tags"
+title = "`librarian_add_tags` tool contract"
+source = "Human request on 2026-06-23: primitives like Tags should have add tags code, and that code must be specific and Spec-driven."
+text = "`librarian_add_tags` adds tag values to the independent TAGS.toml record for a writable Library knowledge scope."
+clarifications = [
+  "Input identifies the knowledge scope by Library resource URI and provides tag values as non-empty strings.",
+  "The tool verifies that the scope URI is an actual Library URI or Library folder URI under a storage-discovered Library and fails when it is malformed or unresolved.",
+  "The tool creates TAGS.toml when the selected writable scope has no tag record, or updates the existing TAGS.toml record for that scope.",
+  "The tool updates Tags metadata rather than adding tag fields to Routine, Goal, Memory, Compliance, Spec, or Library schemas.",
+]

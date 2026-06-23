@@ -1,0 +1,33 @@
+id = "librarian.acceptance.spec-backed-agent-tools"
+title = "Spec-backed Librarian agent tools"
+requirements = [
+  "librarian.tool-descriptor-registry",
+  "librarian.tool-router",
+  "librarian.library-uri-verification",
+  "librarian.tool-librarian-intro",
+  "librarian.tool-librarian-list-libraries",
+  "librarian.tool-librarian-read",
+  "librarian.tool-librarian-list-files",
+  "librarian.tool-librarian-search",
+  "librarian.tool-librarian-update",
+  "librarian.tool-librarian-create-library",
+  "librarian.tool-librarian-add-tags",
+  "librarian.tool-librarian-remove-tags",
+  "librarian.tool-librarian-query-by-tags",
+  "librarian.tool-comments",
+]
+procedure = [
+  "Inspect the Librarian tool descriptor registry.",
+  "Verify that the descriptor registry exposes exactly the implemented Librarian tool names: `librarian_intro`, `librarian_list_libraries`, `librarian_read`, `librarian_list_files`, `librarian_search`, `librarian_update`, `librarian_create_library`, `librarian_add_tags`, `librarian_remove_tags`, and `librarian_query_by_tags`.",
+  "Inspect each tool descriptor's description and JSON parameter schema.",
+  "Inspect the Librarian tool router for dispatch coverage for each descriptor name.",
+  "Verify that every exposed tool name has a corresponding tool-specific requirement file.",
+  "Call URI-accepting tools with an exact malformed or unresolved Library URI.",
+]
+expected = [
+  "Every implemented Librarian tool exposed to agents is explicitly named in the descriptor registry.",
+  "Every implemented Librarian tool has a tool-specific Spec requirement covering its input, behavior, and output contract.",
+  "The router handles every descriptor name and records each tool call through Librarian observability.",
+  "The descriptor registry and router are themselves covered by Spec requirements.",
+  "URI-accepting tools fail when the exact Library URI or Library resource URI is not actual and storage-discovered.",
+]

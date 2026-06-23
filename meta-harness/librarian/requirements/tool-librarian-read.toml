@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-read"
+title = "`librarian_read` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `librarian_read`."
+text = "`librarian_read` reads one file from a readable Library by Library resource URI."
+clarifications = [
+  "Input requires `uri` as a string and disallows additional properties.",
+  "The tool verifies that `uri` is an actual Library resource URI under a storage-discovered Library and fails when it is malformed or unresolved.",
+  "The tool resolves the Library resource URI, enforces Library readability and agent excludes, and returns the public Library listing, canonical resource URI, and text content.",
+  "The tool does not accept or return host-local filesystem paths as the resource identity.",
+]

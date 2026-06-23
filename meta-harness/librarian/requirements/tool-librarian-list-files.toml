@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-list-files"
+title = "`librarian_list_files` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `librarian_list_files`."
+text = "`librarian_list_files` lists file resource URIs under a readable Library URI or Library folder URI."
+clarifications = [
+  "Input requires `uri` as a string, accepts optional `recursive` as a boolean, and disallows additional properties.",
+  "The tool verifies that `uri` is an actual Library URI or Library folder URI under a storage-discovered Library and fails when it is malformed or unresolved.",
+  "The tool enforces Library readability and agent excludes before listing files.",
+  "Output returns the public Library listing, canonical listed URI, recursive flag, and file entries identified by Library resource URI.",
+]

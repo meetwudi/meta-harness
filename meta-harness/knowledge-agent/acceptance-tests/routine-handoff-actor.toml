@@ -2,6 +2,7 @@ id = "knowledge-agent.acceptance.routine-handoff-actor"
 title = "Routine handoff actor"
 requirements = [
   "knowledge-agent.routine-handoffs",
+  "knowledge-agent.handoff-routine-agent",
   "knowledge-agent.uses-librarian",
   "knowledge-agent.library-scoped-access",
   "knowledge-agent.prompt-calls-librarian-intro",

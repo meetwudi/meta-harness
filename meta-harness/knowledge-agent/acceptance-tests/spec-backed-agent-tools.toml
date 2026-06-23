@@ -1,0 +1,33 @@
+id = "knowledge-agent.acceptance.spec-backed-agent-tools"
+title = "Spec-backed Knowledge Agent tools"
+requirements = [
+  "knowledge-agent.agent-tool-assembly",
+  "knowledge-agent.tool-librarian-openai-adapter",
+  "knowledge-agent.tool-goal-registry",
+  "knowledge-agent.tool-goal-create",
+  "knowledge-agent.tool-goal-update",
+  "knowledge-agent.tool-goal-request-audit",
+  "knowledge-agent.tool-goal-list",
+  "knowledge-agent.tool-goal-complete-audit",
+  "knowledge-agent.handoff-routine-agent",
+  "knowledge-agent.handoff-goal-auditor",
+  "knowledge-agent.goal-shared-interface",
+  "knowledge-agent.goal-update-interface",
+  "knowledge-agent.routine-handoffs",
+  "knowledge-agent.uses-librarian",
+]
+procedure = [
+  "Inspect the Knowledge Agent tool and handoff assembly point.",
+  "Verify that the primary Knowledge Agent session includes Routine handoffs, the Goal Auditor handoff, Librarian tools, and Goal tools.",
+  "Inspect the Librarian OpenAI tool adapter and verify it preserves Librarian descriptor names, descriptions, and parameter schemas.",
+  "Inspect the Goal tool registry and verify default exposure of `goal_create`, `goal_update`, `goal_request_audit`, and `goal_list`.",
+  "Inspect Goal Auditor tool exposure and verify `goal_complete_audit` is exposed only for the Goal Auditor path.",
+  "Verify that every exposed Knowledge Agent tool or handoff has a corresponding tool-specific or handoff-specific requirement file.",
+]
+expected = [
+  "The Knowledge Agent assembly point is covered by a Spec requirement.",
+  "Every exposed Goal tool has a tool-specific Spec requirement covering its input, behavior, and output contract.",
+  "The Librarian adapter is covered by a Spec requirement and delegates tool contracts to Librarian Spec knowledge.",
+  "Routine and Goal Auditor handoffs have handoff-specific Spec requirements.",
+  "Routine-specific behavior remains in Routine knowledge while the generic Routine exposure and handoff interface is Spec-backed.",
+]

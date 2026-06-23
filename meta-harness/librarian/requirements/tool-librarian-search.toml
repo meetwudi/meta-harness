@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-search"
+title = "`librarian_search` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `librarian_search`."
+text = "`librarian_search` searches readable Library files selected by Library URI patterns and a text query."
+clarifications = [
+  "Input requires `libraryUriPatterns` as an array of strings and `query` as a string, accepts optional numeric `limit`, and disallows additional properties.",
+  "The tool verifies exact non-wildcard Library URI patterns against actual storage-discovered Library URIs and fails when an exact pattern is malformed or unresolved.",
+  "The tool searches only readable Libraries matching the URI patterns and skips excluded paths.",
+  "Output returns the input Library URI patterns, query, and result groups containing public Library listings and content snippets keyed by Library resource URI.",
+]

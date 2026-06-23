@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-update"
+title = "`librarian_update` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `librarian_update`."
+text = "`librarian_update` writes one text file into a writable Library by Library resource URI."
+clarifications = [
+  "Input requires `uri` and `content` as strings and disallows additional properties.",
+  "The tool verifies that `uri` is an actual Library resource URI under a storage-discovered Library and fails when it is malformed or unresolved.",
+  "The tool resolves the Library resource URI, enforces Library writability, creates parent directories through storage when needed, and writes text content.",
+  "Output returns the public Library listing, canonical resource URI, and bytes written.",
+]

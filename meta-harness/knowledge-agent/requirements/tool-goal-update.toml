@@ -1,0 +1,9 @@
+id = "knowledge-agent.tool-goal-update"
+title = "`goal_update` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `goal_update`."
+text = "`goal_update` updates current state, evidence, progress, blockers, or clarifications in an existing Goal primitive record."
+clarifications = [
+  "Input requires `goalUri` and may include state, current-state summary, evidence, progress, blocker, and clarification updates.",
+  "Evidence URIs must be `library://...` resources.",
+  "The tool does not mark a Goal met; met state is set only by independent Goal audit completion.",
+]

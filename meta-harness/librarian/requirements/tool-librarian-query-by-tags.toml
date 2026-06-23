@@ -1,0 +1,12 @@
+id = "librarian.tool-librarian-query-by-tags"
+title = "`librarian_query_by_tags` tool contract"
+source = "Human request on 2026-06-23: primitives like Tags should have query by tags code, and that code must be specific and Spec-driven."
+text = "`librarian_query_by_tags` queries readable Library knowledge scopes by structured tag filters over independent TAGS.toml records."
+clarifications = [
+  "Input provides tag values as structured filters and searches all readable Libraries when no Library filter is supplied.",
+  "Input may narrow the query with `libraryUris`, a list of exact storage-discovered Library URIs.",
+  "Input may also narrow the query with `libraryUriPatterns` for wildcard Library URI matching.",
+  "The tool verifies exact Library URIs and exact non-wildcard Library URI patterns against actual storage-discovered Library URIs and fails when an exact URI or pattern is malformed or unresolved.",
+  "The tool reads TAGS.toml records rather than tag fields embedded in other primitive schemas.",
+  "Output identifies matching knowledge scopes with Library resource URIs so callers can read the matched knowledge before acting.",
+]

@@ -1,0 +1,9 @@
+id = "knowledge-agent.tool-goal-complete-audit"
+title = "`goal_complete_audit` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `goal_complete_audit`."
+text = "`goal_complete_audit` records an independent Goal Auditor signal in an existing Goal primitive record."
+clarifications = [
+  "Input requires `goalUri`, audit `signal`, and audit `summary`, and may include audit request id, gaps, evidence refs, and ok-to-close.",
+  "The tool is exposed only to the independent Goal Auditor agent.",
+  "The tool records the audit, updates the Goal state from the audit signal, and returns the signal, ok-to-close value, gaps, and public Goal summary.",
+]

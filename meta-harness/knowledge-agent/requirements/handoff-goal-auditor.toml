@@ -1,0 +1,9 @@
+id = "knowledge-agent.handoff-goal-auditor"
+title = "Goal Auditor handoff contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool or handoff, applied to observed Goal Auditor handoff."
+text = "Knowledge Agent exposes an independent Goal Auditor handoff for exactly one open Goal audit request."
+clarifications = [
+  "The handoff input requires Goal URI, audit request id, request summary, evidence refs, and evidence Library URIs.",
+  "The Goal Auditor receives the shared Knowledge Agent prompt rendered in Goal Audit mode and an independent Goal Auditor actor identity.",
+  "The Goal Auditor receives Librarian tools and Goal tools including `goal_complete_audit`, with shell disabled for audit evidence inspection.",
+]

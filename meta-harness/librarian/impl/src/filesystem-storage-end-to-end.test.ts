@@ -1,6 +1,11 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports librarian.storage-abstraction: verifies local filesystem storage can back Librarian in the integration test.
 // Supports librarian.tool-call-observability: verifies recorded Librarian tool call events.
+// Supports librarian.tool-descriptor-registry: verifies the exposed Librarian tool names.
+// Supports librarian.tool-librarian-add-tags: verifies Tags can be added to a writable scope.
+// Supports librarian.tool-librarian-remove-tags: verifies Tags can be removed from a writable scope.
+// Supports librarian.tool-librarian-query-by-tags: verifies Tags can be queried structurally.
+// Supports librarian.library-uri-verification: verifies malformed or unresolved exact Library URIs fail.
 
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -8,6 +13,7 @@ import { join } from "node:path";
 import { createLibrarianContext } from "./create-librarian-context.js";
 import { createLocalFileSystemStorage } from "./create-local-file-system-storage.js";
 import { executeLibrarianTool } from "./execute-librarian-tool.js";
+import { librarianToolDescriptors } from "./librarian-tool-descriptors.js";
 
 const storageRoot = await mkdtemp(join(tmpdir(), "librarian-integration-"));
 const createdStorageRoot = await mkdtemp(join(tmpdir(), "librarian-created-"));
@@ -153,6 +159,23 @@ const context = createLibrarianContext({
   sessionId: "integration-session",
 });
 
+const descriptorNames = librarianToolDescriptors().map((descriptor) => descriptor.name);
+const expectedDescriptorNames = [
+  "librarian_intro",
+  "librarian_list_libraries",
+  "librarian_read",
+  "librarian_list_files",
+  "librarian_search",
+  "librarian_update",
+  "librarian_create_library",
+  "librarian_add_tags",
+  "librarian_remove_tags",
+  "librarian_query_by_tags",
+];
+if (descriptorNames.join(",") !== expectedDescriptorNames.join(",")) {
+  throw new Error(`Unexpected Librarian tool descriptors: ${descriptorNames.join(",")}`);
+}
+
 const intro = await executeLibrarianTool(context, "librarian_intro", {});
 const list = await executeLibrarianTool(context, "librarian_list_libraries", {});
 const storageDefinitions = await executeLibrarianTool(context, "librarian_read", {
@@ -184,6 +207,17 @@ try {
 if (!invalidNameRejected) {
   throw new Error("Spaced Library name was not rejected");
 }
+let unknownLibraryUriRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_read", {
+    uri: "library://missing-library/nope.md",
+  });
+} catch (error) {
+  unknownLibraryUriRejected = String((error as Error).message).includes("Unknown Library URI");
+}
+if (!unknownLibraryUriRejected) {
+  throw new Error("Unknown exact Library resource URI was not rejected");
+}
 await executeLibrarianTool(context, "librarian_update", {
   uri: "library://fixture-memory/magic-number.md",
   content: "12345",
@@ -203,6 +237,64 @@ await executeLibrarianTool(context, "librarian_search", {
   query: "12345",
   limit: 5,
 });
+let nonCanonicalTagsUriRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_add_tags", {
+    scopeUri: "library://fixture-memory//bad-scope",
+    tags: ["bad"],
+  });
+} catch (error) {
+  nonCanonicalTagsUriRejected = String((error as Error).message).includes("canonical");
+}
+if (!nonCanonicalTagsUriRejected) {
+  throw new Error("Non-canonical Tags scope URI was not rejected");
+}
+const addedTags = await executeLibrarianTool(context, "librarian_add_tags", {
+  scopeUri: "library://fixture-memory/notes",
+  tags: ["retrieval", "routine/planning"],
+});
+const queriedTags = await executeLibrarianTool(context, "librarian_query_by_tags", {
+  tags: ["routine/planning"],
+  match: "all",
+});
+const queriedTagsByUri = await executeLibrarianTool(context, "librarian_query_by_tags", {
+  libraryUris: ["library://fixture-memory"],
+  tags: ["routine/planning"],
+  match: "all",
+});
+const removedTags = await executeLibrarianTool(context, "librarian_remove_tags", {
+  scopeUri: "library://fixture-memory/notes",
+  tags: ["routine/planning"],
+});
+const queriedTagsAfterRemove = await executeLibrarianTool(context, "librarian_query_by_tags", {
+  libraryUriPatterns: ["library://fixture-*"],
+  tags: ["routine/planning"],
+  match: "all",
+});
+let unresolvedTagQueryPatternRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_query_by_tags", {
+    libraryUriPatterns: ["library://does-not-exist"],
+    tags: ["retrieval"],
+  });
+} catch (error) {
+  unresolvedTagQueryPatternRejected = String((error as Error).message).includes("Unknown Library URI");
+}
+if (!unresolvedTagQueryPatternRejected) {
+  throw new Error("Unresolved exact query-by-tags Library URI was not rejected");
+}
+let unresolvedTagQueryUriRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_query_by_tags", {
+    libraryUris: ["library://does-not-exist"],
+    tags: ["retrieval"],
+  });
+} catch (error) {
+  unresolvedTagQueryUriRejected = String((error as Error).message).includes("Unknown Library URI");
+}
+if (!unresolvedTagQueryUriRejected) {
+  throw new Error("Unresolved exact query-by-tags libraryUris filter was not rejected");
+}
 
 const listJson = JSON.stringify(list);
 const introJson = JSON.stringify(intro);
@@ -272,6 +364,40 @@ if (JSON.stringify(directFiles).includes("library://fixture-manual/docs/deep.md"
 if (!JSON.stringify(recursiveFiles).includes("library://fixture-manual/docs/deep.md")) {
   throw new Error("Recursive file listing did not return the nested file URI");
 }
+const addedTagsJson = JSON.stringify(addedTags);
+if (!addedTagsJson.includes('"scopeUri":"library://fixture-memory/notes"')) {
+  throw new Error("Add Tags did not return the canonical scope URI");
+}
+if (!addedTagsJson.includes('"tagsUri":"library://fixture-memory/notes/TAGS.toml"')) {
+  throw new Error("Add Tags did not return the canonical Tags URI");
+}
+if (!addedTagsJson.includes("routine/planning")) {
+  throw new Error("Add Tags did not include the added tag");
+}
+const queriedTagsJson = JSON.stringify(queriedTags);
+if (!queriedTagsJson.includes('"scopeUri":"library://fixture-memory/notes"')) {
+  throw new Error("Query by Tags did not return the matching scope URI");
+}
+if (!queriedTagsJson.includes('"matchedTags":["routine/planning"]')) {
+  throw new Error("Query by Tags did not return the matched tag");
+}
+if (!queriedTagsJson.includes('"libraryUris":[]')) {
+  throw new Error("Query by Tags did not default to an empty exact URI filter");
+}
+const queriedTagsByUriJson = JSON.stringify(queriedTagsByUri);
+if (!queriedTagsByUriJson.includes('"scopeUri":"library://fixture-memory/notes"')) {
+  throw new Error("Query by Tags exact URI filter did not return the matching scope URI");
+}
+if (!queriedTagsByUriJson.includes('"libraryUris":["library://fixture-memory"]')) {
+  throw new Error("Query by Tags did not echo the exact Library URI filter");
+}
+const removedTagsJson = JSON.stringify(removedTags);
+if (removedTagsJson.includes('"routine/planning"') && !removedTagsJson.includes('"removedTags":["routine/planning"]')) {
+  throw new Error("Remove Tags did not remove routine/planning from the current tags");
+}
+if (JSON.stringify(queriedTagsAfterRemove).includes('"scopeUri":"library://fixture-memory/notes"')) {
+  throw new Error("Query by Tags returned a removed tag");
+}
 
 const createdLibraryToml = await readFile(join(createdRoot, "LIBRARY.toml"), "utf8");
 if (!createdLibraryToml.includes('name = "tmp-created-library"')) {
@@ -292,6 +418,13 @@ const createdStored = await readFile(join(createdRoot, "note.md"), "utf8");
 if (createdStored !== "created in tmp locally") {
   throw new Error("Created tmp Library update did not write the expected value");
 }
+const tagsToml = await readFile(join(memoryRoot, "notes", "TAGS.toml"), "utf8");
+if (!tagsToml.includes('"retrieval"')) {
+  throw new Error("Tags record did not preserve the remaining tag");
+}
+if (tagsToml.includes('"routine/planning"')) {
+  throw new Error("Tags record still contained the removed tag");
+}
 
 const searchEvent = context.toolCallEvents.find((event) => event.toolName === "librarian_search");
 if (!JSON.stringify(searchEvent).includes("library://fixture-memory")) {
@@ -305,7 +438,7 @@ if (JSON.stringify(context.toolCallEvents).includes('"path"')) {
 }
 
 const callOrder = context.toolCallEvents.map((event) => event.toolName).join(",");
-if (callOrder !== "librarian_intro,librarian_list_libraries,librarian_read,librarian_list_files,librarian_list_files,librarian_create_library,librarian_update,librarian_update,librarian_read,librarian_read,librarian_search,librarian_list_libraries") {
+if (callOrder !== "librarian_intro,librarian_list_libraries,librarian_read,librarian_list_files,librarian_list_files,librarian_create_library,librarian_update,librarian_update,librarian_read,librarian_read,librarian_search,librarian_add_tags,librarian_query_by_tags,librarian_query_by_tags,librarian_remove_tags,librarian_query_by_tags,librarian_list_libraries") {
   throw new Error(`Unexpected tool call order: ${callOrder}`);
 }
 if (!context.toolCallEvents.every((event) => event.input)) {

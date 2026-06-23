@@ -1,0 +1,10 @@
+id = "librarian.library-uri-verification"
+title = "Library URI verification"
+source = "Human request on 2026-06-23: specs should mention that Library URI correctness is verified, and Librarian should fail when a provided Library URI is not the actual Library URI."
+text = "Librarian tools verify Library URI inputs against actual storage-discovered Library URIs and fail when an exact Library URI or Library resource URI is malformed or does not resolve."
+clarifications = [
+  "Exact Library URI inputs must use the `library://...` form and resolve to a storage-discovered Library visible to the active Librarian context.",
+  "Library resource URI inputs must resolve under an actual storage-discovered Library URI and use canonical Library-relative path segments.",
+  "Exact Library URI list filters must contain actual storage-discovered Library URIs.",
+  "Pattern inputs may use wildcard `*`, but exact non-wildcard Library URI patterns must resolve to an actual storage-discovered Library URI.",
+]

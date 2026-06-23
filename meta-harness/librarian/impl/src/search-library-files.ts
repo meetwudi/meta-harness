@@ -2,6 +2,7 @@
 // Supports librarian.shamanistic-library-tools: implements Library file discovery for retrieval.
 // Supports librarian.multi-library-search: searches across Libraries selected by URI pattern.
 // Supports librarian.agent-excludes: skips excluded Library paths during searches.
+// Supports librarian.library-uri-verification: verifies exact Library URI search patterns.
 
 import { contentSnippet } from "./content-snippet.js";
 import { libraryResourceUri } from "./library-resource-uri.js";
@@ -10,6 +11,7 @@ import { matchesAnyPattern } from "./matches-any-pattern.js";
 import { publicLibraryListing } from "./public-library-listing.js";
 import { resolveLibraryFilePath } from "./resolve-library-file-path.js";
 import type { LibrarianContext } from "./types.js";
+import { verifyLibraryUriPatterns } from "./library-uri-verification.js";
 import { walkLibraryFiles } from "./walk-library-files.js";
 
 /**
@@ -27,7 +29,9 @@ export async function searchLibraryFiles(
     throw new Error("Search query must be at least two characters");
   }
   const limit = Math.max(1, Math.min(input.limit ?? 10, 25));
-  const libraries = (await loadResolvedLibraries(context)).filter(
+  const allLibraries = await loadResolvedLibraries(context);
+  verifyLibraryUriPatterns(input.libraryUriPatterns, allLibraries);
+  const libraries = allLibraries.filter(
     (library) =>
       library.readable &&
       matchesAnyPattern(input.libraryUriPatterns, library.uri),

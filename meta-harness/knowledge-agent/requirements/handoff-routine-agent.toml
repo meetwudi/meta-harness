@@ -1,0 +1,9 @@
+id = "knowledge-agent.handoff-routine-agent"
+title = "Routine handoff contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool or handoff, applied to observed Routine-backed handoffs."
+text = "Knowledge Agent exposes discovered Meta Harness Routines as Routine-scoped handoff agents."
+clarifications = [
+  "Each Routine handoff is created from discovered Routine knowledge and uses the Routine actor identity.",
+  "Each Routine handoff starts with the shared Knowledge Agent prompt rendered in Routine mode.",
+  "Routine handoff agents receive Librarian tools through the Routine-scoped Librarian context; Routine-specific behavior remains Routine knowledge.",
+]

@@ -2,15 +2,21 @@ id = "librarian.acceptance.query-by-tags"
 title = "Query by tags"
 requirements = [
   "librarian.query-by-tags",
+  "librarian.tool-librarian-query-by-tags",
+  "librarian.library-uri-verification",
   "storage.query-by-tags",
 ]
 procedure = [
   "Create readable Library scopes that contain TAGS.toml records with simple tags and slash-separated tag values.",
-  "Run a structured Librarian query by tags against readable Library URI patterns.",
+  "Run `librarian_query_by_tags` without a Library filter.",
+  "Run `librarian_query_by_tags` with exact `libraryUris` filters.",
+  "Run `librarian_query_by_tags` with readable Library URI patterns.",
   "Inspect the query results.",
 ]
 expected = [
   "The query uses structured tag filters rather than free-text search.",
+  "Without a Library filter, the query searches all readable Libraries.",
+  "With exact `libraryUris`, the query searches only those actual storage-discovered Libraries.",
   "The query reads tag data from TAGS.toml records rather than tag fields embedded in other primitive schemas.",
   "The results identify matching scoped knowledge with Library resource URIs.",
 ]

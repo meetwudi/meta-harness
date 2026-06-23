@@ -1,0 +1,9 @@
+id = "knowledge-agent.tool-goal-request-audit"
+title = "`goal_request_audit` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `goal_request_audit`."
+text = "`goal_request_audit` records a request for independent Goal Auditor judgment in an existing Goal primitive record."
+clarifications = [
+  "Input requires `goalUri` and request `summary`, and may include an audit request id and evidence refs.",
+  "Evidence refs must be Goal evidence ids or `library://...` evidence resources rather than raw workspace paths or external URLs.",
+  "Output includes a handoff payload for the independent Goal Auditor and requires the pursuing agent to hand off rather than reporting an audit signal itself.",
+]

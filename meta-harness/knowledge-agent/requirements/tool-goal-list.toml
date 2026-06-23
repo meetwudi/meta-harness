@@ -1,0 +1,9 @@
+id = "knowledge-agent.tool-goal-list"
+title = "`goal_list` tool contract"
+source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `goal_list`."
+text = "`goal_list` lists Goal primitive records visible to the active actor identities."
+clarifications = [
+  "Input may include Library URI patterns and a state filter.",
+  "The tool discovers readable Libraries through Librarian, lists Goal records under matching Libraries, and ignores malformed or concurrently removed Goal records during listing.",
+  "Output returns the requested state filter or all states, plus public Goal summaries.",
+]

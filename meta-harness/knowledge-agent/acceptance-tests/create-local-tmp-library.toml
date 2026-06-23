@@ -7,6 +7,7 @@ requirements = [
   "librarian.library-creation-knowledge",
   "librarian.library-name-format",
   "librarian.create-library-in-storage-location",
+  "librarian.tool-librarian-create-library",
 ]
 procedure = [
   "Use a Knowledge Agent runtime that has a writable local tmp storage location.",

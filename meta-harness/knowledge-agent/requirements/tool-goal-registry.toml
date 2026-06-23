@@ -1,0 +1,9 @@
+id = "knowledge-agent.tool-goal-registry"
+title = "Goal tool registry"
+source = "Human request on 2026-06-23 to spec each provided agent tool and the file that puts the tools together, applied to the observed Goal tool registry."
+text = "Knowledge Agent has a Spec-backed registry for every Goal tool exposed to agents."
+clarifications = [
+  "The default Goal tool registry exposes `goal_create`, `goal_update`, `goal_request_audit`, and `goal_list`.",
+  "The registry exposes `goal_complete_audit` only when the Goal Auditor tool option is enabled.",
+  "Each Goal tool descriptor includes an agent-facing name, description, JSON parameter schema, and execution binding to the corresponding Goal operation.",
+]

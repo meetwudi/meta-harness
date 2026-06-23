@@ -1,6 +1,10 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports librarian.shamanistic-library-tools: describes Librarian tools exposed to agents.
 // Supports librarian.tool-comments: gives each tool a concise description.
+// Supports librarian.tool-descriptor-registry: lists the agent-facing Librarian tool registry.
+// Supports librarian.tool-librarian-add-tags: describes the add Tags tool.
+// Supports librarian.tool-librarian-remove-tags: describes the remove Tags tool.
+// Supports librarian.tool-librarian-query-by-tags: describes the query by Tags tool.
 
 import type { LibrarianToolDescriptor } from "./types.js";
 import { LIBRARY_NAME_PATTERN } from "./library-name.js";
@@ -95,6 +99,63 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
           description: { type: "string" },
         },
         required: ["storageLocationName", "name"],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: "librarian_add_tags",
+      description: "Add tag values to the TAGS.toml record for a writable Library knowledge scope.",
+      parameters: {
+        type: "object",
+        properties: {
+          scopeUri: { type: "string", pattern: "^library://" },
+          tags: {
+            type: "array",
+            items: { type: "string" },
+          },
+        },
+        required: ["scopeUri", "tags"],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: "librarian_remove_tags",
+      description: "Remove tag values from the TAGS.toml record for a writable Library knowledge scope.",
+      parameters: {
+        type: "object",
+        properties: {
+          scopeUri: { type: "string", pattern: "^library://" },
+          tags: {
+            type: "array",
+            items: { type: "string" },
+          },
+        },
+        required: ["scopeUri", "tags"],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: "librarian_query_by_tags",
+      description: "Query readable Library knowledge scopes by structured tag filters from TAGS.toml records. Searches all readable Libraries unless exact libraryUris or wildcard libraryUriPatterns filters are supplied.",
+      parameters: {
+        type: "object",
+        properties: {
+          libraryUris: {
+            type: "array",
+            items: { type: "string" },
+          },
+          libraryUriPatterns: {
+            type: "array",
+            items: { type: "string" },
+          },
+          tags: {
+            type: "array",
+            items: { type: "string" },
+          },
+          match: { type: "string", enum: ["all", "any"] },
+          limit: { type: "number" },
+        },
+        required: ["tags"],
         additionalProperties: false,
       },
     },
