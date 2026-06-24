@@ -1,13 +1,43 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.storage-discovery-runtime: reads project defaults from managed project metadata.
+// Harness-Requirement: storage.storage-location-knowledge
+// Harness-Requirement: storage.actor-granted-location-access
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+
+export type MetaHarnessStorageCapability =
+  | "read"
+  | "write"
+  | "delete"
+  | "query"
+  | "blob";
+
+export type MetaHarnessStorageGrant = {
+  actors?: string[];
+  capabilities?: MetaHarnessStorageCapability[];
+};
+
+export type MetaHarnessStorageLocation = {
+  name?: string;
+  description?: string;
+  driverName?: string;
+  grants?: MetaHarnessStorageGrant[];
+  libraryRootPath?: string;
+  discoveryMode?: string;
+  discoveryExcludes?: string[];
+  discoverLibraries?: boolean;
+  sourceUri?: string;
+  guidanceUri?: string;
+};
 
 export type MetaHarnessConfig = {
   project?: {
     name?: string;
     localRoot?: string;
+  };
+  storage?: {
+    locations?: MetaHarnessStorageLocation[];
   };
 };
 

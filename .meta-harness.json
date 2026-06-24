@@ -4,6 +4,77 @@
     "name": "meta-harness",
     "localRoot": "~/.meta-harness"
   },
+  "storage": {
+    "locations": [
+      {
+        "name": "repository",
+        "description": "Checked-in repository storage location for Libraries discovered from repository Library manifests.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{repoRootPath}}",
+        "discoveryMode": "filesystem-recursive",
+        "discoveryExcludes": [
+          "meta-harness/templates",
+          "meta-harness/templates/**",
+          "node_modules",
+          "node_modules/**",
+          "dist",
+          "dist/**",
+          "meta-harness/knowledge-agent/impl/node_modules",
+          "meta-harness/knowledge-agent/impl/node_modules/**",
+          "meta-harness/knowledge-agent/impl/dist",
+          "meta-harness/knowledge-agent/impl/dist/**",
+          "meta-harness/librarian/impl/dist",
+          "meta-harness/librarian/impl/dist/**"
+        ],
+        "discoverLibraries": true,
+        "sourceUri": "library://repository/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      },
+      {
+        "name": "machine-local",
+        "description": "Machine-local storage location for local Libraries discovered under the configured local root.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{localRoot}}",
+        "discoveryMode": "filesystem-recursive",
+        "discoveryExcludes": [
+          "knowledge-agent/sandbox-workspaces",
+          "knowledge-agent/sandbox-workspaces/**"
+        ],
+        "discoverLibraries": true,
+        "sourceUri": "library://repository/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      },
+      {
+        "name": "tmp-local",
+        "description": "Temporary local filesystem storage location for creating local Libraries.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{tmpStorageLibrariesRoot}}",
+        "discoveryMode": "filesystem-root-and-direct-children",
+        "discoveryExcludes": [],
+        "discoverLibraries": true,
+        "sourceUri": "library://repository/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      }
+    ]
+  },
   "source": {
     "type": "git",
     "url": "https://github.com/meetwudi/meta-harness.git",

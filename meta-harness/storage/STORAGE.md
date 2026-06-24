@@ -19,37 +19,51 @@ Storage capabilities describe what the location's driver can do. Library
 governance still determines whether a particular actor or Routine may read or
 update a particular Library.
 
-## Knowledge Agent Local Locations
+## Project Storage Locations
 
-The local Knowledge Agent runtime materializes storage locations from:
+The local Knowledge Agent runtime materializes storage locations from the
+managed project's marker:
 
 ```text
-library://meta-harness/storage/knowledge-agent-local-storage-locations.toml
+library://repository/.meta-harness.json
 ```
 
-That structured file defines the local runtime's known storage locations:
-
-- `repository`: checked-in repository Libraries discovered from repository
-  Library manifests.
-- `machine-local`: machine-local Libraries discovered under the configured
-  local root.
-- `tmp-local`: local Library creation target.
-
-Each storage location definition includes:
+The marker's `storage.locations` array is the project-owned starting point for
+known storage locations. Each storage location definition includes:
 
 - `name`
 - `description`
-- `driver_name`
-- capability fields
-- discovery mode and exclude fields
-- Library placement fields
-- `source_uri`
-- `guidance_uri`
+- `driverName`
+- `grants`
+- `libraryRootPath`
+- `discoveryMode`
+- `discoveryExcludes`
+- `discoverLibraries`
+- `sourceUri`
+- `guidanceUri`
+
+`grants` map storage capabilities to actor URI patterns. A grant record includes
+`actors` and `capabilities`. Supported capability names are `read`, `write`,
+`delete`, `query`, and `blob`.
+
+Example:
+
+```json
+{
+  "actors": ["actor://knowledge-agent"],
+  "capabilities": ["read", "write", "delete", "query", "blob"]
+}
+```
+
+The local filesystem runtime supports `driverName` value `filesystem`. Other
+drivers, such as blob-backed storage drivers, may be described by storage
+knowledge before a local driver implementation exists; a runtime must fail
+clearly when asked to materialize an unsupported driver.
 
 ## Agent Use
 
 Use `librarian_read` to inspect
-`library://meta-harness/storage/knowledge-agent-local-storage-locations.toml`.
+`library://repository/.meta-harness.json`.
 Read each location's name, description, driver, capabilities, Library discovery
 fields, and Library placement fields from that knowledge.
 

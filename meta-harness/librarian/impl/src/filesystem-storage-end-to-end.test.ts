@@ -6,6 +6,8 @@
 // Supports librarian.tool-librarian-remove-tags: verifies Tags can be removed from a writable scope.
 // Supports librarian.tool-librarian-query-by-tags: verifies Tags can be queried structurally.
 // Supports librarian.library-uri-verification: verifies malformed or unresolved exact Library URIs fail.
+// Harness-Requirement: storage.actor-granted-location-access
+// Harness-Requirement: storage.driver-capabilities
 
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -34,6 +36,85 @@ await storage.makeDirectory(manualDocsRoot);
 await storage.makeDirectory(memoryRoot);
 await storage.makeDirectory(createdLibrariesRoot);
 await writeFile(
+  join(librariesRoot, "LIBRARY.toml"),
+  [
+    'name = "repository"',
+    'description = "Fixture repository Library."',
+    'read_actors = ["actor://knowledge-agent"]',
+    "update_actors = []",
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(librariesRoot, ".meta-harness.json"),
+  JSON.stringify(
+    {
+      schema: 1,
+      project: {
+        name: "fixture-project",
+        localRoot: "~/.fixture-project",
+      },
+      storage: {
+        locations: [
+          {
+            name: "repository",
+            description: "Fixture checked-in repository storage location.",
+            driverName: "filesystem",
+            grants: [
+              {
+                actors: ["actor://knowledge-agent"],
+                capabilities: ["read", "write", "delete", "query", "blob"],
+              },
+            ],
+            libraryRootPath: "{{repoRootPath}}",
+            discoveryMode: "filesystem-root-and-direct-children",
+            discoveryExcludes: [],
+            discoverLibraries: true,
+            sourceUri: "library://repository/.meta-harness.json",
+            guidanceUri: "library://meta-harness/storage/STORAGE.md",
+          },
+          {
+            name: "machine-local",
+            description: "Fixture local storage location.",
+            driverName: "filesystem",
+            grants: [
+              {
+                actors: ["actor://knowledge-agent"],
+                capabilities: ["read", "write", "delete", "query", "blob"],
+              },
+            ],
+            libraryRootPath: "{{localRoot}}",
+            discoveryMode: "filesystem-recursive",
+            discoveryExcludes: [],
+            discoverLibraries: true,
+            sourceUri: "library://repository/.meta-harness.json",
+            guidanceUri: "library://meta-harness/storage/STORAGE.md",
+          },
+          {
+            name: "tmp-local",
+            description: "Temporary local filesystem storage location for Library creation tests.",
+            driverName: "filesystem",
+            grants: [
+              {
+                actors: ["actor://knowledge-agent"],
+                capabilities: ["read", "write", "delete", "query", "blob"],
+              },
+            ],
+            libraryRootPath: "{{tmpStorageLibrariesRoot}}",
+            discoveryMode: "filesystem-root-and-direct-children",
+            discoveryExcludes: [],
+            discoverLibraries: true,
+            sourceUri: "library://repository/.meta-harness.json",
+            guidanceUri: "library://meta-harness/storage/STORAGE.md",
+          },
+        ],
+      },
+    },
+    null,
+    2,
+  ),
+);
+await writeFile(
   join(metaHarnessRoot, "LIBRARY.toml"),
   [
     'name = "meta-harness"',
@@ -54,38 +135,6 @@ await writeFile(
 await writeFile(
   join(metaHarnessStorageRoot, "STORAGE.md"),
   "Storage guidance fixture.\n",
-);
-await writeFile(
-  join(metaHarnessStorageRoot, "knowledge-agent-local-storage-locations.toml"),
-  [
-    "[[storage_locations]]",
-    'name = "repository"',
-    'description = "Fixture checked-in repository storage location."',
-    'driver_name = "filesystem"',
-    "readable = true",
-    "writable = true",
-    "deletable = true",
-    "queryable = true",
-    "",
-    "[[storage_locations]]",
-    'name = "machine-local"',
-    'description = "Fixture local storage location."',
-    'driver_name = "filesystem"',
-    "readable = true",
-    "writable = true",
-    "deletable = true",
-    "queryable = true",
-    "",
-    "[[storage_locations]]",
-    'name = "tmp-local"',
-    'description = "Temporary local filesystem storage location for Library creation tests."',
-    'driver_name = "filesystem"',
-    "readable = true",
-    "writable = true",
-    "deletable = true",
-    "queryable = true",
-    "",
-  ].join("\n"),
 );
 await writeFile(
   join(manualRoot, "LIBRARY.toml"),
@@ -129,11 +178,12 @@ const context = createLibrarianContext({
         writable: true,
         deletable: true,
         queryable: true,
+        blob: true,
       },
       libraryRootPath: librariesRoot,
       discoveryMode: "filesystem-root-and-direct-children",
       discoveryExcludes: [],
-      sourceUri: "library://meta-harness/storage/knowledge-agent-local-storage-locations.toml",
+      sourceUri: "library://repository/.meta-harness.json",
       guidanceUri: "library://meta-harness/storage/STORAGE.md",
     },
     {
@@ -146,11 +196,12 @@ const context = createLibrarianContext({
         writable: true,
         deletable: true,
         queryable: true,
+        blob: true,
       },
       libraryRootPath: createdLibrariesRoot,
       discoveryMode: "filesystem-root-and-direct-children",
       discoveryExcludes: [],
-      sourceUri: "library://meta-harness/storage/knowledge-agent-local-storage-locations.toml",
+      sourceUri: "library://repository/.meta-harness.json",
       guidanceUri: "library://meta-harness/storage/STORAGE.md",
     },
   ],
@@ -179,7 +230,7 @@ if (descriptorNames.join(",") !== expectedDescriptorNames.join(",")) {
 const intro = await executeLibrarianTool(context, "librarian_intro", {});
 const list = await executeLibrarianTool(context, "librarian_list_libraries", {});
 const storageDefinitions = await executeLibrarianTool(context, "librarian_read", {
-  uri: "library://meta-harness/storage/knowledge-agent-local-storage-locations.toml",
+  uri: "library://repository/.meta-harness.json",
 });
 const directFiles = await executeLibrarianTool(context, "librarian_list_files", {
   uri: "library://fixture-manual",
@@ -322,6 +373,9 @@ if (!introJson.includes("Storage guidance fixture.")) {
 if (!listJson.includes('"uri":"library://meta-harness"')) {
   throw new Error("Meta Harness Library was not listed");
 }
+if (!listJson.includes('"uri":"library://repository"')) {
+  throw new Error("Repository Library was not listed");
+}
 if (!listJson.includes('"uri":"library://fixture-manual"')) {
   throw new Error("Manual Library was not listed");
 }
@@ -343,17 +397,20 @@ if (!listedLibraries.find((library) => library.uri === "library://meta-harness")
 const storageDefinitionsContent = String(
   (storageDefinitions as { content?: unknown }).content,
 );
-if (!storageDefinitionsContent.includes('name = "repository"')) {
+if (!storageDefinitionsContent.includes('"name": "repository"')) {
   throw new Error("Storage knowledge did not include repository");
 }
-if (!storageDefinitionsContent.includes('name = "machine-local"')) {
+if (!storageDefinitionsContent.includes('"name": "machine-local"')) {
   throw new Error("Storage knowledge did not include machine-local");
 }
-if (!storageDefinitionsContent.includes('name = "tmp-local"')) {
+if (!storageDefinitionsContent.includes('"name": "tmp-local"')) {
   throw new Error("Storage knowledge did not include tmp-local");
 }
-if (!storageDefinitionsContent.includes("writable = true")) {
-  throw new Error("Storage knowledge did not include a writable location");
+if (!storageDefinitionsContent.includes('"write"')) {
+  throw new Error("Storage knowledge did not include a write grant");
+}
+if (!storageDefinitionsContent.includes('"blob"')) {
+  throw new Error("Storage knowledge did not include blob capability support");
 }
 if (!JSON.stringify(directFiles).includes("library://fixture-manual/README.md")) {
   throw new Error("Direct file listing did not return the root file URI");

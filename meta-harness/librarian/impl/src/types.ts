@@ -20,6 +20,7 @@ export type StorageDriverCapabilities = {
   writable: boolean;
   deletable: boolean;
   queryable: boolean;
+  blob: boolean;
 };
 
 export type StorageLocation = {

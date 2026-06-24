@@ -1,0 +1,4 @@
+id = "storage.actor-granted-location-access"
+title = "Storage access is granted to actors"
+source = "Human-listed requirement on 2026-06-24: storage locations should use actor-system grants instead of readable and writable booleans, starting with actor://knowledge-agent access."
+text = "Storage location access is defined by grants from storage capabilities to actor URI patterns, and the local Knowledge Agent starts with grants for actor://knowledge-agent."

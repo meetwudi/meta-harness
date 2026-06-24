@@ -22,7 +22,7 @@ Gather these fields for a Library creation request:
 ## Storage Location Selection
 
 Read storage guidance from `library://meta-harness/storage/STORAGE.md`, then
-read `library://meta-harness/storage/knowledge-agent-local-storage-locations.toml`.
+read `library://repository/.meta-harness.json`.
 Use the storage location names, descriptions, drivers, and capabilities from
 that knowledge.
 

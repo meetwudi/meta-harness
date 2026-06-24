@@ -18,14 +18,16 @@ export function createLocalLibrarianContext(
   runtime: PreparedRuntime,
 ) {
   const storage = createLocalFileSystemStorage();
+  const actorUri = "actor://knowledge-agent";
   return createLibrarianContext({
     storage,
     storageLocations: loadLocalStorageLocations({
       repoRootPath: input.repoRootPath,
       runtime,
       storage,
+      actorUris: [actorUri],
     }),
-    actorUri: "actor://knowledge-agent",
+    actorUri,
     sessionId: input.conversationId,
   });
 }

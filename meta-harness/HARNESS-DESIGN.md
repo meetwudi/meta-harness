@@ -82,8 +82,8 @@ harness/
     AGENTS.md
 ```
 
-`.meta-harness.json` records the managed project name, local root, and Meta
-Harness source:
+`.meta-harness.json` records the managed project name, local root, storage
+locations, and Meta Harness source:
 
 ```json
 {
@@ -91,6 +91,34 @@ Harness source:
   "project": {
     "name": "project-name",
     "localRoot": "~/.project-name"
+  },
+  "storage": {
+    "locations": [
+      {
+        "name": "repository",
+        "description": "Checked-in repository storage location for Libraries discovered from repository Library manifests.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{repoRootPath}}",
+        "discoveryMode": "filesystem-recursive",
+        "discoveryExcludes": [
+          "meta-harness/templates",
+          "meta-harness/templates/**",
+          "node_modules",
+          "node_modules/**",
+          "dist",
+          "dist/**"
+        ],
+        "discoverLibraries": true,
+        "sourceUri": "library://repository/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      }
+    ]
   },
   "source": {
     "type": "git",
@@ -102,6 +130,9 @@ Harness source:
 
 `project.name` is a filesystem-safe project name. `project.localRoot` is the
 default local root for ignored or machine-local Libraries and runtime artifacts.
+`storage.locations` is the project-owned starting point for Library discovery.
+Each storage location defines its driver, actor grants, Library root, discovery
+mode, discovery excludes, and guidance URI.
 
 To understand management-layer changes, managed projects compare source refs directly with `git diff` in the Meta Harness source repository:
 

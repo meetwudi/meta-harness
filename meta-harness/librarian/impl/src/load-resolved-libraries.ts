@@ -3,6 +3,7 @@
 // Supports librarian.readable-writable-computed: attaches computed access to each Library.
 // Supports storage.all-known-storage-locations: associates resolved Libraries with storage locations.
 // Supports librarian.storage-discovery-tool-context: discovers Libraries from storage locations.
+// Harness-Requirement: storage.actor-granted-location-access
 
 import { join, relative, sep } from "node:path";
 import { computeLibraryAccess } from "./compute-library-access.js";
@@ -26,7 +27,11 @@ export async function loadResolvedLibraries(
 ): Promise<ResolvedLibrary[]> {
   const libraries = new Map<string, ResolvedLibrary>();
   for (const location of context.storageLocations) {
-    if (location.discoverLibraries === false) {
+    if (
+      location.discoverLibraries === false ||
+      !location.capabilities.readable ||
+      !location.capabilities.queryable
+    ) {
       continue;
     }
     await loadDiscoveredLibraries(

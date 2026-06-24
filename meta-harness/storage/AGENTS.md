@@ -11,6 +11,3 @@ Start with [SPEC.toml](SPEC.toml), then read the referenced requirement and
 acceptance-test collections.
 
 Agent-readable storage guidance: [STORAGE.md](STORAGE.md)
-
-Knowledge Agent local storage location definitions:
-[knowledge-agent-local-storage-locations.toml](knowledge-agent-local-storage-locations.toml)

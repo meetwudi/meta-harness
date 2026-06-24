@@ -30,8 +30,9 @@ Inspect the managed repository for:
 
 Use these source files instead of duplicating instructions here:
 
-- `meta-harness/storage/knowledge-agent-local-storage-locations.toml`
 - `meta-harness/storage/STORAGE.md`
+- `.meta-harness.json` storage location entries when the new source ref uses
+  project-marker storage locations
 - `meta-harness/primitives/LIBRARY.md`
 - `meta-harness/tools/check-library-definitions`
 - `meta-harness/tools/check-project-harness-compliance`

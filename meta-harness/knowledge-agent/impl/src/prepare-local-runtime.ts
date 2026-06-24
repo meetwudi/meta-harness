@@ -47,7 +47,6 @@ export async function prepareLocalRuntime(
   await ensureConversationsLibrary(conversationsLibrary);
   await ensureMemoryLibrary(memoryLibrary);
   await mkdir(conversationRoot, { recursive: true });
-  await mkdir(tmpStorageLibrariesRoot, { recursive: true });
   await mkdir(sandboxWorkspace, { recursive: true });
   const runtime = {
     localRoot,

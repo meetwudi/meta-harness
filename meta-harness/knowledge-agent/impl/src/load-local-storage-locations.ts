@@ -1,32 +1,37 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports storage.storage-location-knowledge: materializes storage locations from structured knowledge.
+// Harness-Requirement: storage.actor-granted-location-access
+// Harness-Requirement: storage.driver-capabilities
 
 import {
-  parseToml,
   type LibrarianStorage,
+  type StorageDriverCapabilities,
   type StorageLocation,
 } from "../../../librarian/impl/dist/index.js";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  loadMetaHarnessConfig,
+  type MetaHarnessStorageCapability,
+  type MetaHarnessStorageGrant,
+  type MetaHarnessStorageLocation,
+} from "./load-meta-harness-config.js";
 import type { PreparedRuntime } from "./types.js";
 
-type StorageLocationDefinition = Record<string, unknown>;
-
-const storageDefinitionsPath = "storage/knowledge-agent-local-storage-locations.toml";
+type StorageLocationDefinition = MetaHarnessStorageLocation;
 
 /**
- * Loads local Knowledge Agent storage locations from structured storage knowledge.
+ * Loads local Knowledge Agent storage locations from project marker knowledge.
  */
 export function loadLocalStorageLocations(input: {
   repoRootPath: string;
   runtime: PreparedRuntime;
   storage: LibrarianStorage;
+  actorUris: string[];
 }): StorageLocation[] {
-  const definitionsPath = join(input.repoRootPath, "meta-harness", storageDefinitionsPath);
-  const data = parseToml(readFileSync(definitionsPath, "utf8"));
-  const definitions = data.storage_locations;
+  const configPath = ".meta-harness.json";
+  const data = loadMetaHarnessConfig(input.repoRootPath);
+  const definitions = data.storage?.locations;
   if (!Array.isArray(definitions)) {
-    throw new Error(`${definitionsPath}: storage_locations must be an array of tables`);
+    throw new Error(`${configPath}: storage.locations must be an array`);
   }
   const values = {
     repoRootPath: input.repoRootPath,
@@ -34,7 +39,7 @@ export function loadLocalStorageLocations(input: {
     tmpStorageLibrariesRoot: input.runtime.tmpStorageLibrariesRoot,
   };
   return definitions.map((definition) =>
-    materializeStorageLocation(definition as StorageLocationDefinition, values, input.storage),
+    materializeStorageLocation(definition, values, input.storage, input.actorUris),
   );
 }
 
@@ -42,29 +47,29 @@ function materializeStorageLocation(
   definition: StorageLocationDefinition,
   values: Record<string, string>,
   storage: LibrarianStorage,
+  actorUris: string[],
 ): StorageLocation {
+  const driverName = requiredString(definition, "driverName");
+  if (driverName !== "filesystem") {
+    throw new Error(`unsupported local storage driver: ${driverName}`);
+  }
   return {
     name: requiredString(definition, "name"),
     description: requiredString(definition, "description"),
-    driverName: requiredString(definition, "driver_name"),
+    driverName,
     storage,
-    capabilities: {
-      readable: requiredBoolean(definition, "readable"),
-      writable: requiredBoolean(definition, "writable"),
-      deletable: requiredBoolean(definition, "deletable"),
-      queryable: requiredBoolean(definition, "queryable"),
-    },
-    libraryRootPath: resolveToken(requiredString(definition, "library_root_path"), values),
-    discoveryMode: requiredDiscoveryMode(definition, "discovery_mode"),
-    discoveryExcludes: optionalStringArray(definition, "discovery_excludes"),
-    discoverLibraries: requiredBoolean(definition, "discover_libraries"),
-    sourceUri: optionalString(definition, "source_uri"),
-    guidanceUri: optionalString(definition, "guidance_uri"),
+    capabilities: computeGrantedCapabilities(requiredGrants(definition), actorUris),
+    libraryRootPath: resolveToken(requiredString(definition, "libraryRootPath"), values),
+    discoveryMode: requiredDiscoveryMode(definition, "discoveryMode"),
+    discoveryExcludes: optionalStringArray(definition, "discoveryExcludes"),
+    discoverLibraries: requiredBoolean(definition, "discoverLibraries"),
+    sourceUri: optionalString(definition, "sourceUri"),
+    guidanceUri: optionalString(definition, "guidanceUri"),
   };
 }
 
 function requiredString(definition: StorageLocationDefinition, key: string): string {
-  const value = definition[key];
+  const value = definition[key as keyof StorageLocationDefinition];
   if (typeof value !== "string" || !value.trim()) {
     throw new Error(`storage location definition is missing string field: ${key}`);
   }
@@ -75,7 +80,7 @@ function optionalString(
   definition: StorageLocationDefinition,
   key: string,
 ): string | undefined {
-  const value = definition[key];
+  const value = definition[key as keyof StorageLocationDefinition];
   if (value === undefined) {
     return undefined;
   }
@@ -89,14 +94,14 @@ function optionalStringArray(
   definition: StorageLocationDefinition,
   key: string,
 ): string[] {
-  const value = definition[key];
+  const value = definition[key as keyof StorageLocationDefinition];
   if (value === undefined) {
     return [];
   }
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
     throw new Error(`storage location definition has invalid string array field: ${key}`);
   }
-  return value;
+  return value as string[];
 }
 
 function requiredDiscoveryMode(
@@ -114,11 +119,88 @@ function requiredDiscoveryMode(
 }
 
 function requiredBoolean(definition: StorageLocationDefinition, key: string): boolean {
-  const value = definition[key];
+  const value = definition[key as keyof StorageLocationDefinition];
   if (typeof value !== "boolean") {
     throw new Error(`storage location definition is missing boolean field: ${key}`);
   }
   return value;
+}
+
+function requiredGrants(definition: StorageLocationDefinition): MetaHarnessStorageGrant[] {
+  const grants = definition.grants;
+  if (!Array.isArray(grants)) {
+    throw new Error("storage location definition is missing grants array");
+  }
+  return grants;
+}
+
+function computeGrantedCapabilities(
+  grants: MetaHarnessStorageGrant[],
+  actorUris: string[],
+): StorageDriverCapabilities {
+  const granted = new Set<MetaHarnessStorageCapability>();
+  for (const grant of grants) {
+    const actors = requiredGrantStringArray(grant, "actors");
+    const capabilities = requiredGrantCapabilities(grant);
+    if (!actorUris.some((actorUri) => matchesAnyPattern(actors, actorUri))) {
+      continue;
+    }
+    for (const capability of capabilities) {
+      granted.add(capability);
+    }
+  }
+  return {
+    readable: granted.has("read"),
+    writable: granted.has("write"),
+    deletable: granted.has("delete"),
+    queryable: granted.has("query"),
+    blob: granted.has("blob"),
+  };
+}
+
+function requiredGrantStringArray(
+  grant: MetaHarnessStorageGrant,
+  key: "actors",
+): string[] {
+  const value = grant[key];
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || !item.trim())) {
+    throw new Error(`storage grant has invalid ${key} array`);
+  }
+  for (const actor of value) {
+    if (!actor.startsWith("actor://")) {
+      throw new Error(`storage grant actor must use actor://: ${actor}`);
+    }
+  }
+  return value;
+}
+
+function requiredGrantCapabilities(
+  grant: MetaHarnessStorageGrant,
+): MetaHarnessStorageCapability[] {
+  const value = grant.capabilities;
+  if (!Array.isArray(value) || value.some((item) => !isStorageCapability(item))) {
+    throw new Error("storage grant has invalid capabilities array");
+  }
+  return value;
+}
+
+function isStorageCapability(value: unknown): value is MetaHarnessStorageCapability {
+  return (
+    value === "read" ||
+    value === "write" ||
+    value === "delete" ||
+    value === "query" ||
+    value === "blob"
+  );
+}
+
+function matchesAnyPattern(patterns: string[], value: string): boolean {
+  return patterns.some((pattern) => wildcardPatternMatches(pattern, value));
+}
+
+function wildcardPatternMatches(pattern: string, value: string): boolean {
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escaped.replace(/\*/g, ".*")}$`).test(value);
 }
 
 function resolveToken(value: string, values: Record<string, string>): string {

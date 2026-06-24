@@ -1,4 +1,4 @@
 id = "storage.driver-capabilities"
 title = "Storage drivers report capabilities"
-source = "Human-listed requirement on 2026-06-20: storage driver itself defines whether it is writable and can also say whether it is readable."
-text = "Storage drivers report their capabilities, including whether the driver can read, write, delete, and query."
+source = "Human-listed requirement on 2026-06-20: storage driver itself defines whether it is writable and can also say whether it is readable. Human-listed update on 2026-06-24: storage capabilities should support blob access too."
+text = "Storage drivers report their capabilities, including whether the driver can read, write, delete, query, and support blob access."

@@ -34,6 +34,11 @@ REQUIRED_LIBRARY_LOCATIONS = {
 }
 
 PROJECT_NAME_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+STORAGE_CAPABILITIES = {"read", "write", "delete", "query", "blob"}
+STORAGE_DISCOVERY_MODES = {
+    "filesystem-root-and-direct-children",
+    "filesystem-recursive",
+}
 
 DELEGATED_CHECKS = (
     "check-library-definitions",
@@ -176,6 +181,95 @@ def validate_meta_harness_marker(repo_root, failures):
         value = source.get(field)
         if not isinstance(value, str) or not value.strip():
             fail(failures, f".meta-harness.json: source.{field} must be a non-empty string")
+
+    validate_storage_locations(data, failures)
+
+
+def validate_storage_locations(data, failures):
+    storage = data.get("storage")
+    if not isinstance(storage, dict):
+        fail(failures, ".meta-harness.json: storage must be an object")
+        return
+
+    locations = storage.get("locations")
+    if not isinstance(locations, list) or not locations:
+        fail(failures, ".meta-harness.json: storage.locations must be a non-empty array")
+        return
+
+    seen_names = set()
+    for index, location in enumerate(locations):
+        prefix = f".meta-harness.json: storage.locations[{index}]"
+        if not isinstance(location, dict):
+            fail(failures, f"{prefix} must be an object")
+            continue
+
+        name = location.get("name")
+        if not isinstance(name, str) or not name.strip():
+            fail(failures, f"{prefix}.name must be a non-empty string")
+        elif name in seen_names:
+            fail(failures, f"{prefix}.name duplicates storage location {name}")
+        else:
+            seen_names.add(name)
+
+        for field in ("description", "driverName", "libraryRootPath", "guidanceUri"):
+            value = location.get(field)
+            if not isinstance(value, str) or not value.strip():
+                fail(failures, f"{prefix}.{field} must be a non-empty string")
+
+        source_uri = location.get("sourceUri")
+        if source_uri is not None and (not isinstance(source_uri, str) or not source_uri.strip()):
+            fail(failures, f"{prefix}.sourceUri must be a non-empty string when present")
+
+        discovery_mode = location.get("discoveryMode")
+        if discovery_mode not in STORAGE_DISCOVERY_MODES:
+            fail(failures, f"{prefix}.discoveryMode must be one of {sorted(STORAGE_DISCOVERY_MODES)}")
+
+        discover_libraries = location.get("discoverLibraries")
+        if not isinstance(discover_libraries, bool):
+            fail(failures, f"{prefix}.discoverLibraries must be a boolean")
+
+        discovery_excludes = location.get("discoveryExcludes")
+        if (
+            not isinstance(discovery_excludes, list)
+            or any(not isinstance(item, str) or not item.strip() for item in discovery_excludes)
+        ):
+            fail(failures, f"{prefix}.discoveryExcludes must be an array of non-empty strings")
+
+        grants = location.get("grants")
+        if not isinstance(grants, list) or not grants:
+            fail(failures, f"{prefix}.grants must be a non-empty array")
+            continue
+        validate_storage_grants(prefix, grants, failures)
+
+
+def validate_storage_grants(prefix, grants, failures):
+    for index, grant in enumerate(grants):
+        grant_prefix = f"{prefix}.grants[{index}]"
+        if not isinstance(grant, dict):
+            fail(failures, f"{grant_prefix} must be an object")
+            continue
+
+        actors = grant.get("actors")
+        if not isinstance(actors, list) or not actors:
+            fail(failures, f"{grant_prefix}.actors must be a non-empty array")
+        else:
+            for actor in actors:
+                if not isinstance(actor, str) or not actor.strip():
+                    fail(failures, f"{grant_prefix}.actors must contain non-empty strings")
+                elif not actor.startswith("actor://"):
+                    fail(failures, f"{grant_prefix}.actors must use actor://: {actor}")
+
+        capabilities = grant.get("capabilities")
+        if not isinstance(capabilities, list) or not capabilities:
+            fail(failures, f"{grant_prefix}.capabilities must be a non-empty array")
+            continue
+
+        for capability in capabilities:
+            if capability not in STORAGE_CAPABILITIES:
+                fail(
+                    failures,
+                    f"{grant_prefix}.capabilities has unsupported capability {capability!r}",
+                )
 
 
 def validate_required_files(repo_root, failures):
