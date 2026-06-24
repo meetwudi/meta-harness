@@ -7,11 +7,13 @@
 // Supports knowledge-agent.routine-handoffs: exposes Meta Harness Routines as Routine-scoped handoff agents.
 // Supports knowledge-agent.goal-auditor-agent: exposes an independent Goal Auditor handoff agent.
 // Supports knowledge-agent.goal-shared-interface: exposes shared Goal tools to the Knowledge Agent.
+// Supports knowledge-agent.conversation-state: exposes the validated state callback tool.
 
 import { getGlobalTraceProvider, withTrace } from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
 import { SandboxAgent } from "@openai/agents/sandbox";
 import { buildManifest } from "./build-manifest.js";
+import { createConversationStateOpenAITools } from "./create-conversation-state-openai-tools.js";
 import { createGoalAuditorHandoffAgent } from "./create-goal-auditor-handoff-agent.js";
 import { createGoalOpenAITools } from "./create-goal-openai-tools.js";
 import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
@@ -56,6 +58,7 @@ export async function runOpenAIConversation(
       goalAuditorHandoff,
     ],
     tools: [
+      ...createConversationStateOpenAITools(options.conversationState),
       ...createLibrarianOpenAITools(options.librarianContext),
       ...createGoalOpenAITools(options.librarianContext),
     ],

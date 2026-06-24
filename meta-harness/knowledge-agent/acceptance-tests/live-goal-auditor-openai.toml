@@ -32,7 +32,7 @@ expected = [
   "The Goal record is created as governed Library knowledge.",
   "The evidence file is written through Librarian and referenced by the Goal record.",
   "The Goal record and audit request use `library://...` evidence references instead of raw workspace paths or external URLs.",
-  "The shared starter prompt includes an actor-model reminder that Goal audit completion belongs to a separate Goal Auditor actor.",
+  "Goal Auditor actor behavior is grounded in the Goal primitive, handoff metadata, and Librarian actor context rather than a broad actor-model reminder in the shared starter prompt.",
   "The Knowledge Agent may proactively request audit when the Goal appears ready, but does not declare the Goal met.",
   "The Goal audit request is recorded before audit completion.",
   "A separate Goal Auditor agent turn occurs with the Goal Auditor actor active in Librarian tool-call history.",

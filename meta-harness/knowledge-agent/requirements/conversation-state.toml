@@ -1,0 +1,18 @@
+id = "knowledge-agent.conversation-state"
+title = "Knowledge Agent carries compact conversation state"
+source = "Human-listed requirement on 2026-06-23: each Knowledge Agent turn should carry forward a small spec-backed conversation state block created by code, using TOML, mentioning Goals and Libraries without redundant Goal state, focus, facts, or invented mode fields."
+text = "Knowledge Agent generates, validates, injects, and persists compact TOML conversation state for each turn."
+clarifications = [
+  "Conversation state is runtime metadata, not durable knowledge.",
+  "Conversation state is created by implementation code on every turn and injected into the Knowledge Agent prompt.",
+  "Conversation state uses TOML.",
+  "The initial schema contains `actor_uri`, repeated `[[mentioned_goal]]` tables, and repeated `[[mentioned_library]]` tables.",
+  "`[[mentioned_goal]]` and `[[mentioned_library]]` entries initially contain `uri` only.",
+  "Mentioned Goals and Libraries are references only; the state must not duplicate Goal state or Library contents.",
+  "Do not add `mode`, focus, fact, summary, or similar fields without a human-approved Spec change.",
+  "Do not change the conversation state structure without human approval and an updated Spec requirement.",
+  "Agents update next-turn conversation state through an explicit validated callback/tool rather than host-side text scraping.",
+  "Previous generated Knowledge Agent prompt and conversation state blocks should not accumulate as model-visible history; model input may keep prior user requests while replacing generated state with the current turn's state.",
+  "Conversation roots store a `conversation-state-history.toml` bookkeeping index for audit.",
+  "The state history index references per-turn before and after state files with checksums; it does not duplicate conversation state content.",
+]

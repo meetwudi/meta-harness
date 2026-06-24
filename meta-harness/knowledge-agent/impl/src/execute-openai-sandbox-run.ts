@@ -2,11 +2,13 @@
 // Supports knowledge-agent.provider-interface: delegates the actual goal work to the Agents SDK run loop.
 // Supports knowledge-agent.openai-trace-conversation-history: returns the SDK trace metadata for local history.
 // Supports knowledge-agent.harness-owned-session: passes Harness-owned session history to the SDK.
+// Supports knowledge-agent.conversation-state: keeps current turn state from accumulating stale prompt blocks.
 
 import { run } from "@openai/agents";
 import type { Trace } from "@openai/agents";
 import type { SandboxAgent } from "@openai/agents/sandbox";
 import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
+import { knowledgeAgentSessionInputCallback } from "./knowledge-agent-session-input.js";
 import type { OpenAISandboxRunOptions } from "./types.js";
 
 /**
@@ -23,6 +25,7 @@ export async function executeOpenAISandboxRun(
     {
       maxTurns: 24,
       session: options.session,
+      sessionInputCallback: knowledgeAgentSessionInputCallback,
       sandbox: {
         client: options.sandboxClient,
         snapshot: {

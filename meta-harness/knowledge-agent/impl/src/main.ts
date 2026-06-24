@@ -5,8 +5,10 @@
 // Supports knowledge-agent.openai-trace-conversation-history: writes local prompt and conversation records.
 // Supports knowledge-agent.storage-agnostic-runtime: uses storage through an implementation interface.
 // Supports knowledge-agent.uses-librarian: routes Library operations through Librarian.
+// Supports knowledge-agent.conversation-state: prepares generated conversation state for each turn.
 
 import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
+import { ConversationStateRuntime } from "./conversation-state.js";
 import { defaultTurnId } from "./default-turn-id.js";
 import { findRepoRoot } from "./find-repo-root.js";
 import { loadMetaHarnessConfig } from "./load-meta-harness-config.js";
@@ -150,6 +152,10 @@ async function runKnowledgeAgentTurn(input: {
     },
     input.runtime,
   );
+  const conversationState = await ConversationStateRuntime.create({
+    runtime: input.runtime,
+    librarianContext,
+  });
   // Harness-Requirement: knowledge-agent.storage-discovery-runtime
   // The only Library context passed to the agent runtime is hidden Librarian tool
   // context; the prompt does not name specific runtime Library paths.
@@ -162,10 +168,12 @@ async function runKnowledgeAgentTurn(input: {
     turnId: input.turnId,
     sandboxWorkspace: input.runtime.sandboxWorkspace,
     librarianContext,
+    conversationState,
     session: input.session,
   };
   const prompt = buildKnowledgeAgentPrompt(options);
   const result = await input.provider.runConversation(options);
+  await conversationState.persistLatest();
   await input.storage.recordConversation(
     { ...options, provider: input.provider.name },
     input.runtime,

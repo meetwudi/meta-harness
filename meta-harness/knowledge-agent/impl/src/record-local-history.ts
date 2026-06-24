@@ -3,9 +3,11 @@
 // Supports knowledge-agent.storage-agnostic-runtime: implements local filesystem conversation record storage.
 // Supports librarian.tool-call-observability: stores only Librarian tool call events in librarian-trace.json.
 // Supports knowledge-agent.conversation-turns: stores each run as a conversation turn.
+// Supports knowledge-agent.conversation-state: stores per-turn prompt state and next-turn state.
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { recordConversationStateHistory } from "./conversation-state-history.js";
 import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
 
 /**
@@ -20,6 +22,8 @@ export async function recordLocalHistory(
   const recordedAt = new Date().toISOString();
   const conversationRoot = localRuntime.conversationRoot;
   const turnRoot = join(conversationRoot, "turns", options.turnId);
+  const beforeStateToml = options.conversationState.promptToml;
+  const afterStateToml = options.conversationState.currentToml();
   await mkdir(turnRoot, { recursive: true });
   await writeFile(
     join(conversationRoot, "CONVERSATION.toml"),
@@ -31,6 +35,21 @@ export async function recordLocalHistory(
   );
   await writeFile(join(turnRoot, "prompt.md"), `${prompt}\n`);
   await writeFile(
+    join(turnRoot, "conversation-state.toml"),
+    beforeStateToml,
+  );
+  await writeFile(
+    join(turnRoot, "conversation-state-after.toml"),
+    afterStateToml,
+  );
+  await recordConversationStateHistory({
+    runtime: localRuntime,
+    turnId: options.turnId,
+    beforeStateToml,
+    afterStateToml,
+    recordedAt,
+  });
+  await writeFile(
     join(turnRoot, "summary.md"),
     [
       `# Turn ${options.turnId}`,
@@ -39,11 +58,17 @@ export async function recordLocalHistory(
       "",
       `Conversation: ${options.conversationId}`,
       "",
-      `Goal: ${options.goal}`,
+      `User request: ${options.goal}`,
       "",
       `Provider: ${options.provider}`,
       "",
       `Model: ${options.model}`,
+      "",
+      "Conversation state: conversation-state.toml",
+      "",
+      "Next conversation state: conversation-state-after.toml",
+      "",
+      "Conversation state history: ../../conversation-state-history.toml",
       "",
       `Librarian tool calls: ${options.librarianContext.toolCallEvents.length}`,
       "",

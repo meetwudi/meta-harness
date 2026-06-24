@@ -3,12 +3,14 @@
 // Supports knowledge-agent.storage-discovery-runtime: defines the required run input shape.
 // Supports knowledge-agent.uses-librarian: keeps local Library paths out of agent-facing run options.
 // Supports knowledge-agent.storage-agnostic-runtime: defines the storage boundary for runtime persistence.
+// Supports knowledge-agent.conversation-state: carries generated conversation state through provider runs.
 
 import type {
   DockerSandboxClient,
   UnixLocalSandboxClient,
 } from "@openai/agents/sandbox/local";
 import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
+import type { ConversationStateRuntime } from "./conversation-state.js";
 import type { KnowledgeAgentSession } from "./local-jsonl-session.js";
 
 export type Args = {
@@ -33,6 +35,7 @@ export type ProviderRunOptions = {
   turnId: string;
   sandboxWorkspace: string;
   librarianContext: LibrarianContext;
+  conversationState: ConversationStateRuntime;
   session: KnowledgeAgentSession;
 };
 
