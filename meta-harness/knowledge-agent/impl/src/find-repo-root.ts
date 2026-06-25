@@ -11,8 +11,8 @@ export function findRepoRoot(start: string): string {
   let current = resolve(start);
   for (;;) {
     if (
-      existsSync(join(current, "meta-harness")) &&
-      existsSync(join(current, "harness"))
+      existsSync(join(current, ".meta-harness.json")) &&
+      existsSync(join(current, "meta-harness"))
     ) {
       return current;
     }

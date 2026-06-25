@@ -15,6 +15,7 @@ procedure = [
   "Ask the knowledge agent to retrieve the value from memory and print it.",
 ]
 expected = [
+  "Knowledge Agent can find the repository root from .meta-harness.json and meta-harness/ without requiring harness/.",
   "Each conversation has a timestamped folder under the conversations Library.",
   "The conversations Library and memory Library each have a LIBRARY.toml.",
   "The second conversation retrieves the value written by the first conversation.",
