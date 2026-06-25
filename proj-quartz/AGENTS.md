@@ -11,8 +11,5 @@ validation expectations, read:
 
 - [harness/AGENTS.md](harness/AGENTS.md)
 - [harness/SPEC.toml](harness/SPEC.toml)
-- [product/CONTEXT.md](product/CONTEXT.md)
-- [product/requirements/initial-chat.toml](product/requirements/initial-chat.toml)
-- [product/acceptance-tests/initial-chat.toml](product/acceptance-tests/initial-chat.toml)
 
 The first application surface lives in [app/](app/).

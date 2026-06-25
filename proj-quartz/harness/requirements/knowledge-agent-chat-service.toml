@@ -1,0 +1,4 @@
+id = "proj-quartz.knowledge-agent-chat-service"
+title = "Knowledge Agent chat service"
+source = "Human request on 2026-06-25: requirement number one is that we can talk to Knowledge Agent using this service, the chat service."
+text = "PROJ-Quartz users can talk to the Knowledge Agent using the chat service."

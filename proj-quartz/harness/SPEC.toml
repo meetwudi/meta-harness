@@ -6,17 +6,9 @@ version = "v0.0.0"
 source = "Human request on 2026-06-25 to add a project-local harness for PROJ-Quartz."
 
 [[requirement_collections]]
-name = "harness-requirements"
+name = "requirements"
 location = "requirements"
 
-[[requirement_collections]]
-name = "product-requirements"
-location = "../product/requirements"
-
 [[acceptance_test_collections]]
-name = "harness-acceptance-tests"
+name = "acceptance-tests"
 location = "acceptance-tests"
-
-[[acceptance_test_collections]]
-name = "product-acceptance-tests"
-location = "../product/acceptance-tests"

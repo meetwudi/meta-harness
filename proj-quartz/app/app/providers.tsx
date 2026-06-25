@@ -4,6 +4,7 @@ import { HttpAgent } from "@ag-ui/client";
 import { CopilotKit } from "@copilotkit/react-core/v2";
 import { useMemo } from "react";
 
+// Harness-Requirement: proj-quartz.knowledge-agent-chat-service
 export function Providers({ children }: { children: React.ReactNode }) {
   const agents = useMemo(
     () => ({

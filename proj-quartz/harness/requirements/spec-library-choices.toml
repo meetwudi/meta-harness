@@ -1,4 +1,0 @@
-id = "proj-quartz.spec-library-choices"
-title = "Spec records software library choices"
-source = "Human request on 2026-06-25: one part of the spec should record the library the project is using so future agents can return to the project and act from that project context."
-text = "PROJ-Quartz specs record the software library and framework choices that govern implementation work."

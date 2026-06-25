@@ -1,4 +1,0 @@
-id = "proj-quartz.project-harness"
-title = "Project-local harness"
-source = "Human request on 2026-06-25: PROJ-Quartz should have a harness inside the project folder that dictates the rest of the project, just like Meta Harness."
-text = "PROJ-Quartz has a project-local harness inside the project folder that governs future project work."

@@ -2,6 +2,7 @@
 
 import { CopilotChat } from "@copilotkit/react-core/v2";
 
+// Harness-Requirement: proj-quartz.knowledge-agent-chat-service
 export default function Page() {
   return (
     <main className="quartz-shell">

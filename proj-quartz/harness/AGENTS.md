@@ -8,9 +8,7 @@ runtime rules, prompts, or validation expectations, read:
 - [SPEC.toml](SPEC.toml)
 - The relevant requirement files listed by the Spec
 - The relevant acceptance-test files listed by the Spec
-- [../product/CONTEXT.md](../product/CONTEXT.md)
 
-Keep changes spec-first. When a human asks for a behavior or project-governance
-change, update this harness before implementation code. Existing product
-requirements and acceptance tests remain part of the project Spec through the
-collections in [SPEC.toml](SPEC.toml).
+Keep changes spec-first. When a human states a requirement, transcribe it into
+this harness before implementation code. Do not invent, split, merge, or
+elaborate requirements beyond the human-stated meaning.

@@ -1,4 +1,0 @@
-id = "proj-quartz.initial-chat"
-title = "Initial CopilotKit chat with Knowledge Agent"
-source = "Human request on 2026-06-25: build PROJ-Quartz as a simple customer acquisition application, use CopilotKit as the starter front end, and make the first version a chat that talks directly with the Meta Harness Knowledge Agent."
-text = "PROJ-Quartz first version provides a CopilotKit-based chat surface for talking directly with the Meta Harness Knowledge Agent."

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 180;
 
+// Harness-Requirement: proj-quartz.knowledge-agent-chat-service
 type AgUiContentPart = {
   type?: string;
   text?: string;
