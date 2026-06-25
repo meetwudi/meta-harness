@@ -1,0 +1,18 @@
+id = "proj-quartz.acceptance.project-harness"
+title = "Project harness guides future work"
+requirements = [
+  "proj-quartz.project-harness",
+  "proj-quartz.spec-library-choices",
+]
+procedure = [
+  "Open the PROJ-Quartz project Library.",
+  "Read the project AGENTS.md file.",
+  "Follow the project harness reference to harness/SPEC.toml.",
+  "Inspect the requirement and acceptance-test collections listed by the Spec.",
+]
+expected = [
+  "The project AGENTS.md identifies harness/ as the project harness before behavior, framework/library, storage, runtime, prompt, or validation changes.",
+  "harness/SPEC.toml lists the harness requirement and acceptance-test collections.",
+  "harness/SPEC.toml also includes the existing product requirement and acceptance-test collections.",
+  "The harness requirements state that PROJ-Quartz has a project-local harness and that specs record software library and framework choices.",
+]
