@@ -1,12 +1,14 @@
 # Bootstrap New Repository
 
-Use this guide to set up a new harnessed repository.
+Use this guide to set up a repository that develops Meta Harness knowledge in
+place.
 
 ## Setup
 
-Copy `meta-harness/` into the repository as-is.
+Include `meta-harness/` as a checked-in framework directory in the repository.
 
-Do not change copied files under `meta-harness/` for project-specific needs.
+Add root `AGENTS.md`, `COMPLIANCE.toml`, `LIBRARY.toml`, and
+`.meta-harness.json`.
 
 Optionally install the bundled Codex skill into the repository:
 
@@ -14,10 +16,11 @@ Optionally install the bundled Codex skill into the repository:
 python3 meta-harness/tools/install-skills
 ```
 
-Create project-specific harness content under `harness/`.
+Top-level project Libraries use the `proj-` prefix. Create
+`proj-<project-name>/` for project knowledge that belongs to the repository.
 
-Copy `meta-harness/templates/LIBRARY.toml` to the repository root and
-`meta-harness/templates/harness/LIBRARY.toml` to `harness/LIBRARY.toml`.
+Copy `meta-harness/templates/LIBRARY.toml` to the repository root. Create each
+`proj-*` Library with its own `LIBRARY.toml`.
 
 Choose a filesystem-safe project name from the repository name. Add
 `.meta-harness.json` with `project.name`, `project.localRoot`, and
@@ -26,7 +29,7 @@ Choose a filesystem-safe project name from the repository name. Add
 Start with a `repository` storage location using `driverName = "filesystem"`,
 actor grants for `actor://knowledge-agent`, `libraryRootPath =
 "{{repoRootPath}}"`, `discoveryMode = "filesystem-recursive"`, and discovery
-excludes for copied templates and generated dependency/build folders.
+excludes for templates and generated dependency/build folders.
 
 Create `<project.localRoot>/routine-memory` for the `routine-memory` Library.
 Copy `meta-harness/templates/routine-memory/LIBRARY.toml` and
@@ -37,7 +40,7 @@ repository PR checks validate the template and any checked-in `LIBRARY.toml` or
 `MEMORY.toml` files, not the live local memory directory.
 
 Add `.meta-harness.json` to record the project metadata, storage locations, and
-Meta Harness source.
+Meta Harness source when the repository tracks one.
 
 Use [../HARNESS-DESIGN.md](../HARNESS-DESIGN.md) for the expected repository shape.
 
@@ -45,14 +48,12 @@ Use [../HARNESS-DESIGN.md](../HARNESS-DESIGN.md) for the expected repository sha
 
 Ask Codex or Claude Code:
 
-> Adopt Meta Harness in this repository. Copy `meta-harness/` as-is, add
-> `.meta-harness.json`, and create project-specific harness content under
-> `harness/`. Choose a filesystem-safe project name from the repository name,
-> set `.meta-harness.json` `project.name`, `project.localRoot`, and
-> `storage.locations`, create
-> `<project.localRoot>/routine-memory`. Copy
-> `meta-harness/templates/LIBRARY.toml` to the repository root,
-> `meta-harness/templates/harness/LIBRARY.toml` to `harness/LIBRARY.toml`, and
+> Adopt Meta Harness in this repository. Add `.meta-harness.json`, root
+> `LIBRARY.toml`, root `COMPLIANCE.toml`, and any top-level `proj-*` Library
+> needed for repository project knowledge. Choose a filesystem-safe project
+> name from the repository name, set `.meta-harness.json` `project.name`,
+> `project.localRoot`, and `storage.locations`, create
+> `<project.localRoot>/routine-memory`, and copy
 > `meta-harness/templates/routine-memory/LIBRARY.toml` plus
 > `meta-harness/templates/routine-memory/MEMORY.toml` into the routine-memory
 > directory. Use

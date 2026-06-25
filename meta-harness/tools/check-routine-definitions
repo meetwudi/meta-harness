@@ -191,26 +191,56 @@ def validate_routine(routine_dir, failures):
         validate_memory_reference(routine_toml, field, data.get(field), failures)
 
 
+def repository_library_roots(repo_root):
+    ignored_roots = {".git"}
+    for path in sorted(repo_root.rglob("LIBRARY.toml")):
+        parts = path.relative_to(repo_root).parts
+        if any(part in ignored_roots for part in parts):
+            continue
+        if parts[:2] == ("meta-harness", "templates"):
+            continue
+        yield path.parent
+
+
+def repository_routine_roots(repo_root):
+    seen = set()
+    for library_root in repository_library_roots(repo_root):
+        routines_root = library_root / "routines"
+        if not routines_root.exists():
+            continue
+        if routines_root in seen:
+            continue
+        seen.add(routines_root)
+        yield routines_root
+
+
+def relative(repo_root, path):
+    return str(path.relative_to(repo_root)).replace("\\", "/")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Verify Meta Harness Routine definitions.")
     parser.add_argument("--repo-root", default=".")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
-    routines_root = repo_root / "harness" / "routines"
     failures = []
+    routine_roots = list(repository_routine_roots(repo_root))
 
-    if not routines_root.exists():
-        print("Meta Harness Routine definitions passed: no harness/routines directory.")
+    if not routine_roots:
+        print("Meta Harness Routine definitions passed: no repository routines found.")
         return 0
 
-    if not (routines_root / "AGENTS.md").is_file():
-        fail(failures, "harness/routines: missing AGENTS.md")
-
     count = 0
-    for routine_dir in sorted(path for path in routines_root.iterdir() if path.is_dir()):
-        validate_routine(routine_dir, failures)
-        count += 1
+    for routines_root in routine_roots:
+        if not routines_root.is_dir():
+            fail(failures, f"{relative(repo_root, routines_root)}: must be a directory")
+            continue
+        if not (routines_root / "AGENTS.md").is_file():
+            fail(failures, f"{relative(repo_root, routines_root)}: missing AGENTS.md")
+        for routine_dir in sorted(path for path in routines_root.iterdir() if path.is_dir()):
+            validate_routine(routine_dir, failures)
+            count += 1
 
     if failures:
         print("Meta Harness Routine definition check failed:", file=sys.stderr)

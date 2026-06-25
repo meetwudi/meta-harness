@@ -1,14 +1,14 @@
 # meta-harness/AGENTS.md
 
-This folder is the shared Meta Harness layer copied into managed projects.
+This folder contains the Meta Harness framework layer.
 
-Managed projects should not edit copied files under `meta-harness/` for project-specific needs.
+Repository-specific project knowledge belongs in top-level `proj-*` Libraries.
 
-Project-specific knowledge belongs under `../harness/`.
+This repository's self-maintenance project lives in `../proj-self-maintenance/`.
 
 ## Local Entry Points
 
-Setup and upgrade workflows: [setup/AGENTS.md](setup/AGENTS.md)
+Setup and orientation workflows: [setup/AGENTS.md](setup/AGENTS.md)
 
 Primitive designs: [primitives/AGENTS.md](primitives/AGENTS.md)
 

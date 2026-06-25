@@ -1,6 +1,6 @@
 # Primitive Orientation
 
-Read this before working in a Meta Harness-managed project.
+Read this before working in a Meta Harness repository.
 
 Meta Harness is knowledge-first. AI is the runtime that reads, follows, and updates knowledge under human rules.
 

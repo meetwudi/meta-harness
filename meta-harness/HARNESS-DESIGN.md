@@ -4,23 +4,26 @@
 
 ## Principles
 
-Meta Harness defines how a managed project uses knowledge-first harness docs.
+Meta Harness defines how a repository uses knowledge-first harness docs.
 
-A managed project is a repository that carries `.meta-harness.json` and follows this design.
+A Meta Harness repository carries `.meta-harness.json` and follows this design.
 
 Development principles are defined in [compliance/DEVELOPMENT-PRINCIPLES.md](compliance/DEVELOPMENT-PRINCIPLES.md).
 
-Meta Harness is self-managed: this repository uses the same marker and management layer that it provides to managed projects.
+Meta Harness is self-managed: this repository uses the same marker, Libraries,
+and Routines that it defines.
 
-`meta-harness/` is the copied management layer. Managed projects must not modify files under `meta-harness/` directly; that layer should change only when updating from the Meta Harness source.
+`meta-harness/` is the framework layer: primitives, setup guidance, templates,
+tools, and runtime implementation.
 
-`harness/` is the project-specific harness layer. Project-specific rules, specs, workflows, and docs belong under `harness/`.
+Top-level `proj-*` directories are project Libraries. This repository's
+self-maintenance project lives under `proj-self-maintenance/`.
 
 Harness docs use progressive disclosure through `AGENTS.md` files. A harness doc should be reachable from the root by following the `AGENTS.md` chain.
 
 The root `AGENTS.md` is protected: AI agents may change it only when a human explicitly asks to change `AGENTS.md`.
 
-## Managed Project Shape
+## Repository Shape
 
 ```text
 .meta-harness.json
@@ -37,10 +40,6 @@ meta-harness/
     AGENTS.md
     BOOTSTRAP-NEW-REPOSITORY.md
     PRIMITIVE-ORIENTATION.md
-    UPGRADE.md
-    migrations/
-      AGENTS.md
-      {sequence}-{name}.md
   compliance/
     AI-POLICY.md
     DEVELOPMENT-PRINCIPLES.md
@@ -64,10 +63,9 @@ meta-harness/
   tools/
   github/
     workflows/
-harness/
+proj-{project-name}/
   AGENTS.md
   LIBRARY.toml
-  COMPLIANCE.toml
   routines/
     AGENTS.md
     {routine-name}/
@@ -82,8 +80,8 @@ harness/
     AGENTS.md
 ```
 
-`.meta-harness.json` records the managed project name, local root, storage
-locations, and Meta Harness source:
+`.meta-harness.json` records the repository project name, local root, storage
+locations, and source:
 
 ```json
 {
@@ -130,27 +128,20 @@ locations, and Meta Harness source:
 
 `project.name` is a filesystem-safe project name. `project.localRoot` is the
 default local root for ignored or machine-local Libraries and runtime artifacts.
-`storage.locations` is the project-owned starting point for Library discovery.
+`storage.locations` is the repository-owned starting point for Library discovery.
 Each storage location defines its driver, actor grants, Library root, discovery
 mode, discovery excludes, and guidance URI.
 
-To understand management-layer changes, managed projects compare source refs directly with `git diff` in the Meta Harness source repository:
-
-```text
-git diff <old-source-ref>..<new-source-ref> -- meta-harness/
-```
-
-Managed projects should use that diff as the change record instead of relying on an in-tree changelog.
-
-`meta-harness/AGENTS.md` indexes Meta Harness docs. `harness/AGENTS.md` indexes project-specific harness docs.
-
-Managed projects should place their own harness content under `harness/`, not by editing the copied `meta-harness/` management layer.
+`meta-harness/AGENTS.md` indexes Meta Harness docs. Each top-level `proj-*`
+Library uses its own `AGENTS.md` for project-specific discovery.
 
 ## Operational Primitives
 
 Standard operational primitive designs live under [primitives/](primitives/).
 
-Primitives are named kinds of knowledge places organized by Libraries. A managed codebase is itself a Library, and its harness files can mark knowledge inside it as Routine, Goal, Memory, Compliance, Spec, or another primitive kind.
+Primitives are named kinds of knowledge places organized by Libraries. A
+repository is itself a Library, and its harness files can mark knowledge inside
+it as Routine, Goal, Memory, Compliance, Spec, or another primitive kind.
 
 - Routine: [primitives/ROUTINE.md](primitives/ROUTINE.md)
 - Goal: [primitives/GOAL.md](primitives/GOAL.md)
@@ -168,7 +159,7 @@ Use [primitives/SPEC.md](primitives/SPEC.md) when a human asks to structure spec
 ## Installable Skill
 
 Meta Harness ships a Codex skill under [skills/](skills/). The
-`meta-harness` skill makes shared harness behavior available through Codex's
+`meta-harness` skill makes Meta Harness behavior available through Codex's
 skill system while still reading the local repository's own harness docs and
 the Knowledge Agent prompt.
 
@@ -188,8 +179,9 @@ By default this copies the skill to `.codex/skills/` in the repository. Use
 - Product harness: [compliance/PRODUCT.md](compliance/PRODUCT.md)
 - Engineering practices: [compliance/ENGINEERING.md](compliance/ENGINEERING.md)
 
-Managed projects should review repository-wide compliance with root `COMPLIANCE.toml`. They may copy the template from `meta-harness/templates/COMPLIANCE.toml`.
+Meta Harness repositories should review repository-wide compliance with root `COMPLIANCE.toml`. They may copy the template from `meta-harness/templates/COMPLIANCE.toml`.
 
-Managed projects should review harness-specific compliance with `harness/COMPLIANCE.toml` or a more specific descendant compliance file. They may copy the template from `meta-harness/templates/harness/COMPLIANCE.toml`.
+Project Libraries may add narrower compliance with `proj-*/COMPLIANCE.toml` or
+more specific descendant compliance files.
 
-Library definitions, Routine definitions, memory definitions, skill definitions, harness file metadata, and compliance attestations are enforced in PRs by the GitHub workflow template. Managed projects may mirror checks with the git hook templates.
+Library definitions, Routine definitions, memory definitions, skill definitions, harness file metadata, and compliance attestations are enforced in PRs by the GitHub workflow template. Repositories may mirror checks with the git hook templates.

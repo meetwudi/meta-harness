@@ -1,4 +1,4 @@
 id = "storage.storage-location-knowledge"
 title = "Storage locations are defined as knowledge"
 source = "Human-listed requirement on 2026-06-21: storage locations are knowledge and should not be hard-coded in the local Knowledge Agent runtime. Human-listed update on 2026-06-24: storage definitions should live in .meta-harness.json as the project starting point."
-text = "Storage location definitions live in the managed project's .meta-harness.json structured knowledge, and runtime code materializes those definitions instead of hard-coding repository or local storage locations."
+text = "Storage location definitions live in the repository's .meta-harness.json structured knowledge, and runtime code materializes those definitions instead of hard-coding repository or local storage locations."

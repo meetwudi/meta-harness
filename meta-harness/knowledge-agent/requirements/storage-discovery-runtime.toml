@@ -1,4 +1,4 @@
 id = "knowledge-agent.storage-discovery-runtime"
 title = "Knowledge Agent uses storage discovery"
 source = "Human-listed requirement on 2026-06-22: Knowledge Agent should use storage locations to discover Libraries. Human-listed update on 2026-06-24: storage definitions should be discovered from .meta-harness.json instead of hard-coded repository or local roots."
-text = "Knowledge Agent prepares storage locations from the managed project's .meta-harness.json and uses Librarian storage discovery to find Libraries."
+text = "Knowledge Agent prepares storage locations from the repository's .meta-harness.json and uses Librarian storage discovery to find Libraries."

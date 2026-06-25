@@ -22,13 +22,13 @@ update a particular Library.
 ## Project Storage Locations
 
 The local Knowledge Agent runtime materializes storage locations from the
-managed project's marker:
+repository marker:
 
 ```text
 library://repository/.meta-harness.json
 ```
 
-The marker's `storage.locations` array is the project-owned starting point for
+The marker's `storage.locations` array is the repository-owned starting point for
 known storage locations. Each storage location definition includes:
 
 - `name`

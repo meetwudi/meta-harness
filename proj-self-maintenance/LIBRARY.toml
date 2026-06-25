@@ -1,10 +1,7 @@
 # This is a Harness primitive.
 # See also: library://meta-harness
 
-name = "meta-harness"
-description = "Meta Harness knowledge, primitives, setup guidance, templates, and tools."
+name = "proj-self-maintenance"
+description = "Self-maintenance project knowledge and Routines for the Meta Harness repository."
 read_actors = ["actor://knowledge-agent"]
 update_actors = ["actor://routine/proj-self-maintenance/routines/concise-cleanup"]
-agent_excludes = [
-  "knowledge-agent/**",
-]

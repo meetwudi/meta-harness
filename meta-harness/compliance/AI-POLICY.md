@@ -2,7 +2,7 @@
 
 # AI Policy
 
-This policy applies to AI agents working in managed projects.
+This policy applies to AI agents working in Meta Harness repositories.
 
 AI agents must be concise and source-disciplined.
 
@@ -49,6 +49,6 @@ governance.
 
 ## Compliance Requirement
 
-Managed projects should include root `COMPLIANCE.toml` for repository-wide compliance review. They may also include descendant compliance files for narrower scopes such as `harness/`.
+Meta Harness repositories should include root `COMPLIANCE.toml` for repository-wide compliance review. They may also include descendant compliance files for narrower scopes such as `proj-*` Libraries.
 
 At minimum, compliance items should verify source discipline for material harness content and preserve the applicable structured source of truth.

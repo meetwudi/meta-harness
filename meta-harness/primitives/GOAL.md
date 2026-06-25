@@ -59,7 +59,7 @@ Example:
 # See also: library://meta-harness
 
 name = "example-goal"
-source_library = "library://project-harness"
+source_library = "library://proj-self-maintenance"
 desired_outcome = "The desired outcome in human-readable form."
 state = "unmet"
 framework_refs = ["library://meta-harness/primitives/GOAL.md#smart"]
@@ -71,7 +71,7 @@ updated_by_actor = "actor://knowledge-agent"
 
 [[evidence]]
 id = "evidence-1"
-uri = "library://project-harness/path/to/evidence.md"
+uri = "library://proj-self-maintenance/path/to/evidence.md"
 summary = "Why this evidence matters for the Goal."
 recorded_at = "2026-06-23T00:00:00Z"
 recorded_by_actor = "actor://knowledge-agent"
@@ -110,7 +110,7 @@ requested_at = "2026-06-23T00:00:00Z"
 [[audits]]
 id = "audit-1"
 audit_request_id = "audit-request-1"
-auditor_actor = "actor://goal-auditor/project-harness/goals/example-goal"
+auditor_actor = "actor://goal-auditor/proj-self-maintenance/goals/example-goal"
 signal = "unmet"
 summary = "Auditor judgment grounded in the Goal record and evidence."
 gaps = ["Evidence does not yet demonstrate the desired outcome."]

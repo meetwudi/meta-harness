@@ -58,7 +58,7 @@ Examples:
 ```toml
 update_actors = []
 update_actors = ["actor://knowledge-agent"]
-update_actors = ["actor://routine/project-harness/routines/*"]
+update_actors = ["actor://routine/proj-self-maintenance/routines/*"]
 update_actors = ["actor://routine/daily-gmail-learning-digest/routines/*"]
 ```
 
@@ -74,7 +74,7 @@ a Routine actor:
 
 ```text
 actor://knowledge-agent
-actor://routine/project-harness/routines/concise-cleanup
+actor://routine/proj-self-maintenance/routines/concise-cleanup
 ```
 
 `agent_excludes` is an optional list of path patterns, relative to the Library
@@ -105,7 +105,7 @@ Examples:
 
 ```text
 library://meta-harness
-library://project-harness
+library://proj-self-maintenance
 library://routine-memory
 ```
 

@@ -2,6 +2,7 @@
 
 # Engineering Practices
 
-Project-specific engineering practices belong under `harness/engineering/` in the managed project.
+Project engineering practices belong under the applicable `proj-*/engineering/`
+Library path.
 
 Meta Harness does not impose default engineering practices.

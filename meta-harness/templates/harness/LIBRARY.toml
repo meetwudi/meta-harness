@@ -1,7 +1,0 @@
-# This is a Harness primitive.
-# See also: library://meta-harness
-
-name = "project-harness"
-description = "Project-specific harness knowledge, Library discovery, Routines, and compliance for this repository."
-read_actors = ["actor://knowledge-agent"]
-update_actors = []

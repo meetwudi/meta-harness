@@ -10,10 +10,10 @@ implementation details discovered after resolving the Library.
 
 ## Shape
 
-Project-specific Routines may use this shape:
+Filesystem Libraries may use this shape:
 
 ```text
-harness/routines/
+proj-{project-name}/routines/
   AGENTS.md
   {routine-name}/
     AGENTS.md
@@ -37,7 +37,7 @@ harness/routines/
 Use `library://{library-name}` references, not paths:
 
 ```text
-library://project-harness
+library://proj-self-maintenance
 library://meta-harness
 library://routine-memory
 ```

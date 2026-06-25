@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.storage-discovery-runtime: reads project defaults from managed project metadata.
+// Supports knowledge-agent.storage-discovery-runtime: reads repository defaults from Meta Harness metadata.
 // Harness-Requirement: storage.storage-location-knowledge
 // Harness-Requirement: storage.actor-granted-location-access
 
@@ -42,7 +42,7 @@ export type MetaHarnessConfig = {
 };
 
 /**
- * Reads the managed project's Meta Harness metadata file.
+ * Reads the repository's Meta Harness metadata file.
  */
 export function loadMetaHarnessConfig(repoRoot: string): MetaHarnessConfig {
   return JSON.parse(readFileSync(join(repoRoot, ".meta-harness.json"), "utf8"));

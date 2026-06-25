@@ -31,10 +31,6 @@ jobs:
         run: |
           python3 meta-harness/tools/check-skill-definitions
 
-      - name: Verify project harness compliance
-        run: |
-          python3 meta-harness/tools/check-project-harness-compliance
-
       - name: Verify harness file metadata
         run: |
           python3 meta-harness/tools/check-harness-file-metadata

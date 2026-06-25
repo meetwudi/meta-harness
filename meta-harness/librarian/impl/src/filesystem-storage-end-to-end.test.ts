@@ -120,7 +120,7 @@ await writeFile(
     'name = "meta-harness"',
     'description = "Fixture Meta Harness Library."',
     'read_actors = ["actor://knowledge-agent"]',
-    'update_actors = ["actor://routine/project-harness/routines/concise-cleanup"]',
+    'update_actors = ["actor://routine/proj-self-maintenance/routines/concise-cleanup"]',
     "",
   ].join("\n"),
 );
@@ -206,7 +206,7 @@ const context = createLibrarianContext({
     },
   ],
   actorUri: "actor://knowledge-agent",
-  actorUris: ["actor://routine/project-harness/routines/concise-cleanup"],
+  actorUris: ["actor://routine/proj-self-maintenance/routines/concise-cleanup"],
   sessionId: "integration-session",
 });
 

@@ -2,7 +2,7 @@
 # See also: library://meta-harness
 
 name = "repository"
-description = "Repository-level project knowledge for a Meta Harness-managed project."
+description = "Repository-level knowledge for a Meta Harness repository."
 read_actors = ["actor://knowledge-agent"]
 update_actors = []
 agent_excludes = [

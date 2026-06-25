@@ -4,12 +4,12 @@
 # Reduce duplication and AI slop while preserving effectiveness.
 
 name = "concise-cleanup"
-source_library = "library://project-harness"
+source_library = "library://proj-self-maintenance"
 purpose = "Make harness docs more concise, less duplicated, and less AI-sloppy while preserving operational effectiveness."
 
 libraries = [
   "library://meta-harness",
-  "library://project-harness",
+  "library://proj-self-maintenance",
 ]
 
 per_execution_memory_library = "library://routine-memory/concise-cleanup/executions/"

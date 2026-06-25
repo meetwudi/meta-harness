@@ -11,14 +11,14 @@ It starts from a simple premise: AI is a runtime for knowledge.
 
 In a harnessed repository, knowledge is not just documentation, planning, or specification. It is the material an AI runtime reads, follows, updates when allowed, and uses to do accountable work.
 
-Meta Harness provides a small structure for that work: Libraries, Tasks, Memory, and Compliance.
+Meta Harness provides a small structure for that work: Libraries, Routines, Goals, Memory, Compliance, Specs, and Tags.
 
 ## Repository Shape
 
-- `meta-harness/`: shared Meta Harness files copied into a harnessed repository.
-- `harness/`: project-specific knowledge, rules, workflows, and tasks.
+- `meta-harness/`: Meta Harness primitives, setup guidance, templates, tools, and runtime implementation.
+- `proj-self-maintenance/`: repository self-maintenance project knowledge and Routines.
 
-Project-specific knowledge belongs under `harness/`.
+Top-level project Libraries use the `proj-` prefix.
 
 ## Bootstrap
 

@@ -4,4 +4,4 @@
 name = "routine-memory"
 description = "Local Memory Library for Harness primitive Routine executions and durable Routine learnings."
 read_actors = ["actor://knowledge-agent", "actor://routine/*"]
-update_actors = ["actor://routine/project-harness/routines/*"]
+update_actors = ["actor://routine/proj-*/routines/*"]
