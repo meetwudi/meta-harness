@@ -123,6 +123,13 @@ knowledge-agent.storage-discovery-runtime
 Acceptance-test files are separate from requirements because one acceptance test
 may verify one requirement or a collection of requirements.
 
+Acceptance-test files are source-governed. AI agents must not create, infer,
+split, merge, elaborate, add, change, or delete acceptance tests unless a human
+explicitly requests or approves that acceptance-test change, or the
+acceptance-test content is already present in sourced material. When permitted,
+transcribe acceptance tests while preserving the human- or source-stated
+procedure and expected behavior.
+
 Acceptance tests must live outside the requirements folder.
 
 Each acceptance-test file includes:
@@ -176,7 +183,9 @@ implementation citation in checked implementation code.
 
 ## Governance
 
-Spec updates are spec-first. Update `SPEC.toml`, requirements, and acceptance
-tests before implementation code when behavior, interfaces, prompts, provider
-choices, runtime rules, or validation expectations change. Update test
-guidelines or integration tests when those expectations change.
+Spec updates are spec-first. Update `SPEC.toml` and human-listed requirements
+before implementation code when behavior, interfaces, prompts, provider
+choices, runtime rules, or validation expectations change. Update acceptance
+tests only when the acceptance-test change is human-requested, human-approved,
+or already sourced. Update test guidelines or integration tests when those
+expectations change.

@@ -2,10 +2,18 @@
 
 # Product Harness
 
-Each project Library records product context in `proj-*/product/CONTEXT.md`: what the product is, who it is for, and what outcomes matter.
+Each project Library records product context in its governed project knowledge:
+what the product is, who it is for, and what outcomes matter.
 
-Product decisions are recorded sequentially in `proj-*/product/decisions/`. Use this for decision history.
+When a project uses a project-local Spec, product requirements live in that
+Spec's declared requirement collections. When a project uses a `product/`
+layout, product decisions are recorded sequentially in
+`proj-*/product/decisions/`.
 
-Early product thoughts should stay as close-paraphrased notes until a human asks to turn them into requirements or the source material already contains requirement-shaped structure.
+Early product thoughts should stay as close-paraphrased notes until a human asks
+to turn them into requirements or the source material already contains
+requirement-shaped structure.
 
-Product requirements are recorded modularly in `proj-*/product/requirements/`. Each requirement must trace to sourced material and include sourced acceptance tests that can actually be tested, or explicitly mark acceptance tests as an unknown source gap.
+Product requirements are recorded modularly and must trace to sourced material.
+Acceptance tests are added, changed, or deleted only when the acceptance-test
+change is human-requested, human-approved, or already sourced.
