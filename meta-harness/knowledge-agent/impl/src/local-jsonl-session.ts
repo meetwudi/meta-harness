@@ -1,5 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.harness-owned-session: persists SDK session history locally.
+// Supports knowledge-agent.postgres-runtime-storage: stores session history through the runtime storage driver.
 
 import type {
   AgentInputItem,
@@ -7,8 +8,8 @@ import type {
   SessionHistoryRewriteArgs,
   SessionHistoryRewriteAwareSession,
 } from "@openai/agents";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import type { LibrarianStorage } from "../../../librarian/impl/dist/index.js";
 
 /**
  * Stores OpenAI Agents SDK session items as newline-delimited JSON.
@@ -16,6 +17,7 @@ import { dirname } from "node:path";
 export class LocalJsonlSession implements SessionHistoryRewriteAwareSession {
   constructor(
     private readonly sessionId: string,
+    private readonly storage: LibrarianStorage,
     private readonly path: string,
   ) {}
 
@@ -67,15 +69,10 @@ export class LocalJsonlSession implements SessionHistoryRewriteAwareSession {
   }
 
   private async readItems(): Promise<AgentInputItem[]> {
-    let text = "";
-    try {
-      text = await readFile(this.path, "utf8");
-    } catch (error: unknown) {
-      if (typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT") {
-        return [];
-      }
-      throw error;
+    if (!(await this.storage.exists(this.path))) {
+      return [];
     }
+    const text = await this.storage.readText(this.path);
     return text
       .split(/\r?\n/)
       .filter((line) => line.trim())
@@ -83,8 +80,8 @@ export class LocalJsonlSession implements SessionHistoryRewriteAwareSession {
   }
 
   private async writeItems(items: AgentInputItem[]): Promise<void> {
-    await mkdir(dirname(this.path), { recursive: true });
-    await writeFile(
+    await this.storage.makeDirectory(dirname(this.path));
+    await this.storage.writeText(
       this.path,
       items.map((item) => JSON.stringify(item)).join("\n") + (items.length ? "\n" : ""),
     );

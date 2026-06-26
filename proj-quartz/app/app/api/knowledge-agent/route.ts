@@ -45,6 +45,12 @@ function projectConfigPath(): string {
   return process.env.QUARTZ_PROJECT_CONFIG ?? "proj-quartz/.meta-harness.json";
 }
 
+function assertQuartzPostgresConfigured(): void {
+  if (!process.env.QUARTZ_POSTGRES_URL) {
+    throw new Error("QUARTZ_POSTGRES_URL is required for PROJ-Quartz runtime storage.");
+  }
+}
+
 function eventBytes(event: AgUiEvent): Uint8Array {
   return textEncoder.encode(
     `data: ${JSON.stringify({ timestamp: Date.now(), ...event })}\n\n`,
@@ -101,6 +107,7 @@ async function runKnowledgeAgent(input: {
   threadId: string;
   runId: string;
 }): Promise<string> {
+  assertQuartzPostgresConfigured();
   const repoRoot = repoRootPath();
   const cliPath = path.join(
     repoRoot,

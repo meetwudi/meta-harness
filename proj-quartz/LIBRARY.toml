@@ -4,7 +4,7 @@
 name = "proj-quartz"
 description = "Customer acquisition project knowledge and application for using Meta Harness Knowledge Agent with customer acquisition knowledge."
 read_actors = ["actor://knowledge-agent"]
-update_actors = ["actor://knowledge-agent"]
+update_actors = []
 agent_excludes = [
   "app/node_modules/**",
   "app/.next/**",

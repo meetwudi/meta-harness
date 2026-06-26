@@ -18,7 +18,7 @@ export function localFileSystemStorage(): KnowledgeAgentStorage {
     prepareRuntime: prepareLocalRuntime,
     createLibrarianContext: createLocalLibrarianContext,
     createSession: (runtime, conversationId) =>
-      new LocalJsonlSession(conversationId, runtime.sessionFile),
+      new LocalJsonlSession(conversationId, runtime.runtimeStorage, runtime.sessionFile),
     recordConversation: recordLocalHistory,
   };
 }

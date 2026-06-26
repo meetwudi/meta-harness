@@ -5,12 +5,16 @@
 // Supports knowledge-agent.storage-agnostic-runtime: defines the storage boundary for runtime persistence.
 // Supports knowledge-agent.conversation-state: carries generated conversation state through provider runs.
 // Supports knowledge-agent.project-config-selection: carries selected project config through local runtime context.
+// Supports knowledge-agent.postgres-runtime-storage: carries the runtime text storage driver through the runtime.
 
 import type {
   DockerSandboxClient,
   UnixLocalSandboxClient,
 } from "@openai/agents/sandbox/local";
-import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
+import type {
+  LibrarianContext,
+  LibrarianStorage,
+} from "../../../librarian/impl/dist/index.js";
 import type { ConversationStateRuntime } from "./conversation-state.js";
 import type { KnowledgeAgentSession } from "./local-jsonl-session.js";
 
@@ -49,6 +53,7 @@ export type PreparedRuntime = {
   sessionFile: string;
   tmpStorageLibrariesRoot: string;
   sandboxWorkspace: string;
+  runtimeStorage: LibrarianStorage;
 };
 
 export type StoragePrepareInput = {

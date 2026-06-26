@@ -6,6 +6,7 @@
 
 import { mkdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { createLocalFileSystemStorage } from "../../../librarian/impl/dist/index.js";
 import { ensureConversationsLibrary } from "./ensure-conversations-library.js";
 import { ensureMemoryLibrary } from "./ensure-memory-library.js";
 import { resolveLocalRoot } from "./resolve-local-root.js";
@@ -44,8 +45,9 @@ export async function prepareLocalRuntime(
     repoRootPath,
     sandboxWorkspaceInput || join(knowledgeAgentRoot, "sandbox-workspaces", conversationId),
   );
-  await ensureConversationsLibrary(conversationsLibrary);
-  await ensureMemoryLibrary(memoryLibrary);
+  const runtimeStorage = createLocalFileSystemStorage();
+  await ensureConversationsLibrary(runtimeStorage, conversationsLibrary);
+  await ensureMemoryLibrary(runtimeStorage, memoryLibrary);
   await mkdir(conversationRoot, { recursive: true });
   await mkdir(sandboxWorkspace, { recursive: true });
   const runtime = {
@@ -56,6 +58,7 @@ export async function prepareLocalRuntime(
     sessionFile,
     tmpStorageLibrariesRoot,
     sandboxWorkspace,
+    runtimeStorage,
   };
   return runtime;
 }

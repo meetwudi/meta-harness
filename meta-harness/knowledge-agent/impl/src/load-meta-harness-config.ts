@@ -2,6 +2,7 @@
 // Supports knowledge-agent.storage-discovery-runtime: reads repository defaults from Meta Harness metadata.
 // Supports knowledge-agent.project-config-selection: resolves project-owned config files.
 // Supports knowledge-agent.proj-self-repository-project: keeps root config as the default repository self project.
+// Supports knowledge-agent.postgres-runtime-storage: parses configured runtime conversation storage.
 // Supports storage.postgres-deployment-configuration: parses deployment-supplied Postgres storage fields.
 // Supports storage.env-gated-storage-locations: parses optional environment gates for storage locations.
 // Harness-Requirement: storage.storage-location-knowledge
@@ -42,6 +43,14 @@ export type MetaHarnessStorageLocation = {
   guidanceUri?: string;
 };
 
+export type MetaHarnessRuntimeStorage = {
+  driverName?: string;
+  connectionStringEnv?: string;
+  schemaName?: string;
+  tableName?: string;
+  autoEnsureSchema?: boolean;
+};
+
 export type MetaHarnessConfig = {
   project?: {
     name?: string;
@@ -49,6 +58,9 @@ export type MetaHarnessConfig = {
   };
   storage?: {
     locations?: MetaHarnessStorageLocation[];
+  };
+  runtime?: {
+    conversationStorage?: MetaHarnessRuntimeStorage;
   };
 };
 

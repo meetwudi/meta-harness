@@ -1,0 +1,4 @@
+id = "proj-quartz.no-local-library-storage"
+title = "No local Library storage"
+source = "Human request on 2026-06-26: PROJ-Quartz should not include local Libraries; listed Libraries should be the harness/project itself or database-backed."
+text = "PROJ-Quartz runtime configuration does not include local machine Library storage locations; writable runtime Libraries and created application Libraries are database-backed."

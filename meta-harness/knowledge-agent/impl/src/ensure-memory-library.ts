@@ -1,19 +1,22 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.library-writes-memory: creates the writable Knowledge Agent memory Library.
+// Supports knowledge-agent.postgres-runtime-storage: creates the memory Library through the runtime storage driver.
 
-import { existsSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { LibrarianStorage } from "../../../librarian/impl/dist/index.js";
 import { MEMORY_LIBRARY_NAME } from "./constants.js";
 
 /**
  * Creates the Knowledge Agent memory Library used by multiple conversations.
  */
-export async function ensureMemoryLibrary(root: string): Promise<void> {
-  await mkdir(root, { recursive: true });
+export async function ensureMemoryLibrary(
+  storage: LibrarianStorage,
+  root: string,
+): Promise<void> {
+  await storage.makeDirectory(root);
   const libraryToml = join(root, "LIBRARY.toml");
-  if (!existsSync(libraryToml)) {
-    await writeFile(
+  if (!(await storage.exists(libraryToml))) {
+    await storage.writeText(
       libraryToml,
       [
         "# This is a Harness primitive.",
@@ -28,8 +31,8 @@ export async function ensureMemoryLibrary(root: string): Promise<void> {
     );
   }
   const memoryToml = join(root, "MEMORY.toml");
-  if (!existsSync(memoryToml)) {
-    await writeFile(
+  if (!(await storage.exists(memoryToml))) {
+    await storage.writeText(
       memoryToml,
       [
         "# This is a Harness primitive.",

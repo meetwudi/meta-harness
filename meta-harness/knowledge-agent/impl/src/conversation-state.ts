@@ -1,12 +1,13 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.conversation-state: validates and renders compact turn-to-turn conversation state.
+// Supports knowledge-agent.postgres-runtime-storage: persists state through the runtime storage driver.
 
 import {
   parseToml,
   resolveLibraryLocation,
   type LibrarianContext,
+  type LibrarianStorage,
 } from "../../../librarian/impl/dist/index.js";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { PreparedRuntime } from "./types.js";
 
@@ -30,6 +31,7 @@ export class ConversationStateRuntime {
   private state: ConversationState;
 
   constructor(
+    private readonly storage: LibrarianStorage,
     private readonly path: string,
     private readonly librarianContext: LibrarianContext,
     state: ConversationState,
@@ -43,8 +45,17 @@ export class ConversationStateRuntime {
     librarianContext: LibrarianContext;
   }): Promise<ConversationStateRuntime> {
     const path = join(input.runtime.conversationRoot, "conversation-state.toml");
-    const state = await loadConversationState(path, input.librarianContext.actorUri);
-    return new ConversationStateRuntime(path, input.librarianContext, state);
+    const state = await loadConversationState(
+      input.runtime.runtimeStorage,
+      path,
+      input.librarianContext.actorUri,
+    );
+    return new ConversationStateRuntime(
+      input.runtime.runtimeStorage,
+      path,
+      input.librarianContext,
+      state,
+    );
   }
 
   currentToml(): string {
@@ -52,7 +63,7 @@ export class ConversationStateRuntime {
   }
 
   async persistLatest(): Promise<void> {
-    await writeText(this.path, this.currentToml());
+    await writeText(this.storage, this.path, this.currentToml());
   }
 
   async update(input: ConversationStateUpdateInput): Promise<Record<string, unknown>> {
@@ -86,16 +97,15 @@ export class ConversationStateRuntime {
   }
 }
 
-async function loadConversationState(path: string, actorUri: string): Promise<ConversationState> {
-  let text = "";
-  try {
-    text = await readFile(path, "utf8");
-  } catch (error: unknown) {
-    if (isNodeErrorCode(error, "ENOENT")) {
-      return emptyConversationState(actorUri);
-    }
-    throw error;
+async function loadConversationState(
+  storage: LibrarianStorage,
+  path: string,
+  actorUri: string,
+): Promise<ConversationState> {
+  if (!(await storage.exists(path))) {
+    return emptyConversationState(actorUri);
   }
+  const text = await storage.readText(path);
 
   const data = parseToml(text);
   const allowedKeys = new Set(["actor_uri", "mentioned_goal", "mentioned_library"]);
@@ -250,11 +260,11 @@ function tomlString(value: string): string {
   return JSON.stringify(value);
 }
 
-async function writeText(path: string, content: string): Promise<void> {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, content);
-}
-
-function isNodeErrorCode(error: unknown, code: string): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === code;
+async function writeText(
+  storage: LibrarianStorage,
+  path: string,
+  content: string,
+): Promise<void> {
+  await storage.makeDirectory(dirname(path));
+  await storage.writeText(path, content);
 }

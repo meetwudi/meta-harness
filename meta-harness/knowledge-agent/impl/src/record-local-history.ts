@@ -4,8 +4,8 @@
 // Supports librarian.tool-call-observability: stores only Librarian tool call events in librarian-trace.json.
 // Supports knowledge-agent.conversation-turns: stores each run as a conversation turn.
 // Supports knowledge-agent.conversation-state: stores per-turn prompt state and next-turn state.
+// Supports knowledge-agent.postgres-runtime-storage: writes conversation history through the runtime storage driver.
 
-import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { recordConversationStateHistory } from "./conversation-state-history.js";
 import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
@@ -24,8 +24,8 @@ export async function recordLocalHistory(
   const turnRoot = join(conversationRoot, "turns", options.turnId);
   const beforeStateToml = options.conversationState.promptToml;
   const afterStateToml = options.conversationState.currentToml();
-  await mkdir(turnRoot, { recursive: true });
-  await writeFile(
+  await localRuntime.runtimeStorage.makeDirectory(turnRoot);
+  await localRuntime.runtimeStorage.writeText(
     join(conversationRoot, "CONVERSATION.toml"),
     [
       `conversation_id = ${JSON.stringify(options.conversationId)}`,
@@ -33,12 +33,12 @@ export async function recordLocalHistory(
       "",
     ].join("\n"),
   );
-  await writeFile(join(turnRoot, "prompt.md"), `${prompt}\n`);
-  await writeFile(
+  await localRuntime.runtimeStorage.writeText(join(turnRoot, "prompt.md"), `${prompt}\n`);
+  await localRuntime.runtimeStorage.writeText(
     join(turnRoot, "conversation-state.toml"),
     beforeStateToml,
   );
-  await writeFile(
+  await localRuntime.runtimeStorage.writeText(
     join(turnRoot, "conversation-state-after.toml"),
     afterStateToml,
   );
@@ -49,7 +49,7 @@ export async function recordLocalHistory(
     afterStateToml,
     recordedAt,
   });
-  await writeFile(
+  await localRuntime.runtimeStorage.writeText(
     join(turnRoot, "summary.md"),
     [
       `# Turn ${options.turnId}`,
@@ -78,7 +78,7 @@ export async function recordLocalHistory(
       "",
     ].join("\n"),
   );
-  await writeFile(
+  await localRuntime.runtimeStorage.writeText(
     join(turnRoot, "librarian-trace.json"),
     `${JSON.stringify(options.librarianContext.toolCallEvents, null, 2)}\n`,
   );

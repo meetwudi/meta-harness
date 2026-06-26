@@ -43,10 +43,10 @@ export async function main(): Promise<number> {
   }
 
   const provider = providerFromName(parsed.provider);
-  // Harness-Requirement: knowledge-agent.storage-agnostic-runtime
-  const storage = storageFromConfig();
   const repoRootPath = findRepoRoot(parsed.repoRoot);
   const config = loadMetaHarnessConfig(repoRootPath, parsed.projectConfig);
+  // Harness-Requirement: knowledge-agent.storage-agnostic-runtime
+  const storage = storageFromConfig(config);
   const configuredLocalRoot = parsed.localRoot || config.project?.localRoot;
   if (!configuredLocalRoot) {
     throw new Error(".meta-harness.json project.localRoot is required");

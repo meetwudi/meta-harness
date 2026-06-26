@@ -1,9 +1,9 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.conversation-state: records auditable conversation state history bookkeeping.
+// Supports knowledge-agent.postgres-runtime-storage: writes state history through the runtime storage driver.
 
 import { parseToml } from "../../../librarian/impl/dist/index.js";
 import { createHash } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { PreparedRuntime } from "./types.js";
 
@@ -28,7 +28,7 @@ export async function recordConversationStateHistory(input: {
   recordedAt: string;
 }): Promise<void> {
   const historyPath = join(input.runtime.conversationRoot, "conversation-state-history.toml");
-  const existing = await readConversationStateHistory(historyPath);
+  const existing = await readConversationStateHistory(input.runtime, historyPath);
   const snapshots = existing.filter(
     (snapshot) =>
       snapshot.turnId !== input.turnId ||
@@ -52,21 +52,20 @@ export async function recordConversationStateHistory(input: {
     }),
   );
 
-  await writeFile(historyPath, renderConversationStateHistory(snapshots));
+  await input.runtime.runtimeStorage.writeText(
+    historyPath,
+    renderConversationStateHistory(snapshots),
+  );
 }
 
 async function readConversationStateHistory(
+  runtime: PreparedRuntime,
   path: string,
 ): Promise<ConversationStateHistorySnapshot[]> {
-  let text = "";
-  try {
-    text = await readFile(path, "utf8");
-  } catch (error: unknown) {
-    if (isNodeErrorCode(error, "ENOENT")) {
-      return [];
-    }
-    throw error;
+  if (!(await runtime.runtimeStorage.exists(path))) {
+    return [];
   }
+  const text = await runtime.runtimeStorage.readText(path);
   const data = parseToml(text);
   const allowedKeys = new Set(["state_snapshot"]);
   for (const key of Object.keys(data)) {
@@ -166,8 +165,4 @@ function sha256(value: string): string {
 
 function tomlString(value: string): string {
   return JSON.stringify(value);
-}
-
-function isNodeErrorCode(error: unknown, code: string): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === code;
 }

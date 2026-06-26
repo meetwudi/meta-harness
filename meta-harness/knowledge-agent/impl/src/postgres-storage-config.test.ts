@@ -244,6 +244,7 @@ function preparedRuntime(workRootPath: string, localRootPath: string): PreparedR
     sessionFile: join(localRootPath, "knowledge-agent", "conversations", "config-test", "session.jsonl"),
     tmpStorageLibrariesRoot: join(workRootPath, "tmp-local-storage", "libraries"),
     sandboxWorkspace: join(workRootPath, "sandbox"),
+    runtimeStorage: createLocalFileSystemStorage(),
   };
 }
 

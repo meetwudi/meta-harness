@@ -4,6 +4,14 @@
     "name": "proj-quartz",
     "localRoot": "~/.proj-quartz"
   },
+  "runtime": {
+    "conversationStorage": {
+      "driverName": "postgres",
+      "connectionStringEnv": "QUARTZ_POSTGRES_URL",
+      "schemaName": "meta_harness",
+      "tableName": "resources"
+    }
+  },
   "storage": {
     "locations": [
       {
@@ -39,7 +47,7 @@
         "grants": [
           {
             "actors": ["actor://knowledge-agent"],
-            "capabilities": ["read", "write", "delete", "query", "blob"]
+            "capabilities": ["read", "query", "blob"]
           }
         ],
         "libraryRootPath": "{{projectRootPath}}",
@@ -50,45 +58,6 @@
           "app/.next",
           "app/.next/**"
         ],
-        "discoverLibraries": true,
-        "sourceUri": "library://proj-quartz/.meta-harness.json",
-        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
-      },
-      {
-        "name": "project-local",
-        "description": "PROJ-Quartz machine-local Libraries under the project local root.",
-        "driverName": "filesystem",
-        "grants": [
-          {
-            "actors": ["actor://knowledge-agent"],
-            "capabilities": ["read", "write", "delete", "query", "blob"]
-          }
-        ],
-        "libraryRootPath": "{{localRoot}}",
-        "discoveryMode": "filesystem-recursive",
-        "discoveryExcludes": [
-          "knowledge-agent/sandbox-workspaces",
-          "knowledge-agent/sandbox-workspaces/**",
-          "knowledge-agent/tmp-local-storage",
-          "knowledge-agent/tmp-local-storage/**"
-        ],
-        "discoverLibraries": true,
-        "sourceUri": "library://proj-quartz/.meta-harness.json",
-        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
-      },
-      {
-        "name": "tmp-local",
-        "description": "PROJ-Quartz temporary local filesystem storage for scratch Libraries.",
-        "driverName": "filesystem",
-        "grants": [
-          {
-            "actors": ["actor://knowledge-agent"],
-            "capabilities": ["read", "write", "delete", "query", "blob"]
-          }
-        ],
-        "libraryRootPath": "{{tmpStorageLibrariesRoot}}",
-        "discoveryMode": "filesystem-root-and-direct-children",
-        "discoveryExcludes": [],
         "discoverLibraries": true,
         "sourceUri": "library://proj-quartz/.meta-harness.json",
         "guidanceUri": "library://meta-harness/storage/STORAGE.md"
