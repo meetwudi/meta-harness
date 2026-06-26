@@ -148,7 +148,7 @@ await writeFile(
 );
 await writeFile(
   join(manualRoot, "README.md"),
-  "Manual root file.\n",
+  "Manual root file with 12345 noise.\n",
 );
 await writeFile(
   join(manualDocsRoot, "deep.md"),
@@ -284,9 +284,9 @@ await executeLibrarianTool(context, "librarian_read", {
   uri: "library://tmp-created-library/note.md",
 });
 await executeLibrarianTool(context, "librarian_search", {
-  libraryUriPatterns: ["library://fixture-*"],
+  libraryUriPatterns: ["library://fixture-memory", "library://fixture-manual"],
   query: "12345",
-  limit: 5,
+  limit: 1,
 });
 let nonCanonicalTagsUriRejected = false;
 try {

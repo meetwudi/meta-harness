@@ -91,15 +91,15 @@ try {
     ),
   );
 
-  const content = "Postgres-backed Library resource for customer acquisition search.\n";
+  const content = "Postgres-backed Library resource for information trading search.\n";
   const updated = await executeLibrarianTool(context, "librarian_update", {
-    uri: "library://pg-fixture/notes/customer.md",
+    uri: "library://pg-fixture/notes/information.md",
     content,
   });
-  assert.equal(readPath(updated, ["uri"]), "library://pg-fixture/notes/customer.md");
+  assert.equal(readPath(updated, ["uri"]), "library://pg-fixture/notes/information.md");
 
   const read = await executeLibrarianTool(context, "librarian_read", {
-    uri: "library://pg-fixture/notes/customer.md",
+    uri: "library://pg-fixture/notes/information.md",
   });
   assert.equal(readPath(read, ["content"]), content);
 
@@ -109,28 +109,28 @@ try {
   });
   assert.ok(
     arrayAt(files, ["files"]).some(
-      (file) => readPath(file, ["uri"]) === "library://pg-fixture/notes/customer.md",
+      (file) => readPath(file, ["uri"]) === "library://pg-fixture/notes/information.md",
     ),
   );
 
   const searched = await executeLibrarianTool(context, "librarian_search", {
     libraryUriPatterns: ["library://pg-fixture"],
-    query: "customer acquisition",
+    query: "information trading",
     limit: 10,
   });
   assert.ok(
     arrayAt(readPath(searched, ["results", 0]), ["matches"]).some(
-      (match) => readPath(match, ["uri"]) === "library://pg-fixture/notes/customer.md",
+      (match) => readPath(match, ["uri"]) === "library://pg-fixture/notes/information.md",
     ),
   );
 
   await executeLibrarianTool(context, "librarian_add_tags", {
     scopeUri: "library://pg-fixture/notes",
-    tags: ["customer-acquisition"],
+    tags: ["information-trading"],
   });
   const tagQuery = await executeLibrarianTool(context, "librarian_query_by_tags", {
     libraryUris: ["library://pg-fixture"],
-    tags: ["customer-acquisition"],
+    tags: ["information-trading"],
   });
   assert.equal(
     readPath(tagQuery, ["results", 0, "matches", 0, "scopeUri"]),

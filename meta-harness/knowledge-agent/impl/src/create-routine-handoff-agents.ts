@@ -15,6 +15,7 @@ import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
 import { createRoutineLibrarianContext } from "./create-routine-librarian-context.js";
 import { discoverRepositoryRoutines } from "./discover-repository-routines.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
+import type { ReasoningEffort } from "./types.js";
 
 /**
  * Creates one Routine-backed handoff agent for each repository Routine definition.
@@ -23,6 +24,7 @@ export function createRoutineHandoffAgents(input: {
   repoRoot: string;
   goal: string;
   model: string;
+  reasoningEffort: ReasoningEffort;
   manifest: Manifest;
   librarianContext: LibrarianContext;
 }): Handoff<unknown, TextOutput>[] {
@@ -40,6 +42,11 @@ export function createRoutineHandoffAgents(input: {
       name: `Meta Harness Routine ${routine.name}`,
       handoffDescription: `Execute Meta Harness Routine ${routine.name}: ${routine.purpose}`,
       model: input.model,
+      modelSettings: {
+        reasoning: {
+          effort: input.reasoningEffort,
+        },
+      },
       instructions: [
         RECOMMENDED_PROMPT_PREFIX,
         routinePrompt,

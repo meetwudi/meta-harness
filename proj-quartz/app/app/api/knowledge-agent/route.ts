@@ -11,6 +11,7 @@ export const maxDuration = 180;
 // Harness-Requirement: proj-quartz.local-postgres-deployment
 // Harness-Requirement: proj-quartz.project-owned-config
 // Harness-Requirement: proj-quartz.follow-up-chat-context
+// Harness-Requirement: proj-quartz.reasoning-effort-selector
 type AgUiContentPart = {
   type?: string;
   text?: string;
@@ -25,14 +26,32 @@ type RunAgentInput = {
   threadId?: string;
   runId?: string;
   messages?: AgUiMessage[];
+  forwardedProps?: unknown;
 };
 
 type AgUiEvent = Record<string, unknown> & {
   type: string;
 };
 
+type ReasoningEffort =
+  | "none"
+  | "minimal"
+  | "low"
+  | "medium"
+  | "high"
+  | "xhigh";
+
 const textEncoder = new TextEncoder();
 const defaultTimeoutMs = 180_000;
+const defaultReasoningEffort: ReasoningEffort = "medium";
+const reasoningEfforts: ReasoningEffort[] = [
+  "none",
+  "minimal",
+  "low",
+  "medium",
+  "high",
+  "xhigh",
+];
 
 function repoRootPath(): string {
   if (process.env.QUARTZ_REPO_ROOT) {
@@ -61,6 +80,33 @@ function eventBytes(event: AgUiEvent): Uint8Array {
 function safeId(value: string, fallback: string): string {
   const cleaned = value.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 96);
   return cleaned || fallback;
+}
+
+function objectRecord(value: unknown): Record<string, unknown> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+
+  return {};
+}
+
+function isReasoningEffort(value: string): value is ReasoningEffort {
+  return reasoningEfforts.some((effort) => effort === value);
+}
+
+function reasoningEffortFromInput(input: RunAgentInput): ReasoningEffort {
+  const value = objectRecord(input.forwardedProps).reasoningEffort;
+  if (value === undefined) {
+    return defaultReasoningEffort;
+  }
+
+  if (typeof value === "string" && isReasoningEffort(value)) {
+    return value;
+  }
+
+  throw new Error(
+    `Invalid reasoning effort. Expected one of ${reasoningEfforts.join(", ")}.`,
+  );
 }
 
 function messageText(message: AgUiMessage): string {
@@ -172,6 +218,7 @@ async function runKnowledgeAgent(input: {
   goal: string;
   threadId: string;
   runId: string;
+  reasoningEffort: ReasoningEffort;
 }): Promise<string> {
   assertQuartzPostgresConfigured();
   const repoRoot = repoRootPath();
@@ -201,6 +248,8 @@ async function runKnowledgeAgent(input: {
         `quartz-${safeId(input.threadId, "thread")}`,
         "--turn-id",
         `quartz-${safeId(input.runId, "run")}`,
+        "--reasoning-effort",
+        input.reasoningEffort,
         "--goal",
         input.goal,
       ],
@@ -277,7 +326,12 @@ export async function POST(request: NextRequest) {
           throw new Error("Send a message for the Knowledge Agent to answer.");
         }
 
-        const output = await runKnowledgeAgent({ goal, threadId, runId });
+        const output = await runKnowledgeAgent({
+          goal,
+          threadId,
+          runId,
+          reasoningEffort: reasoningEffortFromInput(input),
+        });
         for (const chunk of chunkText(output)) {
           if (chunk) {
             send({

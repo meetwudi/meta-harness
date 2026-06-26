@@ -17,6 +17,7 @@ import { createGoalAuditorLibrarianContext } from "./create-goal-auditor-librari
 import { createGoalOpenAITools } from "./create-goal-openai-tools.js";
 import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
+import type { ReasoningEffort } from "./types.js";
 
 const GOAL_AUDITOR_ACTOR_URI = "actor://goal-auditor";
 
@@ -35,6 +36,7 @@ export function createGoalAuditorHandoffAgent(input: {
   repoRoot: string;
   goal: string;
   model: string;
+  reasoningEffort: ReasoningEffort;
   manifest: Manifest;
   librarianContext: LibrarianContext;
 }): Handoff<unknown, TextOutput> {
@@ -53,6 +55,11 @@ export function createGoalAuditorHandoffAgent(input: {
     name: "Meta Harness Goal Auditor",
     handoffDescription: "Audit whether a Meta Harness Goal is met and record an independent audit signal.",
     model: input.model,
+    modelSettings: {
+      reasoning: {
+        effort: input.reasoningEffort,
+      },
+    },
     instructions: [
       RECOMMENDED_PROMPT_PREFIX,
       auditorPrompt,
@@ -140,7 +147,7 @@ function formatGoalAuditInput(input: GoalAuditHandoffInput | undefined): string 
     `Evidence refs: ${input.evidenceRefs.join(", ") || "(none provided)"}`,
     `Evidence Library URIs: ${input.evidenceUris.join(", ") || "(none provided)"}`,
     "",
-    "First call librarian_intro.",
+    "First call librarian_intro, then call librarian_list_libraries.",
     "Then read library://meta-harness/primitives/GOAL.md.",
     "Then read the Goal record through Librarian, read the Evidence Library URIs through Librarian, and call goal_complete_audit.",
     "Do not use shell or sandbox filesystem tools to inspect Goal evidence.",

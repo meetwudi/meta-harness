@@ -1,0 +1,4 @@
+id = "librarian.search-library-pattern-order"
+title = "Search respects requested Library order"
+source = "Human-observed requirement on 2026-06-26 while verifying PROJ-Quartz retrieval: noisy conversation Libraries must not starve an explicitly requested Memory Library."
+text = "Librarian search processes matching Libraries in the order implied by the requested Library URI patterns so earlier requested Libraries can return matches before later noisy Libraries consume the result limit."

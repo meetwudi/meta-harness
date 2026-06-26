@@ -1,0 +1,4 @@
+id = "knowledge-agent.openai-reasoning-effort"
+title = "Knowledge Agent applies OpenAI reasoning effort"
+source = "Human-listed requirement on 2026-06-26: Knowledge Agent should use medium reasoning and allow reasoning selection from the chat."
+text = "Knowledge Agent accepts a reasoning effort setting, defaults it to medium, validates supported values, and applies it to OpenAI model settings."

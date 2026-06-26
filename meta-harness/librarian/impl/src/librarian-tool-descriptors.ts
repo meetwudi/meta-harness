@@ -16,7 +16,7 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
   return [
     {
       name: "librarian_intro",
-      description: "Start here. Returns primitive onboarding content using the search result shape.",
+      description: "Call this first before any other Librarian tool. Returns primitive onboarding content using the search result shape.",
       parameters: {
         type: "object",
         properties: {},
@@ -25,7 +25,7 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
     },
     {
       name: "librarian_list_libraries",
-      description: "List storage-discovered Libraries with readable and writable access.",
+      description: "Call this immediately after librarian_intro to list storage-discovered Libraries with readable and writable access.",
       parameters: {
         type: "object",
         properties: {},

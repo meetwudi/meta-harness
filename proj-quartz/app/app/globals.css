@@ -30,6 +30,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -127,13 +128,47 @@ textarea {
 .quartz-chat-frame {
   height: calc(100vh - 120px);
   min-height: 520px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: var(--quartz-panel);
   border: 1px solid var(--quartz-line);
   border-radius: 8px;
 }
 
-.quartz-chat-frame > * {
+.quartz-chat-toolbar {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--quartz-line);
+  background: #fbfcfa;
+}
+
+.quartz-chat-toolbar label {
+  color: var(--quartz-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.quartz-chat-toolbar select {
+  min-width: 116px;
+  height: 32px;
+  border: 1px solid var(--quartz-line);
+  border-radius: 6px;
+  background: var(--quartz-panel);
+  color: var(--quartz-ink);
+  padding: 0 28px 0 10px;
+}
+
+.quartz-chat-body {
+  min-height: 0;
+  flex: 1;
+}
+
+.quartz-chat-body > * {
   height: 100%;
 }
 

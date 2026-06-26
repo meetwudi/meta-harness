@@ -4,6 +4,7 @@ source = "Human request on 2026-06-23 to spec each provided agent tool, applied 
 text = "`librarian_list_libraries` returns storage-discovered Libraries visible to the active Librarian context."
 clarifications = [
   "Input schema has no properties and disallows additional properties.",
+  "Tool description identifies `librarian_list_libraries` as the Library discovery call to make immediately after `librarian_intro`.",
   "Output contains a `libraries` array.",
   "Each listed Library includes name, URI, description, readable, and writable fields computed from storage discovery and actor governance.",
 ]

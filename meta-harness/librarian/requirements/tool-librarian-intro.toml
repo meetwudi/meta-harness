@@ -4,6 +4,7 @@ source = "Human request on 2026-06-23 to spec each provided agent tool, applied 
 text = "`librarian_intro` returns primitive onboarding, Library creation, and storage guidance content to an agent using the Librarian search-result shape."
 clarifications = [
   "Input schema has no properties and disallows additional properties.",
+  "Tool description identifies `librarian_intro` as the first Librarian tool call in a run.",
   "Output identifies `library://meta-harness` as the Library URI pattern and returns matching onboarding resources with Library listings and content.",
   "The tool reads onboarding content through Library resolution instead of exposing host-local filesystem paths.",
 ]

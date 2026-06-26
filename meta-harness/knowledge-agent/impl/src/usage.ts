@@ -14,6 +14,7 @@ export function usage(): string {
     "Options:",
     "  --provider <name>              Provider name. Default: openai",
     "  --model <model>                Provider model. Default: provider cheap model",
+    "  --reasoning-effort <effort>    Reasoning effort. Default: medium",
     "  --client <unix|docker>         Sandbox client. Default: unix",
     "  --repo-root <path>             Repository root. Default: discovered from cwd",
     "  --project-config <path>        Project config path. Default: .meta-harness.json",

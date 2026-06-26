@@ -4,6 +4,7 @@
 // Supports librarian.agent-excludes: skips excluded Library paths during searches.
 // Supports librarian.library-uri-verification: verifies exact Library URI search patterns.
 // Supports librarian.postgres-backed-library-interface: searches Postgres-backed Library resources.
+// Supports librarian.search-library-pattern-order: searches Libraries in requested URI pattern order.
 
 import { contentSnippet } from "./content-snippet.js";
 import { libraryResourceUri } from "./library-resource-uri.js";
@@ -32,11 +33,18 @@ export async function searchLibraryFiles(
   const limit = Math.max(1, Math.min(input.limit ?? 10, 25));
   const allLibraries = await loadResolvedLibraries(context);
   verifyLibraryUriPatterns(input.libraryUriPatterns, allLibraries);
-  const libraries = allLibraries.filter(
-    (library) =>
-      library.readable &&
-      matchesAnyPattern(input.libraryUriPatterns, library.uri),
-  );
+  const libraries = allLibraries
+    .filter(
+      (library) =>
+        library.readable &&
+        matchesAnyPattern(input.libraryUriPatterns, library.uri),
+    )
+    .map((library) => ({
+      library,
+      order: matchingPatternIndex(input.libraryUriPatterns, library.uri),
+    }))
+    .sort((left, right) => left.order - right.order)
+    .map((entry) => entry.library);
   const results: Record<string, unknown>[] = [];
   let matchCount = 0;
   for (const library of libraries) {
@@ -75,4 +83,9 @@ export async function searchLibraryFiles(
     query: input.query,
     results,
   };
+}
+
+function matchingPatternIndex(patterns: string[], libraryUri: string): number {
+  const index = patterns.findIndex((pattern) => matchesAnyPattern([pattern], libraryUri));
+  return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
 }

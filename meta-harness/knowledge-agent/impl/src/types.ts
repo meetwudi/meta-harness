@@ -6,6 +6,7 @@
 // Supports knowledge-agent.conversation-state: carries generated conversation state through provider runs.
 // Supports knowledge-agent.project-config-selection: carries selected project config through local runtime context.
 // Supports knowledge-agent.postgres-runtime-storage: carries the runtime text storage driver through the runtime.
+// Supports knowledge-agent.openai-reasoning-effort: carries selected reasoning effort through provider runs.
 
 import type {
   DockerSandboxClient,
@@ -18,12 +19,15 @@ import type {
 import type { ConversationStateRuntime } from "./conversation-state.js";
 import type { KnowledgeAgentSession } from "./local-jsonl-session.js";
 
+export type ReasoningEffort = "none" | "minimal" | "low" | "medium" | "high" | "xhigh";
+
 export type Args = {
   command?: string;
   repoRoot: string;
   goal?: string;
   provider: string;
   model?: string;
+  reasoningEffort: ReasoningEffort;
   client: string;
   projectConfig: string;
   conversationId: string;
@@ -36,6 +40,7 @@ export type ProviderRunOptions = {
   repoRoot: string;
   goal: string;
   model: string;
+  reasoningEffort: ReasoningEffort;
   client: string;
   conversationId: string;
   turnId: string;

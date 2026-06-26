@@ -1,0 +1,4 @@
+id = "knowledge-agent.prompt-calls-library-list"
+title = "Knowledge Agent prompt calls Library listing after intro"
+source = "Human-listed requirement on 2026-06-26: call librarian_intro first and then call the Library listing tool."
+text = "The shared Knowledge Agent starter prompt and handoff instructions explicitly require calling librarian_list_libraries immediately after librarian_intro before reading Libraries, making edits, or answering the user."

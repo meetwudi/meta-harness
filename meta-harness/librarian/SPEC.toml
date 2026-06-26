@@ -4,7 +4,7 @@
 # This file marks this folder as a Spec primitive.
 name = "librarian"
 version = "v0.0.0"
-source = "Human-listed Librarian requirements captured starting on 2026-06-19, including Routine actor naming, Tags operations, spec-backed tool requirements captured on 2026-06-23, and Postgres-backed Library interface requirements captured on 2026-06-25."
+source = "Human-listed Librarian requirements captured starting on 2026-06-19, including Routine actor naming, Tags operations, spec-backed tool requirements captured on 2026-06-23, Postgres-backed Library interface requirements captured on 2026-06-25, and requested Library search ordering captured on 2026-06-26."
 
 [[requirement_collections]]
 name = "requirements"

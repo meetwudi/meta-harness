@@ -2,6 +2,7 @@
 // Supports knowledge-agent.storage-discovery-runtime: reads storage-discovery CLI inputs.
 // Supports knowledge-agent.provider-interface: reads provider, model, and sandbox selection inputs.
 // Supports knowledge-agent.project-config-selection: reads the selected project config path.
+// Supports knowledge-agent.openai-reasoning-effort: reads reasoning effort from CLI and environment.
 // Harness-Requirement: knowledge-agent.project-config-selection
 
 import {
@@ -10,6 +11,7 @@ import {
 } from "./constants.js";
 import { defaultConversationId } from "./default-conversation-id.js";
 import { defaultTurnId } from "./default-turn-id.js";
+import { parseReasoningEffort } from "./reasoning-effort.js";
 import type { Args } from "./types.js";
 
 /**
@@ -20,6 +22,7 @@ export function parseArgs(argv: string[]): Args {
     repoRoot: process.cwd(),
     provider: process.env.KNOWLEDGE_AGENT_PROVIDER ?? DEFAULT_PROVIDER,
     model: process.env.KNOWLEDGE_AGENT_MODEL,
+    reasoningEffort: parseReasoningEffort(process.env.KNOWLEDGE_AGENT_REASONING_EFFORT),
     client: process.env.KNOWLEDGE_AGENT_SANDBOX_CLIENT ?? DEFAULT_CLIENT,
     projectConfig: process.env.KNOWLEDGE_AGENT_PROJECT_CONFIG ?? ".meta-harness.json",
     conversationId: defaultConversationId(),
@@ -48,6 +51,9 @@ export function parseArgs(argv: string[]): Args {
         break;
       case "--model":
         args.model = value;
+        break;
+      case "--reasoning-effort":
+        args.reasoningEffort = parseReasoningEffort(value);
         break;
       case "--client":
         args.client = value;

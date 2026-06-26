@@ -68,6 +68,7 @@ export async function main(): Promise<number> {
       runtime,
       repoRootPath,
       model: parsed.model ?? provider.defaultModel,
+      reasoningEffort: parsed.reasoningEffort,
       session,
     });
     return 0;
@@ -82,6 +83,7 @@ export async function main(): Promise<number> {
     goal: parsed.goal ?? "",
     turnId: parsed.turnId,
     model: parsed.model ?? provider.defaultModel,
+    reasoningEffort: parsed.reasoningEffort,
     session,
   });
   console.log(finalOutput);
@@ -98,6 +100,7 @@ async function runInteractiveChat(input: {
   runtime: PreparedRuntime;
   repoRootPath: string;
   model: string;
+  reasoningEffort: Args["reasoningEffort"];
   session: ProviderRunOptions["session"];
 }): Promise<void> {
   console.error(`Conversation: ${input.parsed.conversationId}`);
@@ -124,6 +127,7 @@ async function runInteractiveChat(input: {
         goal: trimmed,
         turnId: defaultTurnId(),
         model: input.model,
+        reasoningEffort: input.reasoningEffort,
         session: input.session,
       });
       console.log(finalOutput);
@@ -145,6 +149,7 @@ async function runKnowledgeAgentTurn(input: {
   goal: string;
   turnId: string;
   model: string;
+  reasoningEffort: Args["reasoningEffort"];
   session: ProviderRunOptions["session"];
 }): Promise<string> {
   const librarianContext = input.storage.createLibrarianContext(
@@ -166,6 +171,7 @@ async function runKnowledgeAgentTurn(input: {
     repoRoot: input.repoRootPath,
     goal: input.goal,
     model: input.model,
+    reasoningEffort: input.reasoningEffort,
     client: input.parsed.client,
     conversationId: input.parsed.conversationId,
     turnId: input.turnId,

@@ -2,3 +2,6 @@ id = "knowledge-agent.prompt-library-grounding"
 title = "Knowledge Agent prompt grounds answers in Libraries"
 source = "Human-listed requirement on 2026-06-26: ground all answers by inspecting Libraries thoroughly."
 text = "The shared Knowledge Agent starter prompt explicitly tells agents to ground all answers by inspecting Libraries thoroughly."
+clarifications = [
+  "After calling librarian_intro and librarian_list_libraries, the agent uses the Library listing to choose relevant Libraries and inspect them before answering.",
+]

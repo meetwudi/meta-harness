@@ -8,6 +8,7 @@
 // Supports knowledge-agent.goal-auditor-agent: exposes an independent Goal Auditor handoff agent.
 // Supports knowledge-agent.goal-shared-interface: exposes shared Goal tools to the Knowledge Agent.
 // Supports knowledge-agent.conversation-state: exposes the validated state callback tool.
+// Supports knowledge-agent.openai-reasoning-effort: applies configured reasoning effort to OpenAI agents.
 
 import { getGlobalTraceProvider, withTrace } from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
@@ -34,6 +35,7 @@ export async function runOpenAIConversation(
     repoRoot: options.repoRoot,
     goal: options.goal,
     model: options.model,
+    reasoningEffort: options.reasoningEffort,
     manifest,
     librarianContext: options.librarianContext,
   });
@@ -41,16 +43,23 @@ export async function runOpenAIConversation(
     repoRoot: options.repoRoot,
     goal: options.goal,
     model: options.model,
+    reasoningEffort: options.reasoningEffort,
     manifest,
     librarianContext: options.librarianContext,
   });
   const agent = new SandboxAgent({
     name: "Meta Harness Knowledge Agent",
     model: options.model,
+    modelSettings: {
+      reasoning: {
+        effort: options.reasoningEffort,
+      },
+    },
     instructions: [
       RECOMMENDED_PROMPT_PREFIX,
       "You are the Meta Harness Knowledge Agent.",
       "Follow the shared Knowledge Agent starter prompt in knowledge-agent/knowledge-agent.md and in the run input.",
+      "Before any other Librarian tool call or final answer, call librarian_intro first, then call librarian_list_libraries.",
       "Never claim an independent Goal audit result yourself. After goal_request_audit, hand off to Meta Harness Goal Auditor with the returned payload and report an audit signal only after goal_complete_audit succeeds.",
     ].join(" "),
     handoffs: [

@@ -1,0 +1,4 @@
+id = "knowledge-agent.prompt-user-facing-language"
+title = "Knowledge Agent prompt avoids unnecessary internal terminology"
+source = "Human-listed requirement on 2026-06-26: do not overexpose how internals work unless the user has used terminology implying familiarity with the system."
+text = "The shared Knowledge Agent starter prompt tells agents to keep answers user-facing and avoid unnecessary internal terminology unless the user uses system terminology or asks for internal details."
