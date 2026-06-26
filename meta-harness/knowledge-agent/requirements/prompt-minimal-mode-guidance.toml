@@ -1,0 +1,4 @@
+id = "knowledge-agent.prompt-minimal-mode-guidance"
+title = "Knowledge Agent prompt uses minimal mode guidance"
+source = "Human-listed requirement on 2026-06-26: mode-specific rules should live in the referenced primitive documents rather than duplicated in the shared starter prompt."
+text = "The shared Knowledge Agent starter prompt keeps Conversation, Routine, and Goal Audit mode instructions compact and points agents to governing primitive documents for mode behavior."
