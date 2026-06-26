@@ -6,6 +6,8 @@
 // Supports knowledge-agent.storage-agnostic-runtime: uses storage through an implementation interface.
 // Supports knowledge-agent.uses-librarian: routes Library operations through Librarian.
 // Supports knowledge-agent.conversation-state: prepares generated conversation state for each turn.
+// Supports knowledge-agent.project-config-selection: loads the selected project config for runtime storage.
+// Harness-Requirement: knowledge-agent.project-config-selection
 
 import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
 import { ConversationStateRuntime } from "./conversation-state.js";
@@ -44,7 +46,7 @@ export async function main(): Promise<number> {
   // Harness-Requirement: knowledge-agent.storage-agnostic-runtime
   const storage = storageFromConfig();
   const repoRootPath = findRepoRoot(parsed.repoRoot);
-  const config = loadMetaHarnessConfig(repoRootPath);
+  const config = loadMetaHarnessConfig(repoRootPath, parsed.projectConfig);
   const configuredLocalRoot = parsed.localRoot || config.project?.localRoot;
   if (!configuredLocalRoot) {
     throw new Error(".meta-harness.json project.localRoot is required");
@@ -148,6 +150,7 @@ async function runKnowledgeAgentTurn(input: {
   const librarianContext = input.storage.createLibrarianContext(
     {
       repoRootPath: input.repoRootPath,
+      projectConfigPath: input.parsed.projectConfig,
       conversationId: input.parsed.conversationId,
     },
     input.runtime,

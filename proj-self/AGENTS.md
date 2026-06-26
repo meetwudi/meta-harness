@@ -1,6 +1,6 @@
-# Self-Maintenance Project
+# PROJ Self
 
-This folder is the self-maintenance project for the Meta Harness repository.
+This folder is the repository self project for the Meta Harness repository.
 
 Meta Harness maintains its own repository knowledge in this top-level project
 Library.

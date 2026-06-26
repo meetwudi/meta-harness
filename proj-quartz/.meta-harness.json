@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "project": {
+    "name": "proj-quartz",
+    "localRoot": "~/.proj-quartz"
+  },
+  "storage": {
+    "locations": [
+      {
+        "name": "meta-harness-framework",
+        "description": "Checked-in Meta Harness framework knowledge needed by PROJ-Quartz agents.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{repoRootPath}}/meta-harness",
+        "discoveryMode": "filesystem-root-and-direct-children",
+        "discoveryExcludes": [
+          "templates",
+          "templates/**",
+          "knowledge-agent/impl/node_modules",
+          "knowledge-agent/impl/node_modules/**",
+          "knowledge-agent/impl/dist",
+          "knowledge-agent/impl/dist/**",
+          "librarian/impl/dist",
+          "librarian/impl/dist/**"
+        ],
+        "discoverLibraries": true,
+        "sourceUri": "library://proj-quartz/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      },
+      {
+        "name": "project",
+        "description": "PROJ-Quartz project knowledge and application files.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{projectRootPath}}",
+        "discoveryMode": "filesystem-root-and-direct-children",
+        "discoveryExcludes": [
+          "app/node_modules",
+          "app/node_modules/**",
+          "app/.next",
+          "app/.next/**"
+        ],
+        "discoverLibraries": true,
+        "sourceUri": "library://proj-quartz/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      },
+      {
+        "name": "project-local",
+        "description": "PROJ-Quartz machine-local Libraries under the project local root.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{localRoot}}",
+        "discoveryMode": "filesystem-recursive",
+        "discoveryExcludes": [
+          "knowledge-agent/sandbox-workspaces",
+          "knowledge-agent/sandbox-workspaces/**",
+          "knowledge-agent/tmp-local-storage",
+          "knowledge-agent/tmp-local-storage/**"
+        ],
+        "discoverLibraries": true,
+        "sourceUri": "library://proj-quartz/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      },
+      {
+        "name": "tmp-local",
+        "description": "PROJ-Quartz temporary local filesystem storage for scratch Libraries.",
+        "driverName": "filesystem",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query", "blob"]
+          }
+        ],
+        "libraryRootPath": "{{tmpStorageLibrariesRoot}}",
+        "discoveryMode": "filesystem-root-and-direct-children",
+        "discoveryExcludes": [],
+        "discoverLibraries": true,
+        "sourceUri": "library://proj-quartz/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      },
+      {
+        "name": "quartz-postgres",
+        "description": "PROJ-Quartz Postgres-backed storage location for database-backed Libraries.",
+        "driverName": "postgres",
+        "enabledWhenEnv": "QUARTZ_POSTGRES_URL",
+        "connectionStringEnv": "QUARTZ_POSTGRES_URL",
+        "schemaName": "meta_harness",
+        "tableName": "resources",
+        "grants": [
+          {
+            "actors": ["actor://knowledge-agent"],
+            "capabilities": ["read", "write", "delete", "query"]
+          }
+        ],
+        "libraryRootPath": "/libraries",
+        "discoveryMode": "resource-root-and-direct-children",
+        "discoveryExcludes": [],
+        "discoverLibraries": true,
+        "sourceUri": "library://proj-quartz/.meta-harness.json",
+        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
+      }
+    ]
+  }
+}

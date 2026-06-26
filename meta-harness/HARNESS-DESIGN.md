@@ -17,7 +17,7 @@ and Routines that it defines.
 tools, and runtime implementation.
 
 Top-level `proj-*` directories are project Libraries. This repository's
-self-maintenance project lives under `proj-self-maintenance/`.
+repository self project lives under `proj-self/`.
 
 Harness docs use progressive disclosure through `AGENTS.md` files. A harness doc should be reachable from the root by following the `AGENTS.md` chain.
 

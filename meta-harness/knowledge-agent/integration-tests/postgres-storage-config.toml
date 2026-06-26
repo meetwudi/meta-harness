@@ -2,19 +2,24 @@ id = "knowledge-agent.integration.postgres-storage-config"
 title = "Postgres storage location configuration"
 requirements = [
   "knowledge-agent.local-filesystem-storage-compatibility",
+  "knowledge-agent.project-config-selection",
   "storage.env-gated-storage-locations",
+  "storage.project-scoped-storage-locations",
   "storage.postgres-deployment-configuration",
+  "proj-quartz.project-owned-config",
   "proj-quartz.postgres-backed-libraries",
 ]
 procedure = [
-  "Create repository storage knowledge with a filesystem location and an env-gated Postgres location.",
-  "Materialize storage locations without the Postgres environment variable.",
+  "Create repository self storage knowledge with a machine-local filesystem location.",
+  "Create project storage knowledge with project-scoped filesystem locations and an env-gated Postgres location.",
+  "Materialize storage locations from the project config without the Postgres environment variable.",
   "Start an isolated local Postgres instance and set the Postgres environment variable.",
-  "Materialize storage locations again.",
+  "Materialize storage locations from the project config again.",
   "Create, write, and read a Library through the configured Postgres-backed storage location.",
 ]
 expected = [
-  "The filesystem location remains available when the Postgres environment variable is absent.",
+  "Project filesystem locations remain available when the Postgres environment variable is absent.",
+  "The repository self machine-local location is not inherited by the selected project config.",
   "The Postgres location is skipped when the deployment environment variable is absent.",
   "The Postgres location is materialized when the deployment environment variable is present.",
   "The configured Postgres-backed location can create, write, and read Libraries through the Librarian interface.",

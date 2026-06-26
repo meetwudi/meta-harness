@@ -1,0 +1,4 @@
+id = "knowledge-agent.proj-self-repository-project"
+title = "Repository self project"
+source = "Human request on 2026-06-26: the repository itself should be treated as a project named `proj-self`."
+text = "The repository's default project configuration represents the repository self project named `proj-self`."

@@ -4,7 +4,7 @@
 # This file marks this folder as a Spec primitive.
 name = "storage"
 version = "v0.0.0"
-source = "Human-listed Storage requirements captured starting on 2026-06-20, including Postgres driver, schema bootstrap, deployment configuration, and env-gated location requirements captured on 2026-06-25 and 2026-06-26."
+source = "Human-listed Storage requirements captured starting on 2026-06-20, including Postgres driver, schema bootstrap, deployment configuration, env-gated location, and project-scoped storage requirements captured on 2026-06-25 and 2026-06-26."
 
 [[requirement_collections]]
 name = "requirements"

@@ -1,0 +1,4 @@
+id = "proj-quartz.project-owned-config"
+title = "Project-owned configuration"
+source = "Human request on 2026-06-26: PROJ-Quartz should have its own configuration file instead of sharing the repository self-maintenance Meta Harness configuration."
+text = "PROJ-Quartz uses a project-owned `.meta-harness.json` runtime configuration so its Knowledge Agent view is scoped to Quartz and its configured backing storage."

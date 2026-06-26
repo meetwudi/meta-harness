@@ -1,6 +1,8 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.storage-discovery-runtime: reads storage-discovery CLI inputs.
 // Supports knowledge-agent.provider-interface: reads provider, model, and sandbox selection inputs.
+// Supports knowledge-agent.project-config-selection: reads the selected project config path.
+// Harness-Requirement: knowledge-agent.project-config-selection
 
 import {
   DEFAULT_CLIENT,
@@ -19,6 +21,7 @@ export function parseArgs(argv: string[]): Args {
     provider: process.env.KNOWLEDGE_AGENT_PROVIDER ?? DEFAULT_PROVIDER,
     model: process.env.KNOWLEDGE_AGENT_MODEL,
     client: process.env.KNOWLEDGE_AGENT_SANDBOX_CLIENT ?? DEFAULT_CLIENT,
+    projectConfig: process.env.KNOWLEDGE_AGENT_PROJECT_CONFIG ?? ".meta-harness.json",
     conversationId: defaultConversationId(),
     turnId: defaultTurnId(),
     localRoot: "",
@@ -48,6 +51,9 @@ export function parseArgs(argv: string[]): Args {
         break;
       case "--client":
         args.client = value;
+        break;
+      case "--project-config":
+        args.projectConfig = value;
         break;
       case "--conversation-id":
         args.conversationId = value;

@@ -16,7 +16,7 @@ Meta Harness provides a small structure for that work: Libraries, Routines, Goal
 ## Repository Shape
 
 - `meta-harness/`: Meta Harness primitives, setup guidance, templates, tools, and runtime implementation.
-- `proj-self-maintenance/`: repository self-maintenance project knowledge and Routines.
+- `proj-self/`: repository self project knowledge and Routines.
 
 Top-level project Libraries use the `proj-` prefix.
 

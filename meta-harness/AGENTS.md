@@ -4,7 +4,7 @@ This folder contains the Meta Harness framework layer.
 
 Repository-specific project knowledge belongs in top-level `proj-*` Libraries.
 
-This repository's self-maintenance project lives in `../proj-self-maintenance/`.
+This repository's self project lives in `../proj-self/`.
 
 ## Local Entry Points
 

@@ -1,0 +1,4 @@
+id = "knowledge-agent.project-config-selection"
+title = "Project config selection"
+source = "Human request on 2026-06-26: each project should have its own configuration file instead of mixing project storage definitions together, while the repository itself is a project named proj-self."
+text = "Knowledge Agent runtime can select a project-owned `.meta-harness.json` configuration file, defaulting to the repository root configuration when no project-specific configuration is supplied."

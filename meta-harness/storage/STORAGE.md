@@ -22,14 +22,21 @@ update a particular Library.
 ## Project Storage Locations
 
 The local Knowledge Agent runtime materializes storage locations from the
-repository marker:
+selected project marker. When no project marker is selected, it uses the
+repository root marker:
 
 ```text
 library://repository/.meta-harness.json
 ```
 
-The marker's `storage.locations` array is the repository-owned starting point for
-known storage locations. Each storage location definition includes:
+Project applications may pass their own marker path, such as:
+
+```text
+library://proj-quartz/.meta-harness.json
+```
+
+The marker's `storage.locations` array is the selected project's starting point
+for known storage locations. Each storage location definition includes:
 
 - `name`
 - `description`
@@ -59,6 +66,13 @@ Example:
   "capabilities": ["read", "write", "delete", "query", "blob"]
 }
 ```
+
+Project configs may use these path tokens in `libraryRootPath`:
+
+- `{{repoRootPath}}`: repository root path.
+- `{{projectRootPath}}`: directory containing the selected project marker.
+- `{{localRoot}}`: resolved project local root.
+- `{{tmpStorageLibrariesRoot}}`: project-scoped temporary local Library root.
 
 The local runtime supports `driverName` values `filesystem` and `postgres`.
 Filesystem locations use `filesystem-root-and-direct-children` or
@@ -126,7 +140,8 @@ unsupported driver.
 ## Agent Use
 
 Use `librarian_read` to inspect
-`library://repository/.meta-harness.json`.
+`library://repository/.meta-harness.json` or the selected project marker, such
+as `library://proj-quartz/.meta-harness.json`.
 Read each location's name, description, driver, capabilities, Library discovery
 fields, and Library placement fields from that knowledge.
 

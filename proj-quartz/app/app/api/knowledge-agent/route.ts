@@ -9,6 +9,7 @@ export const maxDuration = 180;
 // Harness-Requirement: proj-quartz.knowledge-agent-chat-service
 // Harness-Requirement: proj-quartz.postgres-backed-libraries
 // Harness-Requirement: proj-quartz.local-postgres-deployment
+// Harness-Requirement: proj-quartz.project-owned-config
 type AgUiContentPart = {
   type?: string;
   text?: string;
@@ -38,6 +39,10 @@ function repoRootPath(): string {
   }
 
   return path.resolve(process.cwd(), "../..");
+}
+
+function projectConfigPath(): string {
+  return process.env.QUARTZ_PROJECT_CONFIG ?? "proj-quartz/.meta-harness.json";
 }
 
 function eventBytes(event: AgUiEvent): Uint8Array {
@@ -117,6 +122,8 @@ async function runKnowledgeAgent(input: {
         "run",
         "--repo-root",
         repoRoot,
+        "--project-config",
+        projectConfigPath(),
         "--conversation-id",
         `quartz-${safeId(input.threadId, "thread")}`,
         "--turn-id",

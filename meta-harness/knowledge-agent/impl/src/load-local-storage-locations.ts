@@ -1,10 +1,14 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports storage.storage-location-knowledge: materializes storage locations from structured knowledge.
+// Supports storage.project-scoped-storage-locations: loads storage locations from the selected project config.
 // Supports knowledge-agent.local-filesystem-storage-compatibility: keeps filesystem storage as a supported local driver.
+// Supports knowledge-agent.project-config-selection: uses the selected project config path.
 // Supports storage.env-gated-storage-locations: skips optional storage locations until their deployment env var is present.
 // Harness-Requirement: storage.actor-granted-location-access
 // Harness-Requirement: storage.driver-capabilities
 // Harness-Requirement: storage.postgres-deployment-configuration
+// Harness-Requirement: storage.project-scoped-storage-locations
+// Harness-Requirement: knowledge-agent.project-config-selection
 
 import {
   createPostgresStorageFromConnectionString,
@@ -14,6 +18,7 @@ import {
 } from "../../../librarian/impl/dist/index.js";
 import {
   loadMetaHarnessConfig,
+  resolveProjectRootPath,
   type MetaHarnessStorageCapability,
   type MetaHarnessStorageGrant,
   type MetaHarnessStorageLocation,
@@ -27,18 +32,20 @@ type StorageLocationDefinition = MetaHarnessStorageLocation;
  */
 export function loadLocalStorageLocations(input: {
   repoRootPath: string;
+  projectConfigPath: string;
   runtime: PreparedRuntime;
   storage: LibrarianStorage;
   actorUris: string[];
 }): StorageLocation[] {
-  const configPath = ".meta-harness.json";
-  const data = loadMetaHarnessConfig(input.repoRootPath);
+  const configPath = input.projectConfigPath;
+  const data = loadMetaHarnessConfig(input.repoRootPath, configPath);
   const definitions = data.storage?.locations;
   if (!Array.isArray(definitions)) {
     throw new Error(`${configPath}: storage.locations must be an array`);
   }
   const values = {
     repoRootPath: input.repoRootPath,
+    projectRootPath: resolveProjectRootPath(input.repoRootPath, configPath),
     localRoot: input.runtime.localRoot,
     tmpStorageLibrariesRoot: input.runtime.tmpStorageLibrariesRoot,
   };

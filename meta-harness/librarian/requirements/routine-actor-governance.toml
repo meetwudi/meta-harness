@@ -1,4 +1,4 @@
 id = "librarian.routine-actor-governance"
 title = "Routine authority uses Routine actors"
 source = "Human-listed requirement on 2026-06-22 and renamed on 2026-06-23: reusable workflow authority should grant Routine actor identities instead of using workflow-specific governance fields."
-text = "Routine-scoped authority is represented by actor URI patterns such as actor://routine/proj-self-maintenance/routines/concise-cleanup."
+text = "Routine-scoped authority is represented by actor URI patterns such as actor://routine/proj-self/routines/concise-cleanup."

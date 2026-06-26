@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "project": {
-    "name": "meta-harness",
+    "name": "proj-self",
     "localRoot": "~/.meta-harness"
   },
   "storage": {
@@ -68,27 +68,6 @@
         ],
         "libraryRootPath": "{{tmpStorageLibrariesRoot}}",
         "discoveryMode": "filesystem-root-and-direct-children",
-        "discoveryExcludes": [],
-        "discoverLibraries": true,
-        "sourceUri": "library://repository/.meta-harness.json",
-        "guidanceUri": "library://meta-harness/storage/STORAGE.md"
-      },
-      {
-        "name": "quartz-postgres",
-        "description": "PROJ-Quartz Postgres-backed storage location for database-backed Libraries.",
-        "driverName": "postgres",
-        "enabledWhenEnv": "QUARTZ_POSTGRES_URL",
-        "connectionStringEnv": "QUARTZ_POSTGRES_URL",
-        "schemaName": "meta_harness",
-        "tableName": "resources",
-        "grants": [
-          {
-            "actors": ["actor://knowledge-agent"],
-            "capabilities": ["read", "write", "delete", "query"]
-          }
-        ],
-        "libraryRootPath": "/libraries",
-        "discoveryMode": "resource-root-and-direct-children",
         "discoveryExcludes": [],
         "discoverLibraries": true,
         "sourceUri": "library://repository/.meta-harness.json",

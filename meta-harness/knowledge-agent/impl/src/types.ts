@@ -4,6 +4,7 @@
 // Supports knowledge-agent.uses-librarian: keeps local Library paths out of agent-facing run options.
 // Supports knowledge-agent.storage-agnostic-runtime: defines the storage boundary for runtime persistence.
 // Supports knowledge-agent.conversation-state: carries generated conversation state through provider runs.
+// Supports knowledge-agent.project-config-selection: carries selected project config through local runtime context.
 
 import type {
   DockerSandboxClient,
@@ -20,6 +21,7 @@ export type Args = {
   provider: string;
   model?: string;
   client: string;
+  projectConfig: string;
   conversationId: string;
   turnId: string;
   localRoot: string;
@@ -70,7 +72,7 @@ export type KnowledgeAgentProvider = {
 export type KnowledgeAgentStorage = {
   prepareRuntime(input: StoragePrepareInput): Promise<PreparedRuntime>;
   createLibrarianContext(
-    input: { repoRootPath: string; conversationId: string },
+    input: { repoRootPath: string; projectConfigPath: string; conversationId: string },
     runtime: PreparedRuntime,
   ): LibrarianContext;
   createSession(runtime: PreparedRuntime, conversationId: string): KnowledgeAgentSession;

@@ -1,8 +1,12 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.local-filesystem-storage-compatibility: verifies filesystem storage remains available without Postgres env.
+// Supports knowledge-agent.project-config-selection: verifies project config selection scopes storage discovery.
 // Supports storage.env-gated-storage-locations: verifies optional Postgres locations are gated by deployment env.
+// Supports storage.project-scoped-storage-locations: verifies selected project config locations do not inherit root machine-local locations.
 // Supports storage.postgres-deployment-configuration: verifies env-provided Postgres connection configuration.
 // Supports proj-quartz.postgres-backed-libraries: verifies configured Postgres-backed Libraries through Librarian.
+// Harness-Requirement: knowledge-agent.project-config-selection
+// Harness-Requirement: storage.project-scoped-storage-locations
 
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
@@ -25,6 +29,7 @@ const initdbCommand = requireCommand("initdb");
 const originalQuartzPostgresUrl = process.env.QUARTZ_POSTGRES_URL;
 const workRoot = await mkdtemp(join(tmpdir(), "ka-pg-"));
 const repoRoot = join(workRoot, "repo");
+const projectRoot = join(repoRoot, "proj-quartz");
 const localRoot = join(workRoot, "local");
 const dataRoot = join(workRoot, "data");
 const socketRoot = join(workRoot, "socket");
@@ -35,6 +40,7 @@ let postgresStorage: PostgresStorage | undefined;
 
 try {
   await mkdir(repoRoot, { recursive: true });
+  await mkdir(projectRoot, { recursive: true });
   await mkdir(localRoot, { recursive: true });
   await writeFile(
     join(repoRoot, ".meta-harness.json"),
@@ -48,8 +54,56 @@ try {
         storage: {
           locations: [
             {
+              name: "machine-local",
+              description: "Root machine-local storage that project config must not inherit.",
+              driverName: "filesystem",
+              grants: [
+                {
+                  actors: ["actor://knowledge-agent"],
+                  capabilities: ["read", "write", "delete", "query", "blob"],
+                },
+              ],
+              libraryRootPath: "{{localRoot}}",
+              discoveryMode: "filesystem-recursive",
+              discoveryExcludes: [],
+              discoverLibraries: true,
+            },
+          ],
+        },
+      },
+      null,
+      2,
+    ),
+  );
+  await writeFile(
+    join(projectRoot, ".meta-harness.json"),
+    JSON.stringify(
+      {
+        schema: 1,
+        project: {
+          name: "proj-quartz",
+          localRoot,
+        },
+        storage: {
+          locations: [
+            {
+              name: "project",
+              description: "Project filesystem fixture storage.",
+              driverName: "filesystem",
+              grants: [
+                {
+                  actors: ["actor://knowledge-agent"],
+                  capabilities: ["read", "write", "delete", "query", "blob"],
+                },
+              ],
+              libraryRootPath: "{{projectRootPath}}",
+              discoveryMode: "filesystem-root-and-direct-children",
+              discoveryExcludes: [],
+              discoverLibraries: true,
+            },
+            {
               name: "tmp-local",
-              description: "Filesystem fixture storage.",
+              description: "Project-scoped temporary filesystem fixture storage.",
               driverName: "filesystem",
               grants: [
                 {
@@ -94,13 +148,14 @@ try {
   delete process.env.QUARTZ_POSTGRES_URL;
   const withoutPostgres = loadLocalStorageLocations({
     repoRootPath: repoRoot,
+    projectConfigPath: "proj-quartz/.meta-harness.json",
     runtime,
     storage: filesystemStorage,
     actorUris: ["actor://knowledge-agent"],
   });
   assert.deepEqual(
     withoutPostgres.map((location) => location.name),
-    ["tmp-local"],
+    ["project", "tmp-local"],
   );
 
   runCommand(initdbCommand, [
@@ -129,13 +184,14 @@ try {
 
   const withPostgres = loadLocalStorageLocations({
     repoRootPath: repoRoot,
+    projectConfigPath: "proj-quartz/.meta-harness.json",
     runtime,
     storage: filesystemStorage,
     actorUris: ["actor://knowledge-agent"],
   });
   assert.deepEqual(
     withPostgres.map((location) => location.name),
-    ["tmp-local", "quartz-postgres"],
+    ["project", "tmp-local", "quartz-postgres"],
   );
 
   postgresStorage = withPostgres.find((location) => location.name === "quartz-postgres")

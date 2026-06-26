@@ -1,0 +1,4 @@
+id = "storage.project-scoped-storage-locations"
+title = "Project-scoped storage locations"
+source = "Human request on 2026-06-26: every project should have its own configuration file so project storage definitions are not mixed together."
+text = "Storage locations are materialized from the selected project configuration, and project-specific configurations may scope filesystem discovery to the selected project root rather than inheriting every repository or machine-local Library location."
