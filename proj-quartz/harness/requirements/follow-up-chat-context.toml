@@ -1,0 +1,4 @@
+id = "proj-quartz.follow-up-chat-context"
+title = "Follow-up chat context"
+source = "Human report on 2026-06-26: when the agent asks whether to show memory and the user replies 'sure', the agent must continue the prior intent instead of answering only 'Sure.'"
+text = "PROJ-Quartz passes enough recent chat context to the Knowledge Agent service for short affirmative follow-ups to resolve against the prior assistant turn."

@@ -10,6 +10,7 @@ export const maxDuration = 180;
 // Harness-Requirement: proj-quartz.postgres-backed-libraries
 // Harness-Requirement: proj-quartz.local-postgres-deployment
 // Harness-Requirement: proj-quartz.project-owned-config
+// Harness-Requirement: proj-quartz.follow-up-chat-context
 type AgUiContentPart = {
   type?: string;
   text?: string;
@@ -92,6 +93,71 @@ function latestUserGoal(input: RunAgentInput): string {
   }
 
   return "";
+}
+
+function previousAssistantMessage(messages: { role?: string; text: string }[]): string {
+  let lastUserIndex = -1;
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index]?.role === "user") {
+      lastUserIndex = index;
+      break;
+    }
+  }
+  const beforeCurrent = lastUserIndex >= 0 ? messages.slice(0, lastUserIndex) : messages;
+  for (const message of [...beforeCurrent].reverse()) {
+    if (message.role === "assistant") {
+      return message.text;
+    }
+  }
+  return "";
+}
+
+function isAffirmativeFollowUp(value: string): boolean {
+  return /^(sure|yes|yeah|yep|yup|ok|okay|please|do it|go ahead|show me|sounds good|that works|let's do it|lets do it)[.!?]*$/i
+    .test(value.trim());
+}
+
+function contextualUserGoal(input: RunAgentInput): string {
+  const messages = (input.messages ?? [])
+    .map((message) => ({
+      role: message.role,
+      text: messageText(message),
+    }))
+    .filter((message) => message.text);
+  const current = latestUserGoal(input);
+  if (!current) {
+    return "";
+  }
+
+  const recentTranscript = messages
+    .slice(-8)
+    .map((message) => `${message.role ?? "message"}: ${message.text}`)
+    .join("\n\n");
+  if (!recentTranscript) {
+    return current;
+  }
+
+  const promptParts = [
+    "Recent chat transcript:",
+    recentTranscript,
+    "",
+    "Current user request:",
+    current,
+    "",
+    "Use the transcript to resolve short follow-ups such as yes, sure, do it, show me, or that one. If the current request is not a follow-up, answer it normally.",
+  ];
+  const previousAssistant = previousAssistantMessage(messages);
+  if (previousAssistant && isAffirmativeFollowUp(current)) {
+    promptParts.push(
+      "",
+      "The current request is an affirmative follow-up. Treat it as the user accepting the previous assistant message or offer. Perform the offered action now instead of asking for confirmation again.",
+      "",
+      "Previous assistant message:",
+      previousAssistant,
+    );
+  }
+
+  return promptParts.join("\n");
 }
 
 function chunkText(value: string, size = 1200): string[] {
@@ -206,7 +272,7 @@ export async function POST(request: NextRequest) {
       });
 
       try {
-        const goal = latestUserGoal(input);
+        const goal = contextualUserGoal(input);
         if (!goal) {
           throw new Error("Send a message for the Knowledge Agent to answer.");
         }
