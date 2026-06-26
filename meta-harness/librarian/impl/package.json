@@ -14,11 +14,17 @@
     "pretest": "npm run build",
     "test": "node dist/filesystem-storage-end-to-end.test.js",
     "preintegration:filesystem-storage-end-to-end": "npm run build",
-    "integration:filesystem-storage-end-to-end": "node dist/filesystem-storage-end-to-end.test.js"
+    "integration:filesystem-storage-end-to-end": "node dist/filesystem-storage-end-to-end.test.js",
+    "preintegration:postgres-storage": "npm run build",
+    "integration:postgres-storage": "node dist/postgres-storage-end-to-end.test.js"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "typescript": "^5.8.0",
-    "tsx": "^4.20.0"
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.0"
+  },
+  "dependencies": {
+    "pg": "^8.22.0"
   }
 }

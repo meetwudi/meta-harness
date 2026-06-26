@@ -3,11 +3,16 @@
 // Supports librarian.tool-librarian-add-tags: exports the add Tags implementation.
 // Supports librarian.tool-librarian-remove-tags: exports the remove Tags implementation.
 // Supports librarian.tool-librarian-query-by-tags: exports the query by Tags implementation.
+// Supports librarian.postgres-backed-library-interface: exports Postgres-backed storage creation.
 
 export { addTags } from "./add-tags.js";
 export { createLibraryInStorageLocation } from "./create-library-in-storage-location.js";
 export { createLibrarianContext } from "./create-librarian-context.js";
 export { createLocalFileSystemStorage } from "./create-local-file-system-storage.js";
+export {
+  createPostgresStorage,
+  createPostgresStorageFromConnectionString,
+} from "./create-postgres-storage.js";
 export { executeLibrarianTool } from "./execute-librarian-tool.js";
 export { librarianToolDescriptors } from "./librarian-tool-descriptors.js";
 export { listLibraryFiles } from "./list-library-files.js";
@@ -32,4 +37,12 @@ export type {
   ResolvedLibrary,
   StorageLocation,
   StorageDriverCapabilities,
+  StorageDiscoveryMode,
 } from "./types.js";
+export type {
+  CreatePostgresStorageFromConnectionStringInput,
+  CreatePostgresStorageInput,
+  PostgresQueryClient,
+  PostgresQueryResult,
+  PostgresStorage,
+} from "./create-postgres-storage.js";

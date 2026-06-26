@@ -3,6 +3,7 @@
 // Supports librarian.multi-library-search: searches across Libraries selected by URI pattern.
 // Supports librarian.agent-excludes: skips excluded Library paths during searches.
 // Supports librarian.library-uri-verification: verifies exact Library URI search patterns.
+// Supports librarian.postgres-backed-library-interface: searches Postgres-backed Library resources.
 
 import { contentSnippet } from "./content-snippet.js";
 import { libraryResourceUri } from "./library-resource-uri.js";

@@ -2,6 +2,7 @@
 // Supports librarian.shamanistic-library-tools: implements Library file retrieval for agents.
 // Supports librarian.resource-uri-tool-inputs: reads files by full Library resource URI.
 // Supports librarian.agent-excludes: blocks excluded Library paths during reads.
+// Supports librarian.postgres-backed-library-interface: reads Postgres-backed Library resources.
 
 import { isLibraryPathExcluded } from "./is-library-path-excluded.js";
 import { libraryResourceUri } from "./library-resource-uri.js";

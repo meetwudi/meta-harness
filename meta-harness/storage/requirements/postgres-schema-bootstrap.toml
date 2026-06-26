@@ -1,0 +1,4 @@
+id = "storage.postgres-schema-bootstrap"
+title = "Driver-owned Postgres schema bootstrap"
+source = "Human request on 2026-06-25: avoid ORM and migration-framework management; use less dependency and write the database schema handling directly."
+text = "The Postgres storage driver manages its required database schema with driver-owned raw SQL bootstrap logic instead of an ORM or external migration framework."

@@ -1,0 +1,28 @@
+id = "librarian.integration.postgres-storage-end-to-end"
+title = "Postgres storage Library operations"
+requirements = [
+  "storage.postgres-driver",
+  "storage.postgres-schema-bootstrap",
+  "storage.postgres-deployment-configuration",
+  "librarian.postgres-backed-library-interface",
+]
+procedure = [
+  "Start an isolated local Postgres instance.",
+  "Create a Librarian context with a Postgres-backed storage location and explicit table configuration.",
+  "Create a Library through the Librarian create-Library tool.",
+  "List Libraries through the Librarian list-Libraries tool.",
+  "Write a Library resource through the Librarian update tool.",
+  "Read the Library resource through the Librarian read tool.",
+  "List Library files through the Librarian list-files tool.",
+  "Query Library content through the Librarian search tool.",
+  "Add Tags to a Library scope and query by those Tags.",
+]
+expected = [
+  "The Postgres driver bootstraps its schema with raw SQL.",
+  "The configured Postgres table is used for Library resources.",
+  "The created Library is returned by Library listing.",
+  "The written resource can be read back by Library URI.",
+  "The written resource appears in Library file listing.",
+  "The written resource is returned by Library search.",
+  "The tagged scope is returned by Tag query.",
+]

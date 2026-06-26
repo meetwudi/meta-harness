@@ -1,0 +1,4 @@
+id = "storage.env-gated-storage-locations"
+title = "Environment-gated storage locations"
+source = "Human request on 2026-06-26: the original local filesystem Knowledge Agent should still work, while database-backed storage is passed as a different storage driver; local deployment can use Docker and later deployment can use Kubernetes or GCP through a clear interface."
+text = "Storage locations may be gated by a named environment variable so optional deployment-backed locations, including Postgres, can be configured without preventing the original local filesystem-backed Knowledge Agent from working when the deployment is absent."

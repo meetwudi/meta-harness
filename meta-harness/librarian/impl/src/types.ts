@@ -3,6 +3,8 @@
 // Supports librarian.shared-tool-context: defines the context shared by Librarian operations.
 // Supports librarian.actor-session-tool-context: carries actor identity and session id in runtime context.
 // Supports librarian.tool-call-observability: defines recorded tool call events.
+// Supports knowledge-agent.local-filesystem-storage-compatibility: keeps storage callers behind the backend-neutral boundary.
+// Supports storage.postgres-driver: allows resource-backed discovery modes alongside filesystem modes.
 
 export type TomlRecord = Record<string, unknown>;
 
@@ -23,6 +25,12 @@ export type StorageDriverCapabilities = {
   blob: boolean;
 };
 
+export type StorageDiscoveryMode =
+  | "filesystem-root-and-direct-children"
+  | "filesystem-recursive"
+  | "resource-root-and-direct-children"
+  | "resource-recursive";
+
 export type StorageLocation = {
   name: string;
   description: string;
@@ -30,7 +38,7 @@ export type StorageLocation = {
   storage: LibrarianStorage;
   capabilities: StorageDriverCapabilities;
   libraryRootPath: string;
-  discoveryMode: "filesystem-root-and-direct-children" | "filesystem-recursive";
+  discoveryMode: StorageDiscoveryMode;
   discoveryExcludes: string[];
   discoverLibraries?: boolean;
   sourceUri?: string;

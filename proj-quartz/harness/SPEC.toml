@@ -3,7 +3,7 @@
 
 name = "proj-quartz"
 version = "v0.0.0"
-source = "Human request on 2026-06-25 to add a project-local harness for PROJ-Quartz."
+source = "Human request on 2026-06-25 to add a project-local harness for PROJ-Quartz, including use of Meta Harness Postgres-backed Libraries through the Library interface and local Docker-oriented Postgres deployment."
 
 [[requirement_collections]]
 name = "requirements"

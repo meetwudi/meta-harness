@@ -1,0 +1,20 @@
+# Harness-Requirement: proj-quartz.local-postgres-deployment
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: quartz
+      POSTGRES_USER: quartz
+      POSTGRES_PASSWORD: quartz
+    volumes:
+      - quartz-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quartz -d quartz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  quartz-postgres-data:

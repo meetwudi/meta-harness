@@ -1,0 +1,4 @@
+id = "knowledge-agent.local-filesystem-storage-compatibility"
+title = "Local filesystem storage compatibility"
+source = "Human request on 2026-06-25: the original Knowledge Agent should still work locally on local files through the storage interface, while database-backed storage is passed as a different storage driver."
+text = "The original local Knowledge Agent must continue to work against local filesystem-backed Libraries through the same storage interface; database-backed Libraries are enabled by passing a different storage driver, without removing or replacing local filesystem behavior."

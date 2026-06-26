@@ -1,0 +1,4 @@
+id = "librarian.postgres-backed-library-interface"
+title = "Postgres-backed Library interface"
+source = "Human request on 2026-06-25: Postgres-backed Libraries should support all Librarian interfaces, including creating a Library, listing Libraries, reading from a Library, writing files, and querying through the Library interface."
+text = "Librarian supports creating, listing, reading, writing, and querying Libraries through the existing Library interface when the storage location is backed by Postgres."

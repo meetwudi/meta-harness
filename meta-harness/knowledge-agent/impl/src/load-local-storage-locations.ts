@@ -1,9 +1,13 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports storage.storage-location-knowledge: materializes storage locations from structured knowledge.
+// Supports knowledge-agent.local-filesystem-storage-compatibility: keeps filesystem storage as a supported local driver.
+// Supports storage.env-gated-storage-locations: skips optional storage locations until their deployment env var is present.
 // Harness-Requirement: storage.actor-granted-location-access
 // Harness-Requirement: storage.driver-capabilities
+// Harness-Requirement: storage.postgres-deployment-configuration
 
 import {
+  createPostgresStorageFromConnectionString,
   type LibrarianStorage,
   type StorageDriverCapabilities,
   type StorageLocation,
@@ -38,21 +42,23 @@ export function loadLocalStorageLocations(input: {
     localRoot: input.runtime.localRoot,
     tmpStorageLibrariesRoot: input.runtime.tmpStorageLibrariesRoot,
   };
-  return definitions.map((definition) =>
-    materializeStorageLocation(definition, values, input.storage, input.actorUris),
-  );
+  return definitions.flatMap((definition) => {
+    const enabledWhenEnv = optionalString(definition, "enabledWhenEnv");
+    if (enabledWhenEnv !== undefined && !process.env[enabledWhenEnv]) {
+      return [];
+    }
+    return [materializeStorageLocation(definition, values, input.storage, input.actorUris)];
+  });
 }
 
 function materializeStorageLocation(
   definition: StorageLocationDefinition,
   values: Record<string, string>,
-  storage: LibrarianStorage,
+  filesystemStorage: LibrarianStorage,
   actorUris: string[],
 ): StorageLocation {
   const driverName = requiredString(definition, "driverName");
-  if (driverName !== "filesystem") {
-    throw new Error(`unsupported local storage driver: ${driverName}`);
-  }
+  const storage = materializeStorageDriver(definition, driverName, filesystemStorage);
   return {
     name: requiredString(definition, "name"),
     description: requiredString(definition, "description"),
@@ -66,6 +72,31 @@ function materializeStorageLocation(
     sourceUri: optionalString(definition, "sourceUri"),
     guidanceUri: optionalString(definition, "guidanceUri"),
   };
+}
+
+function materializeStorageDriver(
+  definition: StorageLocationDefinition,
+  driverName: string,
+  filesystemStorage: LibrarianStorage,
+): LibrarianStorage {
+  if (driverName === "filesystem") {
+    return filesystemStorage;
+  }
+  if (driverName === "postgres") {
+    const envName = optionalString(definition, "connectionStringEnv") ??
+      "META_HARNESS_POSTGRES_URL";
+    const connectionString = process.env[envName];
+    if (!connectionString) {
+      throw new Error(`Postgres storage location requires environment variable: ${envName}`);
+    }
+    return createPostgresStorageFromConnectionString({
+      connectionString,
+      schemaName: optionalString(definition, "schemaName"),
+      tableName: optionalString(definition, "tableName"),
+      autoEnsureSchema: optionalBoolean(definition, "autoEnsureSchema"),
+    });
+  }
+  throw new Error(`unsupported local storage driver: ${driverName}`);
 }
 
 function requiredString(definition: StorageLocationDefinition, key: string): string {
@@ -111,9 +142,25 @@ function requiredDiscoveryMode(
   const value = requiredString(definition, key);
   if (
     value !== "filesystem-root-and-direct-children" &&
-    value !== "filesystem-recursive"
+    value !== "filesystem-recursive" &&
+    value !== "resource-root-and-direct-children" &&
+    value !== "resource-recursive"
   ) {
     throw new Error(`storage location definition has invalid discovery mode: ${value}`);
+  }
+  return value;
+}
+
+function optionalBoolean(
+  definition: StorageLocationDefinition,
+  key: string,
+): boolean | undefined {
+  const value = definition[key as keyof StorageLocationDefinition];
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== "boolean") {
+    throw new Error(`storage location definition has invalid boolean field: ${key}`);
   }
   return value;
 }

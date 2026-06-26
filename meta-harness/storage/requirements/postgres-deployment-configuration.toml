@@ -1,0 +1,4 @@
+id = "storage.postgres-deployment-configuration"
+title = "Postgres deployment configuration"
+source = "Human request on 2026-06-25: think about deployment later; local can use Docker, later deployment can use Kubernetes or GCP, and the interface should stay clear."
+text = "Postgres-backed storage is configured through a clear deployment interface that can be supplied locally or by later Kubernetes or GCP deployments without changing higher-level Library code."

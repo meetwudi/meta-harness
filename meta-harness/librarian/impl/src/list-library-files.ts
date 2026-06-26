@@ -1,6 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports librarian.file-listing: lists file resource URIs under a Library URI.
 // Supports librarian.agent-excludes: omits excluded Library paths from file listings.
+// Supports librarian.postgres-backed-library-interface: lists Postgres-backed Library resources.
 
 import { join } from "node:path";
 import { isLibraryPathExcluded } from "./is-library-path-excluded.js";

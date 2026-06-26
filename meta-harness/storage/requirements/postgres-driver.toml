@@ -1,0 +1,4 @@
+id = "storage.postgres-driver"
+title = "Postgres storage driver"
+source = "Human request on 2026-06-25: implement database-backed, Postgres-backed Meta Harness Libraries as a storage driver."
+text = "Meta Harness storage includes a Postgres driver for database-backed Library resources."

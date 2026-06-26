@@ -39,6 +39,11 @@ known storage locations. Each storage location definition includes:
 - `discoveryMode`
 - `discoveryExcludes`
 - `discoverLibraries`
+- `enabledWhenEnv`
+- `connectionStringEnv`
+- `schemaName`
+- `tableName`
+- `autoEnsureSchema`
 - `sourceUri`
 - `guidanceUri`
 
@@ -55,10 +60,68 @@ Example:
 }
 ```
 
-The local filesystem runtime supports `driverName` value `filesystem`. Other
-drivers, such as blob-backed storage drivers, may be described by storage
-knowledge before a local driver implementation exists; a runtime must fail
-clearly when asked to materialize an unsupported driver.
+The local runtime supports `driverName` values `filesystem` and `postgres`.
+Filesystem locations use `filesystem-root-and-direct-children` or
+`filesystem-recursive` discovery modes. Resource-backed locations, including
+Postgres, use `resource-root-and-direct-children` or `resource-recursive`
+discovery modes.
+
+Filesystem storage remains the original local Knowledge Agent path. Postgres is
+configured as a separate driver behind the same Library storage interface, so
+runtime callers create, list, read, update, search, and tag Libraries through the
+same Librarian tools.
+
+`enabledWhenEnv` is an optional storage location gate. When present and the
+named environment variable is not set, the local runtime skips that location.
+Use this for deployment-backed locations that should be available when local
+Docker, Kubernetes, or GCP provides the connection details, without making the
+default filesystem-backed local agent depend on that deployment.
+
+Postgres storage locations use the same Library resource interface as filesystem
+locations. The database connection string is read from an environment variable
+rather than stored in `.meta-harness.json`.
+
+Postgres location fields:
+
+- `connectionStringEnv`: environment variable containing the Postgres
+  connection string. Defaults to `META_HARNESS_POSTGRES_URL`.
+- `schemaName`: optional Postgres schema name for the storage table.
+- `tableName`: optional storage table name. Defaults to
+  `meta_harness_resources`.
+- `autoEnsureSchema`: optional boolean. When omitted, the driver bootstraps its
+  required schema with raw SQL.
+
+Example Postgres-backed Library location:
+
+```json
+{
+  "name": "quartz-postgres",
+  "description": "PROJ-Quartz Postgres-backed Libraries.",
+  "driverName": "postgres",
+  "enabledWhenEnv": "QUARTZ_POSTGRES_URL",
+  "connectionStringEnv": "QUARTZ_POSTGRES_URL",
+  "schemaName": "meta_harness",
+  "tableName": "resources",
+  "libraryRootPath": "/libraries",
+  "discoveryMode": "resource-root-and-direct-children",
+  "discoveryExcludes": [],
+  "discoverLibraries": true,
+  "grants": [
+    {
+      "actors": ["actor://knowledge-agent"],
+      "capabilities": ["read", "write", "delete", "query"]
+    }
+  ]
+}
+```
+
+Local Docker, Kubernetes, and GCP deployments supply the connection string
+through the named environment variable. Higher-level Library code does not need
+to change when that deployment source changes.
+
+Other drivers may be described by storage knowledge before a local driver
+implementation exists; a runtime must fail clearly when asked to materialize an
+unsupported driver.
 
 ## Agent Use
 

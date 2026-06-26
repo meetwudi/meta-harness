@@ -1,6 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports librarian.shamanistic-library-tools: implements Library listing for agents.
 // Supports librarian.library-list-fields: returns Libraries with name, URI, description, readable, and writable.
+// Supports librarian.postgres-backed-library-interface: lists Postgres-backed Libraries through Librarian.
 
 import { loadResolvedLibraries } from "./load-resolved-libraries.js";
 import { publicLibraryListing } from "./public-library-listing.js";

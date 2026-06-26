@@ -7,6 +7,8 @@ export const runtime = "nodejs";
 export const maxDuration = 180;
 
 // Harness-Requirement: proj-quartz.knowledge-agent-chat-service
+// Harness-Requirement: proj-quartz.postgres-backed-libraries
+// Harness-Requirement: proj-quartz.local-postgres-deployment
 type AgUiContentPart = {
   type?: string;
   text?: string;

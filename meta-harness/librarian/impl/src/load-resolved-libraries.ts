@@ -83,7 +83,10 @@ async function discoverLibraryRoots(
   if (!(await storage.exists(rootPath))) {
     return [];
   }
-  if (location.discoveryMode === "filesystem-root-and-direct-children") {
+  if (
+    location.discoveryMode === "filesystem-root-and-direct-children" ||
+    location.discoveryMode === "resource-root-and-direct-children"
+  ) {
     return discoverRootAndDirectChildren(storage, rootPath, location.discoveryExcludes);
   }
   return discoverRecursive(storage, rootPath, location.discoveryExcludes);

@@ -1,0 +1,21 @@
+id = "knowledge-agent.integration.postgres-storage-config"
+title = "Postgres storage location configuration"
+requirements = [
+  "knowledge-agent.local-filesystem-storage-compatibility",
+  "storage.env-gated-storage-locations",
+  "storage.postgres-deployment-configuration",
+  "proj-quartz.postgres-backed-libraries",
+]
+procedure = [
+  "Create repository storage knowledge with a filesystem location and an env-gated Postgres location.",
+  "Materialize storage locations without the Postgres environment variable.",
+  "Start an isolated local Postgres instance and set the Postgres environment variable.",
+  "Materialize storage locations again.",
+  "Create, write, and read a Library through the configured Postgres-backed storage location.",
+]
+expected = [
+  "The filesystem location remains available when the Postgres environment variable is absent.",
+  "The Postgres location is skipped when the deployment environment variable is absent.",
+  "The Postgres location is materialized when the deployment environment variable is present.",
+  "The configured Postgres-backed location can create, write, and read Libraries through the Librarian interface.",
+]

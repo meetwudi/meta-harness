@@ -9,6 +9,8 @@
   "scripts": {
     "prebuild": "npm --prefix ../../librarian/impl run build",
     "build": "tsc -p tsconfig.json",
+    "preintegration:postgres-storage-config": "npm run build",
+    "integration:postgres-storage-config": "node dist/postgres-storage-config.test.js",
     "prerun": "npm --prefix ../../librarian/impl run build",
     "run": "tsx src/cli.ts"
   },

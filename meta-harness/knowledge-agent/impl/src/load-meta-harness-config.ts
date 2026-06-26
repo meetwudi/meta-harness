@@ -1,5 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.storage-discovery-runtime: reads repository defaults from Meta Harness metadata.
+// Supports storage.postgres-deployment-configuration: parses deployment-supplied Postgres storage fields.
+// Supports storage.env-gated-storage-locations: parses optional environment gates for storage locations.
 // Harness-Requirement: storage.storage-location-knowledge
 // Harness-Requirement: storage.actor-granted-location-access
 
@@ -27,6 +29,11 @@ export type MetaHarnessStorageLocation = {
   discoveryMode?: string;
   discoveryExcludes?: string[];
   discoverLibraries?: boolean;
+  enabledWhenEnv?: string;
+  connectionStringEnv?: string;
+  schemaName?: string;
+  tableName?: string;
+  autoEnsureSchema?: boolean;
   sourceUri?: string;
   guidanceUri?: string;
 };

@@ -2,6 +2,7 @@
 // Supports librarian.update-through-librarian: implements Library updates through Librarian.
 // Supports librarian.direct-storage-updates: writes directly through the storage backend.
 // Supports librarian.resource-uri-tool-inputs: writes files by full Library resource URI.
+// Supports librarian.postgres-backed-library-interface: writes Postgres-backed Library resources.
 
 import { dirname } from "node:path";
 import { libraryResourceUri } from "./library-resource-uri.js";

@@ -2,6 +2,7 @@
 // Supports librarian.create-library-in-storage-location: creates a Library in a named storage location.
 // Supports storage.library-creation-target-location: targets creation at a storage location.
 // Supports storage.location-library-placement: uses the storage location's Library root for placement.
+// Supports librarian.postgres-backed-library-interface: creates Libraries through storage abstraction.
 
 import { join } from "node:path";
 import { validateLibraryName } from "./library-name.js";
@@ -17,7 +18,7 @@ export type CreateLibraryInStorageLocationInput = {
 };
 
 /**
- * Creates a filesystem Library inside a named storage location.
+ * Creates a Library inside a named storage location.
  */
 export async function createLibraryInStorageLocation(
   context: LibrarianContext,
