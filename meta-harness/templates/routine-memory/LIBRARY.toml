@@ -3,5 +3,6 @@
 
 name = "routine-memory"
 description = "Local Memory Library for Harness primitive Routine executions and durable Routine learnings."
+isSystemLibrary = false
 read_actors = ["actor://knowledge-agent", "actor://routine/*"]
 update_actors = ["actor://routine/proj-*/routines/*"]

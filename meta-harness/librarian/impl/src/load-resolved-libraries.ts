@@ -36,10 +36,9 @@ export async function loadResolvedLibraries(
     }
     await loadDiscoveredLibraries(
       libraries,
-      location.storage,
+      location,
       await discoverLibraryRoots(location.storage, location.libraryRootPath, location),
       context.actorUris,
-      location.name,
     );
   }
   return [...libraries.values()];
@@ -47,14 +46,13 @@ export async function loadResolvedLibraries(
 
 async function loadDiscoveredLibraries(
   libraries: Map<string, ResolvedLibrary>,
-  storage: LibrarianStorage,
+  location: StorageLocation,
   roots: string[],
   actorUris: string[],
-  storageLocationName: string,
 ): Promise<void> {
   for (const rootPath of roots) {
     const manifestPath = join(rootPath, "LIBRARY.toml");
-    const manifest = await readTomlFile(storage, manifestPath);
+    const manifest = await readTomlFile(location.storage, manifestPath);
     const access = computeLibraryAccess(manifest, actorUris);
     if (typeof manifest.name !== "string" || !manifest.name.trim()) {
       throw new Error(`${manifestPath}: name must be a non-empty string`);
@@ -65,12 +63,14 @@ async function loadDiscoveredLibraries(
       name,
       uri,
       description: typeof manifest.description === "string" ? manifest.description : "",
+      isSystemLibrary: manifest.isSystemLibrary === true,
       readable: access.readable,
       writable: access.writable,
+      deletable: access.writable && location.capabilities.deletable,
       rootPath,
       agentExcludes: stringArray(manifest.agent_excludes),
-      storage,
-      storageLocationName,
+      storage: location.storage,
+      storageLocationName: location.name,
     });
   }
 }

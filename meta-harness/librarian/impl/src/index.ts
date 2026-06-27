@@ -4,6 +4,7 @@
 // Supports librarian.tool-librarian-remove-tags: exports the remove Tags implementation.
 // Supports librarian.tool-librarian-query-by-tags: exports the query by Tags implementation.
 // Supports librarian.postgres-backed-library-interface: exports Postgres-backed storage creation.
+// Supports librarian.tool-librarian-delete: exports the file/folder delete implementation.
 
 export { addTags } from "./add-tags.js";
 export { createLibraryInStorageLocation } from "./create-library-in-storage-location.js";
@@ -13,6 +14,8 @@ export {
   createPostgresStorage,
   createPostgresStorageFromConnectionString,
 } from "./create-postgres-storage.js";
+export { deleteLibrary } from "./delete-library.js";
+export { deleteLibraryResource } from "./delete-library-resource.js";
 export { executeLibrarianTool } from "./execute-librarian-tool.js";
 export { librarianToolDescriptors } from "./librarian-tool-descriptors.js";
 export { listLibraryFiles } from "./list-library-files.js";

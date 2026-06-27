@@ -10,6 +10,7 @@ import { createLocalFileSystemStorage } from "../../../librarian/impl/dist/index
 import { ensureConversationsLibrary } from "./ensure-conversations-library.js";
 import { ensureMemoryLibrary } from "./ensure-memory-library.js";
 import { resolveLocalRoot } from "./resolve-local-root.js";
+import { resolveRuntimeLibraryRootPath } from "./runtime-library-path.js";
 import type { PreparedRuntime, StoragePrepareInput } from "./types.js";
 
 /**
@@ -26,34 +27,55 @@ export async function prepareLocalRuntime(
   } = input;
   const localRoot = resolveLocalRoot(repoRootPath, configuredLocalRoot);
   const knowledgeAgentRoot = join(localRoot, "knowledge-agent");
-  const conversationsLibrary = resolve(
-    repoRootPath,
-    join(knowledgeAgentRoot, "conversations"),
-  );
-  const memoryLibrary = resolve(
-    repoRootPath,
-    join(knowledgeAgentRoot, "memory"),
-  );
-  const conversationRoot = join(conversationsLibrary, conversationId);
-  const sessionFile = join(conversationRoot, "session.jsonl");
   const tmpStorageRoot = resolve(
     repoRootPath,
     join(knowledgeAgentRoot, "tmp-local-storage"),
   );
   const tmpStorageLibrariesRoot = join(tmpStorageRoot, "libraries");
+  const pathValues = {
+    repoRootPath,
+    projectRootPath: input.projectRootPath,
+    localRoot,
+    tmpStorageLibrariesRoot,
+  };
+  const conversationsLibrary = resolveRuntimeLibraryRootPath(
+    input.conversationLibrary.rootPath,
+    pathValues,
+  );
+  const memoryLibrary = input.sharedMemory.library
+    ? resolveRuntimeLibraryRootPath(input.sharedMemory.library.rootPath, pathValues)
+    : "";
+  const conversationRoot = join(conversationsLibrary, conversationId);
+  const sessionFile = join(conversationRoot, "session.jsonl");
   const sandboxWorkspace = resolve(
     repoRootPath,
     sandboxWorkspaceInput || join(knowledgeAgentRoot, "sandbox-workspaces", conversationId),
   );
   const runtimeStorage = createLocalFileSystemStorage();
-  await ensureConversationsLibrary(runtimeStorage, conversationsLibrary);
-  await ensureMemoryLibrary(runtimeStorage, memoryLibrary);
+  await ensureConversationsLibrary(
+    runtimeStorage,
+    conversationsLibrary,
+    input.conversationLibrary.name,
+    input.actorUri,
+  );
+  if (input.sharedMemory.enabled) {
+    if (!input.sharedMemory.library) {
+      throw new Error(".meta-harness.json runtime.sharedMemory.library is required when shared memory is enabled");
+    }
+    await ensureMemoryLibrary(
+      runtimeStorage,
+      memoryLibrary,
+      input.sharedMemory.library.name,
+      input.actorUri,
+    );
+  }
   await mkdir(conversationRoot, { recursive: true });
   await mkdir(sandboxWorkspace, { recursive: true });
   const runtime = {
     localRoot,
     conversationsLibrary,
     memoryLibrary,
+    memoryCurator: input.memoryCurator,
     conversationRoot,
     sessionFile,
     tmpStorageLibrariesRoot,

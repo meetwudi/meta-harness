@@ -2,7 +2,21 @@
   "schema": 1,
   "project": {
     "name": "proj-self",
-    "localRoot": "~/.meta-harness"
+    "localRoot": "~/.meta-harness",
+    "actorUri": "actor://knowledge-agent"
+  },
+  "runtime": {
+    "conversationLibrary": {
+      "name": "knowledge-agent-conversations",
+      "rootPath": "{{localRoot}}/knowledge-agent/conversations"
+    },
+    "sharedMemory": {
+      "enabled": true,
+      "library": {
+        "name": "knowledge-agent-memory",
+        "rootPath": "{{localRoot}}/knowledge-agent/memory"
+      }
+    }
   },
   "storage": {
     "locations": [

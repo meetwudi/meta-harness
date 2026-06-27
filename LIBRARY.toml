@@ -3,6 +3,7 @@
 
 name = "repository"
 description = "Repository-level knowledge for the Meta Harness repository."
+isSystemLibrary = true
 read_actors = ["actor://knowledge-agent"]
 update_actors = []
 agent_excludes = [

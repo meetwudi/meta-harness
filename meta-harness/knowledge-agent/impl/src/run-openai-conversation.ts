@@ -9,19 +9,20 @@
 // Supports knowledge-agent.goal-shared-interface: exposes shared Goal tools to the Knowledge Agent.
 // Supports knowledge-agent.conversation-state: exposes the validated state callback tool.
 // Supports knowledge-agent.openai-reasoning-effort: applies configured reasoning effort to OpenAI agents.
+// Supports knowledge-agent.web-search-tool: attaches hosted web search to the primary Knowledge Agent.
+// Supports knowledge-agent.provider-stream-events: emits public progress around the provider run and memory curator.
 
 import { getGlobalTraceProvider, withTrace } from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
 import { SandboxAgent } from "@openai/agents/sandbox";
 import { buildManifest } from "./build-manifest.js";
-import { createConversationStateOpenAITools } from "./create-conversation-state-openai-tools.js";
 import { createGoalAuditorHandoffAgent } from "./create-goal-auditor-handoff-agent.js";
-import { createGoalOpenAITools } from "./create-goal-openai-tools.js";
-import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
+import { createKnowledgeAgentOpenAITools } from "./create-knowledge-agent-openai-tools.js";
 import { createSandboxClient } from "./create-sandbox-client.js";
 import { createRoutineHandoffAgents } from "./create-routine-handoff-agents.js";
 import { executeOpenAISandboxRun } from "./execute-openai-sandbox-run.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
+import { runMemoryCurator } from "./run-memory-curator.js";
 import type { ProviderRunOptions } from "./types.js";
 
 /**
@@ -66,11 +67,10 @@ export async function runOpenAIConversation(
       ...routineHandoffs,
       goalAuditorHandoff,
     ],
-    tools: [
-      ...createConversationStateOpenAITools(options.conversationState),
-      ...createLibrarianOpenAITools(options.librarianContext),
-      ...createGoalOpenAITools(options.librarianContext),
-    ],
+    tools: createKnowledgeAgentOpenAITools({
+      conversationState: options.conversationState,
+      librarianContext: options.librarianContext,
+    }),
     defaultManifest: manifest,
     capabilities: knowledgeAgentCapabilities(),
   });
@@ -87,5 +87,17 @@ export async function runOpenAIConversation(
     },
   );
   await getGlobalTraceProvider().forceFlush();
-  return tracedResult;
+  options.onStreamEvent?.({
+    type: "progress",
+    message: "Memory curator started.",
+  });
+  const memoryCurator = await runMemoryCurator(options);
+  options.onStreamEvent?.({
+    type: "progress",
+    message: "Memory curator finished.",
+  });
+  return {
+    ...tracedResult,
+    memoryCurator,
+  };
 }

@@ -15,7 +15,12 @@ REQUIRED_FIELDS = {
 }
 
 OPTIONAL_FIELDS = {
+    "curation",
     "collections",
+}
+
+CURATION_OPTIONAL_FIELDS = {
+    "auto_curated",
 }
 
 COLLECTION_REQUIRED_FIELDS = {
@@ -43,6 +48,10 @@ def strip_comment(line):
 
 def parse_value(raw):
     raw = raw.strip()
+    if raw == "true":
+        return True
+    if raw == "false":
+        return False
     if raw.startswith("["):
         return ast.literal_eval(raw)
     if raw.startswith('"') and raw.endswith('"'):
@@ -158,6 +167,19 @@ def validate_collections(path, collections, failures):
             seen_names.add(name)
 
 
+def validate_curation(path, curation, failures):
+    if curation is None:
+        return
+    if not isinstance(curation, dict):
+        fail(failures, f"{path}: curation must be a table")
+        return
+    value = curation.get("auto_curated")
+    if value is not None and not isinstance(value, bool):
+        fail(failures, f"{path}: curation.auto_curated must be a boolean")
+    for field in sorted(set(curation) - CURATION_OPTIONAL_FIELDS):
+        fail(failures, f"{path}: curation unsupported field {field}")
+
+
 def validate_memory(memory_toml, failures):
     data = load_toml(memory_toml, failures)
     if data is None:
@@ -168,6 +190,7 @@ def validate_memory(memory_toml, failures):
 
     validate_required_fields(memory_toml, data, REQUIRED_FIELDS, failures)
     validate_string_list(memory_toml, data, "instructions", failures)
+    validate_curation(memory_toml, data.get("curation"), failures)
     validate_collections(memory_toml, data.get("collections"), failures)
 
     for field in sorted(set(data) - set(REQUIRED_FIELDS) - OPTIONAL_FIELDS):

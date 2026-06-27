@@ -1,0 +1,11 @@
+id = "knowledge-agent.runtime-library-configuration"
+title = "Runtime Libraries are configured by project knowledge"
+source = "Human request on 2026-06-26: runtime Library names and paths for conversations and memory must not be hard-coded."
+text = "Knowledge Agent runtime Library names and root paths are declared in project runtime configuration."
+clarifications = [
+  "Conversation history Library name and root path come from the selected project config.",
+  "When shared memory is enabled, the shared memory Library name and root path come from the selected project config.",
+  "The runtime must fail clearly when required runtime Library configuration is missing.",
+  "Runtime Library root paths may use supported project path tokens resolved from storage knowledge.",
+  "The runtime must fail clearly when a runtime Library root path contains an unsupported token.",
+]

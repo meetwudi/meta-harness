@@ -1,0 +1,10 @@
+id = "proj-quartz.memory-curator-actor"
+title = "Quartz Memory Curator actor"
+source = "Human request on 2026-06-26: Quartz memory curator should be its own actor, for example Quartz slash memory-curator."
+text = "PROJ-Quartz configures a distinct Memory Curator actor for Library-scoped memory capture."
+clarifications = [
+  "The actor URI is `actor://proj-quartz/memory-curator`.",
+  "The curator runs after the main Quartz agent turn.",
+  "The curator has its own OpenAI trace.",
+  "The curator uses the shared Knowledge Agent prompt in Memory Curator mode.",
+]

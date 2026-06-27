@@ -5,29 +5,41 @@
 // Supports storage.project-scoped-storage-locations: verifies selected project config locations do not inherit root machine-local locations.
 // Supports storage.postgres-deployment-configuration: verifies env-provided Postgres connection configuration.
 // Supports proj-quartz.postgres-backed-libraries: verifies configured Postgres-backed Libraries through Librarian.
+// Supports proj-quartz.quartz-agent-actor: verifies Quartz storage grants for the project actor.
 // Harness-Requirement: knowledge-agent.project-config-selection
 // Harness-Requirement: storage.project-scoped-storage-locations
 
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
+import { readFileSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import {
   createLibrarianContext,
   createLocalFileSystemStorage,
   executeLibrarianTool,
   type PostgresStorage,
 } from "../../../librarian/impl/dist/index.js";
+import {
+  loadMetaHarnessConfig,
+  resolveMemoryCuratorConfig,
+} from "./load-meta-harness-config.js";
 import { loadLocalStorageLocations } from "./load-local-storage-locations.js";
+import type { KnowledgeAgentSession } from "./local-jsonl-session.js";
+import { memoryCuratorRecentContext } from "./memory-curator-recent-context.js";
+import { buildMemoryCuratorPrompt } from "./run-memory-curator.js";
 import type { PreparedRuntime } from "./types.js";
 
 const postgresCommand = requireCommand("postgres");
 const initdbCommand = requireCommand("initdb");
 const originalQuartzPostgresUrl = process.env.QUARTZ_POSTGRES_URL;
+const quartzAgentActor = "actor://proj-quartz/agent";
+const quartzMemoryCuratorActor = "actor://proj-quartz/memory-curator";
 const workRoot = await mkdtemp(join(tmpdir(), "ka-pg-"));
+const sourceRepoRoot = resolve(process.cwd(), "../../..");
 const repoRoot = join(workRoot, "repo");
 const projectRoot = join(repoRoot, "proj-quartz");
 const localRoot = join(workRoot, "local");
@@ -37,6 +49,7 @@ const port = await availablePort();
 const connectionString = `postgresql://postgres@127.0.0.1:${port}/postgres`;
 let postgres: ChildProcessWithoutNullStreams | undefined;
 let postgresStorage: PostgresStorage | undefined;
+let curatorPostgresStorage: PostgresStorage | undefined;
 
 try {
   await mkdir(repoRoot, { recursive: true });
@@ -83,6 +96,15 @@ try {
         project: {
           name: "proj-quartz",
           localRoot,
+          actorUri: quartzAgentActor,
+        },
+        runtime: {
+          memoryCurator: {
+            enabled: true,
+            actorUri: quartzMemoryCuratorActor,
+            recentMessageLimit: 10,
+            latestUserMessageOnly: true,
+          },
         },
         storage: {
           locations: [
@@ -92,7 +114,7 @@ try {
               driverName: "filesystem",
               grants: [
                 {
-                  actors: ["actor://knowledge-agent"],
+                  actors: [quartzAgentActor, quartzMemoryCuratorActor],
                   capabilities: ["read", "write", "delete", "query", "blob"],
                 },
               ],
@@ -107,7 +129,7 @@ try {
               driverName: "filesystem",
               grants: [
                 {
-                  actors: ["actor://knowledge-agent"],
+                  actors: [quartzAgentActor, quartzMemoryCuratorActor],
                   capabilities: ["read", "write", "delete", "query", "blob"],
                 },
               ],
@@ -126,7 +148,7 @@ try {
               tableName: "resources",
               grants: [
                 {
-                  actors: ["actor://knowledge-agent"],
+                  actors: [quartzAgentActor, quartzMemoryCuratorActor],
                   capabilities: ["read", "write", "delete", "query"],
                 },
               ],
@@ -134,6 +156,9 @@ try {
               discoveryMode: "resource-root-and-direct-children",
               discoveryExcludes: [],
               discoverLibraries: true,
+              defaultForLibraryCreation: true,
+              createdLibraryReadActors: [quartzAgentActor, quartzMemoryCuratorActor],
+              createdLibraryUpdateActors: [quartzAgentActor, quartzMemoryCuratorActor],
             },
           ],
         },
@@ -143,6 +168,14 @@ try {
     ),
   );
 
+  const quartzConfig = loadMetaHarnessConfig(repoRoot, "proj-quartz/.meta-harness.json");
+  assert.deepEqual(resolveMemoryCuratorConfig(quartzConfig), {
+    enabled: true,
+    actorUri: quartzMemoryCuratorActor,
+    recentMessageLimit: 10,
+    latestUserMessageOnly: true,
+  });
+
   const runtime = preparedRuntime(workRoot, localRoot);
   const filesystemStorage = createLocalFileSystemStorage();
   delete process.env.QUARTZ_POSTGRES_URL;
@@ -151,7 +184,7 @@ try {
     projectConfigPath: "proj-quartz/.meta-harness.json",
     runtime,
     storage: filesystemStorage,
-    actorUris: ["actor://knowledge-agent"],
+    actorUris: [quartzAgentActor],
   });
   assert.deepEqual(
     withoutPostgres.map((location) => location.name),
@@ -187,7 +220,7 @@ try {
     projectConfigPath: "proj-quartz/.meta-harness.json",
     runtime,
     storage: filesystemStorage,
-    actorUris: ["actor://knowledge-agent"],
+    actorUris: [quartzAgentActor],
   });
   assert.deepEqual(
     withPostgres.map((location) => location.name),
@@ -202,11 +235,10 @@ try {
   const context = createLibrarianContext({
     storage: filesystemStorage,
     storageLocations: withPostgres,
-    actorUri: "actor://knowledge-agent",
+    actorUri: quartzAgentActor,
     sessionId: "postgres-storage-config",
   });
   await executeLibrarianTool(context, "librarian_create_library", {
-    storageLocationName: "quartz-postgres",
     name: "quartz-config-smoke",
     description: "Quartz config-backed Postgres smoke Library.",
   });
@@ -221,7 +253,183 @@ try {
     readPath(read, ["content"]),
     "Quartz config Postgres smoke content",
   );
+
+  const firstUserMessage =
+    "I want a stocks Library for notes about stocks I am watching.";
+  const secondUserMessage =
+    "I want the stocks we talk about to be actively observed and captured, organized by stock folder, like FB and QCOM.";
+  assert.equal(firstUserMessage.includes("TOML"), false);
+  assert.equal(secondUserMessage.includes("TOML"), false);
+  assert.equal(secondUserMessage.includes("MEMORY.toml"), false);
+  const quartzLibraryCreationPolicy = readFileSync(
+    resolve(sourceRepoRoot, "proj-quartz", "harness", "LIBRARY-CREATION.toml"),
+    "utf8",
+  );
+  assert.match(quartzLibraryCreationPolicy, /ask_user_to_confirm_storage_location = false/);
+  assert.match(quartzLibraryCreationPolicy, /expose_storage_location_in_user_response = false/);
+  assert.match(quartzLibraryCreationPolicy, /require_description_before_create = true/);
+
+  const stocksCreated = await executeLibrarianTool(context, "librarian_create_library", {
+    name: "stocks",
+    description: "Stock observation memory for public companies the user is watching.",
+  });
+  assert.equal(readPath(stocksCreated, ["storageLocation", "name"]), "quartz-postgres");
+  await executeLibrarianTool(context, "librarian_update", {
+    uri: "library://stocks/MEMORY.toml",
+    content: [
+      "# This is a Harness primitive.",
+      "# See also: library://meta-harness",
+      "",
+      "instructions = [",
+      '  "Capture only user-stated stock observations and preferences from conversation.",',
+      '  "Use one folder per stock symbol under symbols/{symbol}/.",',
+      '  "Within each stock folder, store sequential memory by day using YYYY-MM-DD.md files.",',
+      '  "Each entry must include learned_at, learned_from, and the exact user-stated fact or observation.",',
+      '  "Inspect existing memory before writing and do not duplicate facts already captured.",',
+      '  "Do not invent investment analysis, recommendations, or conclusions.",',
+      "]",
+      "",
+      "[curation]",
+      "auto_curated = true",
+      "",
+      "[[collections]]",
+      'name = "symbols"',
+      'location = "symbols/{symbol}/"',
+      "instructions = [",
+      '  "Treat this location as the folder for one stock symbol.",',
+      '  "Store sequential daily memory inside the stock folder using files named YYYY-MM-DD.md.",',
+      '  "Append new entries in chronological order within the day file when multiple facts are learned on the same day.",',
+      '  "Each entry must include learned_at, learned_from, and statement fields or equivalent labeled lines.",',
+      "]",
+      "",
+    ].join("\n"),
+  });
+  await executeLibrarianTool(context, "librarian_update", {
+    uri: "library://stocks/symbols/FB/2026-06-26.md",
+    content: [
+      "# FB - 2026-06-26",
+      "",
+      "## 2026-06-26",
+      "",
+      "- learned_at: 2026-06-26",
+      "- learned_from: user",
+      "- statement: FB is one of the example stock symbols to organize.",
+      "",
+    ].join("\n"),
+  });
+
+  const stocksManifest = await executeLibrarianTool(context, "librarian_read", {
+    uri: "library://stocks/LIBRARY.toml",
+  });
+  const stocksManifestContent = String(readPath(stocksManifest, ["content"]));
+  assert.match(
+    stocksManifestContent,
+    /read_actors = \["actor:\/\/proj-quartz\/agent","actor:\/\/proj-quartz\/memory-curator"\]/,
+  );
+  assert.match(
+    stocksManifestContent,
+    /update_actors = \["actor:\/\/proj-quartz\/agent","actor:\/\/proj-quartz\/memory-curator"\]/,
+  );
+
+  const curatorLocations = loadLocalStorageLocations({
+    repoRootPath: repoRoot,
+    projectConfigPath: "proj-quartz/.meta-harness.json",
+    runtime,
+    storage: filesystemStorage,
+    actorUris: [quartzMemoryCuratorActor],
+  });
+  curatorPostgresStorage = curatorLocations.find((location) => location.name === "quartz-postgres")
+    ?.storage as PostgresStorage | undefined;
+  assert.ok(curatorPostgresStorage);
+  const curatorContext = createLibrarianContext({
+    storage: filesystemStorage,
+    storageLocations: curatorLocations,
+    actorUri: quartzMemoryCuratorActor,
+    sessionId: "postgres-memory-curator-config",
+  });
+  const curatorList = await executeLibrarianTool(curatorContext, "librarian_list_libraries", {});
+  assert.ok(
+    arrayAt(curatorList, ["libraries"]).some(
+      (library) =>
+        readPath(library, ["uri"]) === "library://stocks" &&
+        readPath(library, ["writable"]) === true,
+    ),
+  );
+  const stocksMemory = await executeLibrarianTool(curatorContext, "librarian_read", {
+    uri: "library://stocks/MEMORY.toml",
+  });
+  assert.match(String(readPath(stocksMemory, ["content"])), /\[curation\]/);
+  assert.match(String(readPath(stocksMemory, ["content"])), /auto_curated = true/);
+  assert.match(String(readPath(stocksMemory, ["content"])), /location = "symbols\/\{symbol\}\/"/);
+  assert.match(String(readPath(stocksMemory, ["content"])), /YYYY-MM-DD\.md/);
+  assert.match(String(readPath(stocksMemory, ["content"])), /learned_at/);
+  assert.match(String(readPath(stocksMemory, ["content"])), /learned_from/);
+  const curatorFiles = await executeLibrarianTool(curatorContext, "librarian_list_files", {
+    uri: "library://stocks",
+    recursive: true,
+  });
+  assert.ok(
+    arrayAt(curatorFiles, ["files"]).some(
+      (file) => readPath(file, ["uri"]) === "library://stocks/symbols/FB/2026-06-26.md",
+    ),
+  );
+
+  const contextualMainAgentGoal = [
+    "Recent chat transcript:",
+    `user: ${firstUserMessage}`,
+    "assistant: Created library://stocks.",
+    "",
+    "Current user request:",
+    secondUserMessage,
+    "",
+    "Use the transcript to resolve short follow-ups.",
+  ].join("\n");
+  assert.notEqual(contextualMainAgentGoal, secondUserMessage);
+  const recentContextSession: KnowledgeAgentSession = {
+    getSessionId: async () => "curator-prompt-boundary",
+    getItems: async (limit) => {
+      assert.equal(limit, 10);
+      return [
+        {
+          type: "message",
+          role: "user",
+          content: [{ type: "input_text", text: firstUserMessage }],
+        },
+        {
+          type: "message",
+          role: "assistant",
+          status: "completed",
+          content: [{ type: "output_text", text: "Created library://stocks." }],
+        },
+        {
+          type: "message",
+          role: "user",
+          content: [{ type: "input_text", text: secondUserMessage }],
+        },
+      ];
+    },
+    addItems: async () => {},
+    popItem: async () => undefined,
+    clearSession: async () => {},
+  };
+  const recentContext = await memoryCuratorRecentContext(recentContextSession, 10);
+  const curatorPrompt = buildMemoryCuratorPrompt({
+    repoRoot: sourceRepoRoot,
+    actorUri: quartzMemoryCuratorActor,
+    recentMessageLimit: 10,
+    latestUserMessage: secondUserMessage,
+    recentContext,
+  });
+  assert.match(curatorPrompt, /## Memory Curator Mode/);
+  assert.match(curatorPrompt, /Active Memory Curator Actor: `actor:\/\/proj-quartz\/memory-curator`/);
+  assert.match(curatorPrompt, /Learn only from the latest user message shown below\./);
+  assert.match(curatorPrompt, /Use the recent conversation context only to understand references and avoid/);
+  assert.match(curatorPrompt, /Inspect existing memory before writing\./);
+  assert.match(curatorPrompt, /Latest user message only: `true`/);
+  assert.match(curatorPrompt, new RegExp(escapeRegExp(secondUserMessage)));
+  assert.equal(curatorPrompt.includes("Recent chat transcript:"), false);
 } finally {
+  await curatorPostgresStorage?.close();
   await postgresStorage?.close();
   if (originalQuartzPostgresUrl === undefined) {
     delete process.env.QUARTZ_POSTGRES_URL;
@@ -240,6 +448,12 @@ function preparedRuntime(workRootPath: string, localRootPath: string): PreparedR
     localRoot: localRootPath,
     conversationsLibrary: join(localRootPath, "knowledge-agent", "conversations"),
     memoryLibrary: join(localRootPath, "knowledge-agent", "memory"),
+    memoryCurator: {
+      enabled: true,
+      actorUri: quartzMemoryCuratorActor,
+      recentMessageLimit: 10,
+      latestUserMessageOnly: true,
+    },
     conversationRoot: join(localRootPath, "knowledge-agent", "conversations", "config-test"),
     sessionFile: join(localRootPath, "knowledge-agent", "conversations", "config-test", "session.jsonl"),
     tmpStorageLibrariesRoot: join(workRootPath, "tmp-local-storage", "libraries"),
@@ -312,4 +526,14 @@ function readPath(value: unknown, path: (string | number)[]): unknown {
     current = (current as Record<string, unknown>)[segment];
   }
   return current;
+}
+
+function arrayAt(value: unknown, path: (string | number)[]): unknown[] {
+  const array = path.length === 0 ? value : readPath(value, path);
+  assert.ok(Array.isArray(array));
+  return array;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

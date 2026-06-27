@@ -1,0 +1,13 @@
+id = "librarian.tool-librarian-delete"
+title = "`librarian_delete` tool contract"
+source = "Human request on 2026-06-26: provide a way to delete files or folders when the Library is writable."
+text = "`librarian_delete` deletes a file or folder resource inside a writable Library."
+clarifications = [
+  "Input requires a `library://...` resource URI with a Library-relative path and rejects exact Library root URIs.",
+  "The containing Library must be writable for the active actor according to its `LIBRARY.toml` update_actors governance.",
+  "The target storage location must grant delete capability to the active actor.",
+  "The target resource path must exist before deletion so typos fail clearly.",
+  "Deleting a folder deletes that folder and its descendants through the storage driver.",
+  "Whole-Library deletion remains a separate `librarian_delete_library` operation.",
+  "Output returns the deleted resource URI, containing Library listing, storage location name, and whether deletion occurred.",
+]

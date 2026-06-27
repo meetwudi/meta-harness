@@ -1,6 +1,8 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.storage-discovery-runtime: documents the storage-discovery CLI shape.
 // Supports knowledge-agent.project-config-selection: documents project config selection.
+// Supports knowledge-agent.library-scoped-memory-curator: documents the raw latest-user-message curation boundary.
+// Supports knowledge-agent.provider-stream-events: documents host JSONL stream output mode.
 
 /**
  * Builds the CLI usage text shown for invalid or incomplete commands.
@@ -17,10 +19,12 @@ export function usage(): string {
     "  --reasoning-effort <effort>    Reasoning effort. Default: medium",
     "  --client <unix|docker>         Sandbox client. Default: unix",
     "  --repo-root <path>             Repository root. Default: discovered from cwd",
+    "  --latest-user-message <text>   Raw latest user message for post-turn memory curation",
     "  --project-config <path>        Project config path. Default: .meta-harness.json",
     "  --conversation-id <id>         Conversation id. Default: generated",
     "  --turn-id <id>                 Turn id for one-off run. Default: generated",
     "  --local-root <path>            Project local root. Default: .meta-harness.json project.localRoot",
     "  --sandbox-workspace <path>     Local sandbox workspace directory",
+    "  --stream-events               Emit public stream events as JSON lines",
   ].join("\n");
 }

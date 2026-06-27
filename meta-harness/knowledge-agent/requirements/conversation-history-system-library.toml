@@ -1,0 +1,9 @@
+id = "knowledge-agent.conversation-history-system-library"
+title = "Conversation history is a system Library"
+source = "Human request on 2026-06-26: Knowledge Agent conversations are system inner-working Libraries that may be visible but should not be editable or deletable by the conversational actor."
+text = "The Knowledge Agent conversation history Library is readable to the active actor but not writable through Librarian by that actor."
+clarifications = [
+  "The runtime may still write conversation records through its internal storage path.",
+  "The conversational actor must not receive Library update authority over the conversation history Library by default.",
+  "Because deletion requires Library update authority, the conversation history Library is not deletable by the conversational actor through Librarian.",
+]

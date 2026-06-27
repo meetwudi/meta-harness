@@ -1,0 +1,9 @@
+id = "knowledge-agent.memory-curation-config"
+title = "Memory curation config"
+source = "Human request on 2026-06-26: MEMORY.toml should carry curation config, including whether the memory is automatically curated, defaulting to yes."
+text = "`MEMORY.toml` supports optional curation config for automatic Memory Curator ingestion."
+clarifications = [
+  "`[curation] auto_curated = false` excludes a Memory collection from automatic curator ingestion.",
+  "When `[curation]` or `auto_curated` is omitted, automatic curation is treated as enabled.",
+  "Automatic curation still follows Library actor governance and can only write to writable Libraries.",
+]

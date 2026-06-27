@@ -4,7 +4,6 @@
 
 import { join } from "node:path";
 import type { LibrarianStorage } from "../../../librarian/impl/dist/index.js";
-import { CONVERSATIONS_LIBRARY_NAME } from "./constants.js";
 
 /**
  * Creates the local conversations Library used to store one folder per conversation.
@@ -12,6 +11,8 @@ import { CONVERSATIONS_LIBRARY_NAME } from "./constants.js";
 export async function ensureConversationsLibrary(
   storage: LibrarianStorage,
   root: string,
+  name: string,
+  actorUri: string,
 ): Promise<void> {
   await storage.makeDirectory(root);
   const libraryToml = join(root, "LIBRARY.toml");
@@ -22,10 +23,11 @@ export async function ensureConversationsLibrary(
         "# This is a Harness primitive.",
         "# See also: library://meta-harness",
         "",
-        `name = "${CONVERSATIONS_LIBRARY_NAME}"`,
+        `name = ${JSON.stringify(name)}`,
         'description = "Conversation history Library for Knowledge Agent sessions, including prompts, summaries, trace references, and conversation records."',
-        'read_actors = ["actor://knowledge-agent"]',
-        'update_actors = ["actor://knowledge-agent"]',
+        "isSystemLibrary = true",
+        `read_actors = [${JSON.stringify(actorUri)}]`,
+        "update_actors = []",
         "",
       ].join("\n"),
     );

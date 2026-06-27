@@ -1,5 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.routine-handoffs: creates OpenAI Agents SDK handoffs for Meta Harness Routines.
+// Supports knowledge-agent.web-search-tool: attaches hosted web search to Routine handoff agents.
 
 import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
 import {
@@ -13,6 +14,7 @@ import { type Manifest, SandboxAgent } from "@openai/agents/sandbox";
 import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
 import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
 import { createRoutineLibrarianContext } from "./create-routine-librarian-context.js";
+import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
 import { discoverRepositoryRoutines } from "./discover-repository-routines.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
 import type { ReasoningEffort } from "./types.js";
@@ -51,7 +53,10 @@ export function createRoutineHandoffAgents(input: {
         RECOMMENDED_PROMPT_PREFIX,
         routinePrompt,
       ].join("\n\n"),
-      tools: createLibrarianOpenAITools(routineContext),
+      tools: [
+        ...createLibrarianOpenAITools(routineContext),
+        ...createWebSearchOpenAITools(),
+      ],
       defaultManifest: input.manifest,
       capabilities: knowledgeAgentCapabilities(),
     });

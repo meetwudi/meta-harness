@@ -1,0 +1,9 @@
+id = "librarian.library-delete-governance"
+title = "Library deletion follows actor governance"
+source = "Human request on 2026-06-26: the actor system should deterministically guard against editing or deleting system Libraries without the right actor."
+text = "Library deletion is governed by storage delete capability and Library update actor authority."
+clarifications = [
+  "Delete authority is not inferred from read access alone.",
+  "Delete authority is not inferred from storage capability alone.",
+  "A Library that is not writable to the active actor must not be deleted through Librarian even when the storage driver can delete paths.",
+]

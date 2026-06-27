@@ -5,9 +5,12 @@
 // Supports librarian.tool-librarian-add-tags: routes the add Tags tool.
 // Supports librarian.tool-librarian-remove-tags: routes the remove Tags tool.
 // Supports librarian.tool-librarian-query-by-tags: routes the query by Tags tool.
+// Supports librarian.tool-librarian-delete: routes the file/folder delete tool.
 
 import { addTags } from "./add-tags.js";
 import { createLibraryInStorageLocation } from "./create-library-in-storage-location.js";
+import { deleteLibrary } from "./delete-library.js";
+import { deleteLibraryResource } from "./delete-library-resource.js";
 import { introLibraries } from "./intro-libraries.js";
 import { listLibraryFiles } from "./list-library-files.js";
 import { listLibraries } from "./list-libraries.js";
@@ -56,9 +59,17 @@ export async function executeLibrarianTool(
     });
   } else if (toolName === "librarian_create_library") {
     output = await createLibraryInStorageLocation(context, {
-      storageLocationName: typeof input.storageLocationName === "string" ? input.storageLocationName : "",
+      storageLocationName: typeof input.storageLocationName === "string" ? input.storageLocationName : undefined,
       name: typeof input.name === "string" ? input.name : "",
-      description: typeof input.description === "string" ? input.description : undefined,
+      description: typeof input.description === "string" ? input.description : "",
+    });
+  } else if (toolName === "librarian_delete") {
+    output = await deleteLibraryResource(context, {
+      uri: String(input.uri),
+    });
+  } else if (toolName === "librarian_delete_library") {
+    output = await deleteLibrary(context, {
+      uri: String(input.uri),
     });
   } else if (toolName === "librarian_add_tags") {
     output = await addTags(context, {

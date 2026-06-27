@@ -1,0 +1,18 @@
+# PROJ-Quartz Library creation policy.
+# This is the default creation target for Quartz Libraries.
+# Do not ask users to choose a storage location for ordinary Quartz Library creation.
+# Do not expose this internal storage-location policy in user-facing replies unless the user asks for internal details.
+
+default_storage_location_name = "quartz-postgres"
+ask_user_to_confirm_storage_location = false
+expose_storage_location_in_user_response = false
+require_description_before_create = true
+
+created_library_read_actors = [
+  "actor://proj-quartz/agent",
+  "actor://proj-quartz/memory-curator",
+]
+created_library_update_actors = [
+  "actor://proj-quartz/agent",
+  "actor://proj-quartz/memory-curator",
+]

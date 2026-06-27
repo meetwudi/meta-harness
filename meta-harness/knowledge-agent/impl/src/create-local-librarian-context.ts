@@ -11,6 +11,10 @@ import {
   createLocalFileSystemStorage,
 } from "../../../librarian/impl/dist/index.js";
 import { loadLocalStorageLocations } from "./load-local-storage-locations.js";
+import {
+  loadMetaHarnessConfig,
+  resolveProjectActorUri,
+} from "./load-meta-harness-config.js";
 import type { PreparedRuntime } from "./types.js";
 
 /**
@@ -21,7 +25,9 @@ export function createLocalLibrarianContext(
   runtime: PreparedRuntime,
 ) {
   const storage = createLocalFileSystemStorage();
-  const actorUri = "actor://knowledge-agent";
+  const actorUri = resolveProjectActorUri(
+    loadMetaHarnessConfig(input.repoRootPath, input.projectConfigPath),
+  );
   return createLibrarianContext({
     storage,
     storageLocations: loadLocalStorageLocations({

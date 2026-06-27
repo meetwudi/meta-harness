@@ -3,6 +3,8 @@
 // Supports knowledge-agent.provider-interface: reads provider, model, and sandbox selection inputs.
 // Supports knowledge-agent.project-config-selection: reads the selected project config path.
 // Supports knowledge-agent.openai-reasoning-effort: reads reasoning effort from CLI and environment.
+// Supports knowledge-agent.library-scoped-memory-curator: reads the raw latest user message when the goal is contextualized.
+// Supports knowledge-agent.provider-stream-events: parses JSONL stream mode for host applications.
 // Harness-Requirement: knowledge-agent.project-config-selection
 
 import {
@@ -29,12 +31,17 @@ export function parseArgs(argv: string[]): Args {
     turnId: defaultTurnId(),
     localRoot: "",
     sandboxWorkspace: "",
+    streamEvents: false,
   };
 
   const rest = [...argv];
   args.command = rest.shift();
   while (rest.length > 0) {
     const flag = rest.shift();
+    if (flag === "--stream-events") {
+      args.streamEvents = true;
+      continue;
+    }
     const value = rest.shift();
     if (!flag?.startsWith("--") || value === undefined) {
       throw new Error(`invalid argument: ${flag ?? ""}`);
@@ -45,6 +52,9 @@ export function parseArgs(argv: string[]): Args {
         break;
       case "--goal":
         args.goal = value;
+        break;
+      case "--latest-user-message":
+        args.latestUserMessage = value;
         break;
       case "--provider":
         args.provider = value;

@@ -10,6 +10,7 @@ export function resultSummary(result: unknown): Record<string, unknown> {
     return {
       ...resultSummary(wrapped.result),
       trace: wrapped.trace,
+      memoryCurator: wrapped.memoryCurator,
     };
   }
   if (typeof result !== "object" || result === null) {

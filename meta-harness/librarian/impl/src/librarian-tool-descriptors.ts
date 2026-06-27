@@ -5,6 +5,7 @@
 // Supports librarian.tool-librarian-add-tags: describes the add Tags tool.
 // Supports librarian.tool-librarian-remove-tags: describes the remove Tags tool.
 // Supports librarian.tool-librarian-query-by-tags: describes the query by Tags tool.
+// Supports librarian.tool-librarian-delete: describes the file/folder delete tool.
 
 import type { LibrarianToolDescriptor } from "./types.js";
 import { LIBRARY_NAME_PATTERN } from "./library-name.js";
@@ -25,7 +26,7 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
     },
     {
       name: "librarian_list_libraries",
-      description: "Call this immediately after librarian_intro to list storage-discovered Libraries with readable and writable access.",
+      description: "Call this immediately after librarian_intro to list storage-discovered Libraries with access and system metadata.",
       parameters: {
         type: "object",
         properties: {},
@@ -90,7 +91,7 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
     {
       name: "librarian_create_library",
       description:
-        "Create a Library in a named storage location. Library names use lowercase letters and digits separated by hyphens or underscores.",
+        "Create a Library in a named storage location, or in the configured default creation location when storageLocationName is omitted. Library names use lowercase letters and digits separated by hyphens or underscores. Description is required.",
       parameters: {
         type: "object",
         properties: {
@@ -98,7 +99,33 @@ export function librarianToolDescriptors(): LibrarianToolDescriptor[] {
           name: { type: "string", pattern: LIBRARY_NAME_PATTERN },
           description: { type: "string" },
         },
-        required: ["storageLocationName", "name"],
+        required: ["name", "description"],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: "librarian_delete",
+      description:
+        "Delete a file or folder resource inside a writable Library. Exact Library roots must use librarian_delete_library.",
+      parameters: {
+        type: "object",
+        properties: {
+          uri: { type: "string", pattern: "^library://" },
+        },
+        required: ["uri"],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: "librarian_delete_library",
+      description:
+        "Delete an exact Library URI when the active actor can update the Library and the storage location grants delete capability.",
+      parameters: {
+        type: "object",
+        properties: {
+          uri: { type: "string", pattern: "^library://" },
+        },
+        required: ["uri"],
         additionalProperties: false,
       },
     },

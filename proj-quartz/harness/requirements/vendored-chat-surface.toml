@@ -1,0 +1,10 @@
+id = "proj-quartz.vendored-chat-surface"
+title = "Vendored chat surface"
+source = "Human request on 2026-06-27: vendor the CopilotKit chat surface now instead of depending on the external package as the Quartz UI dependency."
+text = "PROJ-Quartz vendors the CopilotKit chat surface it uses, records upstream provenance, and resolves Quartz chat imports through the vendored copy rather than an external registry package."
+
+criteria = [
+  "The vendored package copy records the upstream package name, version, repository, and capture date.",
+  "Quartz package dependencies resolve CopilotKit packages from the local vendored tree.",
+  "Quartz application code imports the chat surface from the vendored package path or the local package installed from that vendored path.",
+]

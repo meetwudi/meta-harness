@@ -3,7 +3,7 @@ title = "Knowledge Agent tool and handoff assembly"
 source = "Human request on 2026-06-23 to spec the file that puts together all tools provided to the agent."
 text = "Knowledge Agent assembles its agent-facing tools and handoffs through a Spec-backed composition point."
 clarifications = [
-  "The assembly includes Routine handoffs, the Goal Auditor handoff, Librarian tools adapted from Librarian descriptors, and Goal tools from the Goal tool registry.",
+  "The assembly includes Routine handoffs, the Goal Auditor handoff, Librarian tools adapted from Librarian descriptors, Goal tools from the Goal tool registry, and hosted web search for current public information.",
   "The assembly preserves the shared Knowledge Agent instructions, sandbox manifest, and runtime capabilities used by the composed agent.",
   "The assembly is the review point for which tool and handoff surfaces are provided to the primary Knowledge Agent session.",
 ]

@@ -3,9 +3,11 @@
 
 name = "proj-quartz"
 description = "Information Trading project knowledge and application for using Meta Harness Knowledge Agent to reason about public information asymmetry."
-read_actors = ["actor://knowledge-agent"]
+isSystemLibrary = true
+read_actors = ["actor://proj-quartz/agent"]
 update_actors = []
 agent_excludes = [
   "app/node_modules/**",
+  "app/vendor/**",
   "app/.next/**",
 ]

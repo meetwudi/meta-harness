@@ -18,6 +18,13 @@ export type KnowledgeAgentPromptOptions = Pick<
   "goal" | "repoRoot"
 > & {
   conversationState?: Pick<ProviderRunOptions["conversationState"], "promptToml">;
+  memoryCuratorMode?: {
+    actorUri: string;
+    recentMessageLimit: number;
+    latestUserMessageOnly: boolean;
+    latestUserMessage: string;
+    recentContext: string;
+  };
   routine?: RoutineDefinition;
   goalAudit?: {
     actorUri: string;
@@ -44,6 +51,7 @@ export function buildKnowledgeAgentPrompt(
   return Mustache.render(template, {
     goal: options.goal,
     conversationStateToml: options.conversationState?.promptToml ?? "",
+    memoryCuratorMode: options.memoryCuratorMode ?? false,
     routine: options.routine
       ? {
         name: options.routine.name,

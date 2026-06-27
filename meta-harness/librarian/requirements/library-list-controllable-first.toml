@@ -1,0 +1,9 @@
+id = "librarian.library-list-controllable-first"
+title = "Library listing prioritizes controllable Libraries"
+source = "Human request on 2026-06-26: system and inner-working Libraries should be lightly mentioned or deprioritized after actual non-system Libraries."
+text = "Librarian lists non-system Libraries before Libraries marked `isSystemLibrary`, and prioritizes controllable Libraries within each group."
+clarifications = [
+  "Controllable Libraries are Libraries that are writable or deletable for the active actor.",
+  "Within the same system/control tier, Library listing remains stable by Library URI.",
+  "The listing still includes readable system Libraries unless they are not visible to the active actor.",
+]

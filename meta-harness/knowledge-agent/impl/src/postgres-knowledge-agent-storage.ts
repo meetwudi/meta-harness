@@ -15,6 +15,7 @@ import { ensureMemoryLibrary } from "./ensure-memory-library.js";
 import { LocalJsonlSession } from "./local-jsonl-session.js";
 import { recordLocalHistory } from "./record-local-history.js";
 import { resolveLocalRoot } from "./resolve-local-root.js";
+import { resolveRuntimeLibraryRootPath } from "./runtime-library-path.js";
 import type { KnowledgeAgentStorage, StoragePrepareInput } from "./types.js";
 
 export type PostgresKnowledgeAgentStorageOptions = {
@@ -51,24 +52,51 @@ async function preparePostgresRuntime(
     conversationId,
   } = input;
   const localRoot = resolveLocalRoot(repoRootPath, configuredLocalRoot);
-  const conversationsLibrary = "/libraries/knowledge-agent-conversations";
-  const memoryLibrary = "/libraries/knowledge-agent-memory";
+  const tmpStorageLibrariesRoot = "/libraries";
+  const pathValues = {
+    repoRootPath,
+    projectRootPath: input.projectRootPath,
+    localRoot,
+    tmpStorageLibrariesRoot,
+  };
+  const conversationsLibrary = resolveRuntimeLibraryRootPath(
+    input.conversationLibrary.rootPath,
+    pathValues,
+  );
+  const memoryLibrary = input.sharedMemory.library
+    ? resolveRuntimeLibraryRootPath(input.sharedMemory.library.rootPath, pathValues)
+    : "";
   const conversationRoot = join(conversationsLibrary, conversationId);
   const sessionFile = join(conversationRoot, "session.jsonl");
-  const tmpStorageLibrariesRoot = "/libraries";
   const sandboxWorkspace = resolve(
     repoRootPath,
     sandboxWorkspaceInput || join(localRoot, "knowledge-agent", "sandbox-workspaces", conversationId),
   );
   await runtimeStorage.ensureSchema();
-  await ensureConversationsLibrary(runtimeStorage, conversationsLibrary);
-  await ensureMemoryLibrary(runtimeStorage, memoryLibrary);
+  await ensureConversationsLibrary(
+    runtimeStorage,
+    conversationsLibrary,
+    input.conversationLibrary.name,
+    input.actorUri,
+  );
+  if (input.sharedMemory.enabled) {
+    if (!input.sharedMemory.library) {
+      throw new Error(".meta-harness.json runtime.sharedMemory.library is required when shared memory is enabled");
+    }
+    await ensureMemoryLibrary(
+      runtimeStorage,
+      memoryLibrary,
+      input.sharedMemory.library.name,
+      input.actorUri,
+    );
+  }
   await runtimeStorage.makeDirectory(conversationRoot);
   await mkdir(sandboxWorkspace, { recursive: true });
   return {
     localRoot,
     conversationsLibrary,
     memoryLibrary,
+    memoryCurator: input.memoryCurator,
     conversationRoot,
     sessionFile,
     tmpStorageLibrariesRoot,

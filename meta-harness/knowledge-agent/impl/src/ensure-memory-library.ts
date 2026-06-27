@@ -4,7 +4,6 @@
 
 import { join } from "node:path";
 import type { LibrarianStorage } from "../../../librarian/impl/dist/index.js";
-import { MEMORY_LIBRARY_NAME } from "./constants.js";
 
 /**
  * Creates the Knowledge Agent memory Library used by multiple conversations.
@@ -12,6 +11,8 @@ import { MEMORY_LIBRARY_NAME } from "./constants.js";
 export async function ensureMemoryLibrary(
   storage: LibrarianStorage,
   root: string,
+  name: string,
+  actorUri: string,
 ): Promise<void> {
   await storage.makeDirectory(root);
   const libraryToml = join(root, "LIBRARY.toml");
@@ -22,10 +23,11 @@ export async function ensureMemoryLibrary(
         "# This is a Harness primitive.",
         "# See also: library://meta-harness",
         "",
-        `name = "${MEMORY_LIBRARY_NAME}"`,
+        `name = ${JSON.stringify(name)}`,
         'description = "Durable Memory Library shared across Knowledge Agent conversations for retrievable values, notes, and summaries."',
-        'read_actors = ["actor://knowledge-agent"]',
-        'update_actors = ["actor://knowledge-agent"]',
+        "isSystemLibrary = true",
+        `read_actors = [${JSON.stringify(actorUri)}]`,
+        `update_actors = [${JSON.stringify(actorUri)}]`,
         "",
       ].join("\n"),
     );

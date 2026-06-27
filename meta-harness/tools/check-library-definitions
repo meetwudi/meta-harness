@@ -17,6 +17,7 @@ REQUIRED_LIBRARY_TOML_FIELDS = {
 }
 OPTIONAL_LIBRARY_TOML_FIELDS = {
     "description",
+    "isSystemLibrary",
     "read_actors",
     "update_actors",
     "agent_excludes",
@@ -42,6 +43,10 @@ def strip_comment(line):
 
 def parse_value(raw):
     raw = raw.strip()
+    if raw == "true":
+        return True
+    if raw == "false":
+        return False
     if raw.startswith("["):
         return ast.literal_eval(raw)
     if raw.startswith('"') and raw.endswith('"'):
@@ -177,6 +182,14 @@ def validate_optional_string(path, data, field, failures):
         fail(failures, f"{path}: {field} must be a non-empty string")
 
 
+def validate_optional_bool(path, data, field, failures):
+    value = data.get(field)
+    if value is None:
+        return
+    if not isinstance(value, bool):
+        fail(failures, f"{path}: {field} must be a boolean")
+
+
 def validate_library_toml(library_toml, failures):
     library_root = library_toml.parent
     if library_root is None:
@@ -200,6 +213,7 @@ def validate_library_toml(library_toml, failures):
     validate_required_fields(library_toml, data, REQUIRED_LIBRARY_TOML_FIELDS, failures)
     validate_library_name(library_toml, data, failures)
     validate_optional_string(library_toml, data, "description", failures)
+    validate_optional_bool(library_toml, data, "isSystemLibrary", failures)
     validate_actor_governance_fields(library_toml, data, failures)
     validate_actor_uri_patterns(library_toml, data, "read_actors", failures)
     validate_actor_uri_patterns(library_toml, data, "update_actors", failures)

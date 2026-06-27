@@ -1,0 +1,68 @@
+id = "proj-quartz.acceptance.stock-memory-curation"
+title = "Stock memory setup from natural language"
+requirements = [
+  "proj-quartz.default-library-creation-target",
+  "proj-quartz.memory-curator-actor",
+  "proj-quartz.stock-memory-setup-natural-language",
+  "knowledge-agent.memory-curation-config",
+  "knowledge-agent.library-scoped-memory-curator",
+]
+
+# Replay guidance:
+# - This is a browser acceptance test for the Quartz app at http://127.0.0.1:3000/.
+# - Use the in-app browser tool so the replay exercises the real SPA, chat
+#   service, API route, Knowledge Agent CLI, Librarian tools, Postgres-backed
+#   Library storage, and post-turn Memory Curator path together.
+# - Use three separate Quartz conversations. In the current UI, a separate
+#   conversation can be simulated by reloading the page or opening a fresh app
+#   session between messages; the important property is that the later turn is
+#   not relying on React component state from the earlier turn.
+# - Capture browser-visible assistant replies and backend evidence after each
+#   conversation. Backend evidence should come from Librarian/Postgres Library
+#   state and from the recorded `memory-curator-trace.json` turn artifact when
+#   available.
+# - When replaying against a reused local Quartz database, verify that no legacy
+#   flat stock memory file such as `library://stocks/symbols/FB.md` remains. If
+#   one exists and the equivalent folder-based entry already exists, delete the
+#   stale flat file through governed `librarian_delete` before treating recall as
+#   accepted. Otherwise the answer can pass while using the wrong memory shape.
+# - Do not ask the user to write TOML, name the storage location, or perform
+#   implementation work during the replay. The acceptance input is intentionally
+#   ordinary product language.
+# - If the first conversation asks for a human-facing Library description, answer
+#   with an ordinary description. That is expected placeholder resolution. It is
+#   not acceptable for the agent to ask for the storage location because Quartz
+#   project knowledge already designates it.
+procedure = [
+  "Open the Quartz SPA in the in-app browser at `http://127.0.0.1:3000/` with `QUARTZ_POSTGRES_URL` configured.",
+  "In a first Quartz conversation, the user says in ordinary language: `I want to start loading everything I know about stocks and have Quartz remember useful stock observations as we talk about them.`",
+  "If the agent asks for a Library description, answer in ordinary language: `Use it for stock observation memory for public companies I am watching.`",
+  "The agent creates or updates `library://stocks` through Librarian without asking for or exposing the storage location because Quartz project knowledge designates the default target.",
+  "The agent translates the setup request into `library://stocks/MEMORY.toml` with curation enabled, one folder per stock symbol, and sequential dated memory entries inside each stock folder, without asking the user to write TOML.",
+  "After the first conversation, inspect backend Library state and record the contents of `library://stocks/LIBRARY.toml` and `library://stocks/MEMORY.toml` as acceptance evidence.",
+  "Start a second Quartz conversation by refreshing the browser page or opening a fresh app session.",
+  "In the second Quartz conversation, the user says in ordinary language: `FB is developing a new chip.`",
+  "After the second conversation's main agent response, the Quartz Memory Curator actor runs in its own OpenAI trace.",
+  "Inspect the second conversation's recorded Memory Curator evidence. Verify the curator received the latest user message as `FB is developing a new chip.`, received only the bounded recent context needed for reference resolution, and did not treat older setup text as new learnable content.",
+  "Inspect the curator tool calls. Verify it calls `librarian_intro`, calls `librarian_list_libraries`, sees writable Library candidates with names, descriptions, and governance metadata, reads `library://stocks/LIBRARY.toml`, reads `library://stocks/MEMORY.toml`, inspects existing memory under the relevant stock folder, and writes only if the fact is not already captured.",
+  "Inspect backend Library state and verify the curator writes the latest user-stated FB chip fact into the FB stock folder as a dated sequential entry.",
+  "If this is a reused local database, verify no legacy flat `library://stocks/symbols/FB.md` file remains; if a duplicate exists and the folder entry already preserves the same fact with provenance, remove the flat duplicate through `librarian_delete` and record that cleanup as test evidence.",
+  "Start a third Quartz conversation by refreshing the browser page or opening a fresh app session.",
+  "In the third Quartz conversation, the user asks in ordinary language: `What do we know about FB?`",
+  "The agent inspects the stocks Memory Library and answers with the captured fact that FB is developing a new chip.",
+]
+expected = [
+  "`library://stocks` is created in the configured Quartz default Library creation location.",
+  "`library://stocks/LIBRARY.toml` grants read and update governance to `actor://proj-quartz/memory-curator`.",
+  "`library://stocks/MEMORY.toml` has `[curation] auto_curated = true` or omits the field so automatic curation defaults to true.",
+  "`library://stocks/MEMORY.toml` specifies a per-stock folder layout and sequential dated entries with learned-at and learned-from provenance.",
+  "The user-facing conversation does not expose internal storage-location details unless the user asks for internal details.",
+  "The curator trace is separate from the main Knowledge Agent trace.",
+  "The curator trace identifies `actor://proj-quartz/memory-curator` as the active actor.",
+  "The curator receives the correct writable Library list with descriptions and does not consider read-only or system-only Libraries as memory write targets.",
+  "The curator reads `MEMORY.toml` before choosing where and how to write memory.",
+  "The curator records the FB chip fact from the second conversation under the FB folder without re-learning older setup content or duplicating existing memory.",
+  "The recorded FB memory entry is dated, sequential within `symbols/FB/`, and preserves learned-at and learned-from provenance.",
+  "No legacy flat stock memory file such as `library://stocks/symbols/FB.md` is needed for the recall answer.",
+  "A later separate conversation can retrieve and answer with the FB chip fact from `library://stocks`.",
+]

@@ -1,0 +1,10 @@
+id = "proj-quartz.chatgpt-style-reasoning-control"
+title = "ChatGPT-style reasoning control"
+source = "Human request on 2026-06-27: use Chrome to inspect ChatGPT and implement a native UI selector like ChatGPT instead of the current selector UI."
+text = "PROJ-Quartz presents reasoning effort as a compact inline chat control with a popover/radio menu rather than a separate native select toolbar."
+
+criteria = [
+  "The reasoning control lives with the chat composer controls instead of in a separate toolbar above the chat.",
+  "The control shows the active reasoning effort as a compact pill-style button.",
+  "Opening the control presents supported reasoning efforts as a single-choice menu with the current value marked.",
+]

@@ -2,7 +2,8 @@
   "schema": 1,
   "project": {
     "name": "proj-quartz",
-    "localRoot": "~/.proj-quartz"
+    "localRoot": "~/.proj-quartz",
+    "actorUri": "actor://proj-quartz/agent"
   },
   "runtime": {
     "conversationStorage": {
@@ -10,7 +11,36 @@
       "connectionStringEnv": "QUARTZ_POSTGRES_URL",
       "schemaName": "meta_harness",
       "tableName": "resources"
+    },
+    "conversationLibrary": {
+      "name": "knowledge-agent-conversations",
+      "rootPath": "/libraries/knowledge-agent-conversations"
+    },
+    "memoryCurator": {
+      "enabled": true,
+      "actorUri": "actor://proj-quartz/memory-curator",
+      "recentMessageLimit": 10,
+      "latestUserMessageOnly": true
+    },
+    "sharedMemory": {
+      "enabled": false
     }
+  },
+  "knowledgeAgent": {
+    "defaultModel": "gpt-5.4-mini",
+    "modelOptions": [
+      {
+        "id": "gpt-5.4-mini",
+        "label": "GPT-5.4 Mini"
+      },
+      {
+        "id": "gpt-5.4",
+        "label": "GPT-5.4"
+      }
+    ]
+  },
+  "libraryCreation": {
+    "policyUri": "library://proj-quartz/harness/LIBRARY-CREATION.toml"
   },
   "storage": {
     "locations": [
@@ -20,7 +50,10 @@
         "driverName": "filesystem",
         "grants": [
           {
-            "actors": ["actor://knowledge-agent"],
+            "actors": [
+              "actor://proj-quartz/agent",
+              "actor://proj-quartz/memory-curator"
+            ],
             "capabilities": ["read", "query", "blob"]
           }
         ],
@@ -46,7 +79,10 @@
         "driverName": "filesystem",
         "grants": [
           {
-            "actors": ["actor://knowledge-agent"],
+            "actors": [
+              "actor://proj-quartz/agent",
+              "actor://proj-quartz/memory-curator"
+            ],
             "capabilities": ["read", "query", "blob"]
           }
         ],
@@ -55,6 +91,8 @@
         "discoveryExcludes": [
           "app/node_modules",
           "app/node_modules/**",
+          "app/vendor",
+          "app/vendor/**",
           "app/.next",
           "app/.next/**"
         ],
@@ -72,7 +110,10 @@
         "tableName": "resources",
         "grants": [
           {
-            "actors": ["actor://knowledge-agent"],
+            "actors": [
+              "actor://proj-quartz/agent",
+              "actor://proj-quartz/memory-curator"
+            ],
             "capabilities": ["read", "write", "delete", "query"]
           }
         ],
@@ -80,6 +121,15 @@
         "discoveryMode": "resource-root-and-direct-children",
         "discoveryExcludes": [],
         "discoverLibraries": true,
+        "defaultForLibraryCreation": true,
+        "createdLibraryReadActors": [
+          "actor://proj-quartz/agent",
+          "actor://proj-quartz/memory-curator"
+        ],
+        "createdLibraryUpdateActors": [
+          "actor://proj-quartz/agent",
+          "actor://proj-quartz/memory-curator"
+        ],
         "sourceUri": "library://proj-quartz/.meta-harness.json",
         "guidanceUri": "library://meta-harness/storage/STORAGE.md"
       }

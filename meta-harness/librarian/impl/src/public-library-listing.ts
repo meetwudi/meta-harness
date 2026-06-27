@@ -11,7 +11,9 @@ export function publicLibraryListing(library: ResolvedLibrary): LibraryListing {
     name: library.name,
     uri: library.uri,
     description: library.description,
+    isSystemLibrary: library.isSystemLibrary,
     readable: library.readable,
     writable: library.writable,
+    deletable: library.deletable,
   };
 }

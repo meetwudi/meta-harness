@@ -12,9 +12,9 @@ import { publicLibraryListing } from "./public-library-listing.js";
 import type { LibrarianContext, StorageLocation } from "./types.js";
 
 export type CreateLibraryInStorageLocationInput = {
-  storageLocationName: string;
+  storageLocationName?: string;
   name: string;
-  description?: string;
+  description: string;
 };
 
 /**
@@ -25,7 +25,8 @@ export async function createLibraryInStorageLocation(
   input: CreateLibraryInStorageLocationInput,
 ): Promise<Record<string, unknown>> {
   const name = validateLibraryName(input.name);
-  const location = findStorageLocation(context, input.storageLocationName);
+  const description = requiredDescription(input.description);
+  const location = findCreationStorageLocation(context, input.storageLocationName);
   if (!location.capabilities.writable) {
     throw new Error(`Storage location cannot create Libraries: ${location.name}`);
   }
@@ -42,7 +43,7 @@ export async function createLibraryInStorageLocation(
   await location.storage.makeDirectory(libraryRoot);
   await location.storage.writeText(
     libraryToml,
-    renderLibraryToml(name, input.description, context.actorUri),
+    renderLibraryToml(name, description, location, context.actorUri),
   );
 
   const created = (await loadResolvedLibraries(context)).find(
@@ -61,10 +62,13 @@ export async function createLibraryInStorageLocation(
   };
 }
 
-function findStorageLocation(
+function findCreationStorageLocation(
   context: LibrarianContext,
-  name: string,
+  name: string | undefined,
 ): StorageLocation {
+  if (name === undefined) {
+    return defaultCreationStorageLocation(context);
+  }
   const location = context.storageLocations.find((candidate) => candidate.name === name);
   if (!location) {
     throw new Error(`Unknown storage location: ${name}`);
@@ -72,23 +76,46 @@ function findStorageLocation(
   return location;
 }
 
+function defaultCreationStorageLocation(context: LibrarianContext): StorageLocation {
+  const locations = context.storageLocations.filter(
+    (candidate) => candidate.defaultForLibraryCreation === true,
+  );
+  if (locations.length === 0) {
+    throw new Error("Library creation requires storageLocationName because no default creation storage location is configured");
+  }
+  if (locations.length > 1) {
+    throw new Error("Library creation has multiple default creation storage locations configured");
+  }
+  return locations[0] as StorageLocation;
+}
+
+function requiredDescription(description: string): string {
+  const trimmed = description.trim();
+  if (!trimmed) {
+    throw new Error("Library creation requires a non-empty description");
+  }
+  return trimmed;
+}
+
 function renderLibraryToml(
   name: string,
-  description: string | undefined,
+  description: string,
+  location: StorageLocation,
   actorUri: string,
 ): string {
+  const readActors = location.createdLibraryReadActors ?? [actorUri];
+  const updateActors = location.createdLibraryUpdateActors ?? [actorUri];
   const lines = [
     "# This is a Harness primitive.",
     "# See also: library://meta-harness",
     "",
     `name = ${JSON.stringify(name)}`,
+    "isSystemLibrary = false",
+    `description = ${JSON.stringify(description)}`,
   ];
-  if (description?.trim()) {
-    lines.push(`description = ${JSON.stringify(description.trim())}`);
-  }
   lines.push(
-    `read_actors = [${JSON.stringify(actorUri)}]`,
-    `update_actors = [${JSON.stringify(actorUri)}]`,
+    `read_actors = ${JSON.stringify(readActors)}`,
+    `update_actors = ${JSON.stringify(updateActors)}`,
     "",
   );
   return lines.join("\n");

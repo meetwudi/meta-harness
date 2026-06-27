@@ -1,0 +1,11 @@
+id = "proj-quartz.reasoning-event-rendering"
+title = "Reasoning event rendering"
+source = "Human request on 2026-06-27: emit reasoning events and render the thinking/reasoning process."
+text = "PROJ-Quartz emits AG-UI reasoning events during Knowledge Agent runs so the chat surface can render reasoning activity."
+
+criteria = [
+  "The Quartz chat route emits `REASONING_START`, `REASONING_MESSAGE_START`, `REASONING_MESSAGE_CONTENT`, `REASONING_MESSAGE_END`, and `REASONING_END` events during a Knowledge Agent run.",
+  "Reasoning content is updated from live Knowledge Agent stream events rather than only a fixed start message and fixed completion message.",
+  "The rendered reasoning content is a user-facing progress trace, not hidden chain-of-thought.",
+  "The reasoning message ends before the assistant text message ends.",
+]

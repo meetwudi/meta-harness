@@ -1,10 +1,10 @@
 id = "knowledge-agent.library-writes-memory"
 title = "Knowledge agent can write files into Libraries"
 source = "Human-listed requirement 3 on 2026-06-17."
-text = "Knowledge agent is able to write files into Libraries, including updating memories."
+text = "Knowledge Agent is able to write files into writable Libraries, including Library-scoped memory updates."
 clarifications = [
-  "Conversations share a writable Knowledge Agent memory Library.",
-  "The Knowledge Agent memory Library has its own LIBRARY.toml.",
-  "The Knowledge Agent memory Library should be discoverable through storage discovery, not through direct prompt instructions.",
+  "When shared memory is enabled, the configured Knowledge Agent memory Library has its own LIBRARY.toml.",
+  "Memory-capable Libraries should be discoverable through storage discovery, not through direct prompt instructions.",
   "The sandbox should expose writable memory Libraries as ordinary directories so agents do not need symlink-specific commands.",
+  "Library-scoped memory capture uses writable Libraries and their descriptions and `MEMORY.toml` instructions rather than a general-purpose memory bucket.",
 ]

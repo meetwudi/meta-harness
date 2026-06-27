@@ -1,0 +1,10 @@
+id = "librarian.library-is-system-library-field"
+title = "Library isSystemLibrary field"
+source = "Human request on 2026-06-26: system Library should be a first-class field in `LIBRARY.toml`, named `isSystemLibrary`, with template default false until a Library is actually system."
+text = "`LIBRARY.toml` supports a boolean `isSystemLibrary` field that identifies system or project-internal Libraries."
+clarifications = [
+  "When omitted, `isSystemLibrary` is treated as false.",
+  "Library templates include `isSystemLibrary = false`.",
+  "System Libraries are listed after non-system Libraries unless another ordering rule is more specific.",
+  "System classification does not replace actor governance; read and update authority still comes from actor fields.",
+]

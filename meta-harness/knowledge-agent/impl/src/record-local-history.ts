@@ -5,9 +5,11 @@
 // Supports knowledge-agent.conversation-turns: stores each run as a conversation turn.
 // Supports knowledge-agent.conversation-state: stores per-turn prompt state and next-turn state.
 // Supports knowledge-agent.postgres-runtime-storage: writes conversation history through the runtime storage driver.
+// Supports knowledge-agent.library-scoped-memory-curator: records the raw latest user message used for curation.
 
 import { join } from "node:path";
 import { recordConversationStateHistory } from "./conversation-state-history.js";
+import { resultSummary } from "./result-summary.js";
 import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
 
 /**
@@ -17,7 +19,7 @@ export async function recordLocalHistory(
   options: ProviderRunOptions & { provider: string },
   localRuntime: PreparedRuntime,
   prompt: string,
-  _result: unknown,
+  result: unknown,
 ): Promise<void> {
   const recordedAt = new Date().toISOString();
   const conversationRoot = localRuntime.conversationRoot;
@@ -60,6 +62,8 @@ export async function recordLocalHistory(
       "",
       `User request: ${options.goal}`,
       "",
+      `Latest user message: ${options.latestUserMessage}`,
+      "",
       `Provider: ${options.provider}`,
       "",
       `Model: ${options.model}`,
@@ -82,4 +86,11 @@ export async function recordLocalHistory(
     join(turnRoot, "librarian-trace.json"),
     `${JSON.stringify(options.librarianContext.toolCallEvents, null, 2)}\n`,
   );
+  const memoryCurator = resultSummary(result).memoryCurator;
+  if (memoryCurator !== undefined) {
+    await localRuntime.runtimeStorage.writeText(
+      join(turnRoot, "memory-curator-trace.json"),
+      `${JSON.stringify(memoryCurator, null, 2)}\n`,
+    );
+  }
 }

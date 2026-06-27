@@ -3,7 +3,8 @@
 
 name = "meta-harness"
 description = "Meta Harness knowledge, primitives, setup guidance, templates, and tools."
-read_actors = ["actor://knowledge-agent"]
+isSystemLibrary = true
+read_actors = ["actor://knowledge-agent", "actor://proj-*/agent"]
 update_actors = ["actor://routine/proj-self/routines/concise-cleanup"]
 agent_excludes = [
   "knowledge-agent/**",

@@ -1,4 +1,4 @@
 id = "librarian.library-list-fields"
 title = "Library listing fields"
-source = "Human-listed requirement on 2026-06-19: Library listing returns Libraries with name, URI, description, readable, and writable."
-text = "Library listing returns Libraries with name, URI, description, readable, and writable."
+source = "Human-listed requirement on 2026-06-19: Library listing returns Libraries with name, URI, description, readable, and writable; extended on 2026-06-26 with deletable and isSystemLibrary."
+text = "Library listing returns Libraries with name, URI, description, isSystemLibrary, readable, writable, and deletable."

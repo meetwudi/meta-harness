@@ -1,0 +1,11 @@
+id = "knowledge-agent.provider-stream-events"
+title = "Provider emits public stream events"
+source = "Human clarification on 2026-06-27: Quartz reasoning output should actually stream from the Knowledge Agent run instead of showing only a fixed placeholder message."
+text = "Knowledge Agent providers may emit public stream events while a run is active so host applications can render live progress without exposing hidden chain-of-thought."
+
+criteria = [
+  "The provider interface supports an optional stream-event callback without making non-streaming callers use streaming mode.",
+  "OpenAI provider streaming relays public run activity such as active agent changes, tool calls, tool outputs, response lifecycle, reasoning checkpoints, and final-output text deltas when the SDK provides them.",
+  "Streamed progress events are sanitized user-facing trace summaries and do not expose hidden chain-of-thought.",
+  "The CLI can emit stream events as JSON lines for host applications that run the Knowledge Agent in a subprocess.",
+]

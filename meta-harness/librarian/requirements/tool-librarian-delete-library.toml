@@ -1,0 +1,11 @@
+id = "librarian.tool-librarian-delete-library"
+title = "`librarian_delete_library` tool contract"
+source = "Human request on 2026-06-26: controllable Libraries should be deletable, while system/project Libraries must not be editable or deletable by actors without authority."
+text = "`librarian_delete_library` deletes an exact Library root only when the active actor has Library update authority and the storage location grants delete capability."
+clarifications = [
+  "Input requires an exact `library://...` Library URI and rejects Library resource URIs with paths.",
+  "The target Library must be writable for the active actor according to its `LIBRARY.toml` update_actors governance.",
+  "The target storage location must grant delete capability to the active actor.",
+  "Read-only system and project Libraries are protected by the same deterministic actor-governance checks used for writes.",
+  "The tool returns the deleted Library URI and storage location name.",
+]

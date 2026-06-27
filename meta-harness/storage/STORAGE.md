@@ -46,6 +46,9 @@ for known storage locations. Each storage location definition includes:
 - `discoveryMode`
 - `discoveryExcludes`
 - `discoverLibraries`
+- `defaultForLibraryCreation`
+- `createdLibraryReadActors`
+- `createdLibraryUpdateActors`
 - `enabledWhenEnv`
 - `connectionStringEnv`
 - `schemaName`
@@ -95,6 +98,19 @@ Postgres storage locations use the same Library resource interface as filesystem
 locations. The database connection string is read from an environment variable
 rather than stored in `.meta-harness.json`.
 
+`defaultForLibraryCreation` is an optional boolean. When exactly one writable
+materialized storage location sets it to `true`, Library creation tools may use
+that location when the request omits `storageLocationName`. Agents should still
+gather missing Library name and description, but they do not need to ask the
+human to choose a storage location when the selected project knowledge already
+designates one.
+
+`createdLibraryReadActors` and `createdLibraryUpdateActors` are optional actor
+URI arrays. When present, they define the `read_actors` and `update_actors`
+written into new Library manifests created in that storage location. When
+omitted, Library creation grants read and update authority to the active actor
+that called the creation tool.
+
 Postgres location fields:
 
 - `connectionStringEnv`: environment variable containing the Postgres
@@ -120,6 +136,9 @@ Example Postgres-backed Library location:
   "discoveryMode": "resource-root-and-direct-children",
   "discoveryExcludes": [],
   "discoverLibraries": true,
+  "defaultForLibraryCreation": true,
+  "createdLibraryReadActors": ["actor://knowledge-agent"],
+  "createdLibraryUpdateActors": ["actor://knowledge-agent"],
   "grants": [
     {
       "actors": ["actor://knowledge-agent"],
@@ -146,6 +165,9 @@ Read each location's name, description, driver, capabilities, Library discovery
 fields, and Library placement fields from that knowledge.
 
 Use writable storage locations to understand where new Libraries can be created.
+When exactly one writable location is marked `defaultForLibraryCreation`, use it
+as the default creation target without exposing the storage-location detail in
+user-facing replies unless the human asks for internal details.
 
 Use Library governance to understand whether a specific Library can be read or
 updated by the current actor.

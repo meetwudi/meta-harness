@@ -1,0 +1,25 @@
+id = "knowledge-agent.integration.agent-tool-assembly"
+title = "Knowledge Agent tool assembly"
+requirements = [
+  "knowledge-agent.agent-tool-assembly",
+  "knowledge-agent.web-search-tool",
+  "knowledge-agent.tool-librarian-openai-adapter",
+  "knowledge-agent.tool-goal-registry",
+  "knowledge-agent.conversation-state",
+  "knowledge-agent.routine-handoffs",
+  "knowledge-agent.goal-auditor-agent",
+  "knowledge-agent.library-scoped-memory-curator",
+]
+procedure = [
+  "Create the hosted web search OpenAI tool through the Knowledge Agent web-search tool helper.",
+  "Create the primary Knowledge Agent tool list through the primary tool assembly helper.",
+  "Inspect Routine handoff assembly and verify it includes the web-search helper.",
+  "Inspect Memory Curator and Goal Auditor assembly and verify they do not include the web-search helper.",
+]
+expected = [
+  "The hosted web search tool has name `web_search`, provider type `web_search`, explicit external web access, and medium search context size.",
+  "The primary Knowledge Agent tool list includes `web_search`, `librarian_intro`, `goal_create`, and `conversation_state_update`.",
+  "Routine handoff agents include hosted web search.",
+  "Memory Curator mode does not include hosted web search.",
+  "Goal Auditor mode does not include hosted web search.",
+]

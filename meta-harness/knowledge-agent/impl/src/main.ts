@@ -7,13 +7,22 @@
 // Supports knowledge-agent.uses-librarian: routes Library operations through Librarian.
 // Supports knowledge-agent.conversation-state: prepares generated conversation state for each turn.
 // Supports knowledge-agent.project-config-selection: loads the selected project config for runtime storage.
+// Supports knowledge-agent.library-scoped-memory-curator: separates contextual goal text from the raw latest user message.
 // Harness-Requirement: knowledge-agent.project-config-selection
+// Harness-Requirement: knowledge-agent.provider-stream-events
 
 import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
 import { ConversationStateRuntime } from "./conversation-state.js";
 import { defaultTurnId } from "./default-turn-id.js";
 import { findRepoRoot } from "./find-repo-root.js";
-import { loadMetaHarnessConfig } from "./load-meta-harness-config.js";
+import {
+  loadMetaHarnessConfig,
+  resolveProjectActorUri,
+  resolveProjectRootPath,
+  resolveMemoryCuratorConfig,
+  resolveRuntimeLibraryConfig,
+  resolveSharedMemoryRuntimeConfig,
+} from "./load-meta-harness-config.js";
 import { parseArgs } from "./parse-args.js";
 import { providerFromName } from "./provider-from-name.js";
 import { createInterface } from "node:readline/promises";
@@ -53,9 +62,17 @@ export async function main(): Promise<number> {
   }
   const runtime = await storage.prepareRuntime({
     repoRootPath,
+    projectRootPath: resolveProjectRootPath(repoRootPath, parsed.projectConfig),
     configuredLocalRoot,
     sandboxWorkspaceInput: parsed.sandboxWorkspace,
     conversationId: parsed.conversationId,
+    actorUri: resolveProjectActorUri(config),
+    conversationLibrary: resolveRuntimeLibraryConfig(
+      config.runtime?.conversationLibrary,
+      "runtime.conversationLibrary",
+    ),
+    memoryCurator: resolveMemoryCuratorConfig(config),
+    sharedMemory: resolveSharedMemoryRuntimeConfig(config),
   });
   const session = storage.createSession(runtime, parsed.conversationId);
 
@@ -81,12 +98,24 @@ export async function main(): Promise<number> {
     runtime,
     repoRootPath,
     goal: parsed.goal ?? "",
+    latestUserMessage: parsed.latestUserMessage ?? parsed.goal ?? "",
     turnId: parsed.turnId,
     model: parsed.model ?? provider.defaultModel,
     reasoningEffort: parsed.reasoningEffort,
     session,
+    onStreamEvent: parsed.streamEvents
+      ? (event) => {
+          process.stdout.write(`${JSON.stringify(event)}\n`);
+        }
+      : undefined,
   });
-  console.log(finalOutput);
+  if (parsed.streamEvents) {
+    process.stdout.write(
+      `${JSON.stringify({ type: "final_output", output: finalOutput })}\n`,
+    );
+  } else {
+    console.log(finalOutput);
+  }
   return 0;
 }
 
@@ -125,6 +154,7 @@ async function runInteractiveChat(input: {
         runtime: input.runtime,
         repoRootPath: input.repoRootPath,
         goal: trimmed,
+        latestUserMessage: trimmed,
         turnId: defaultTurnId(),
         model: input.model,
         reasoningEffort: input.reasoningEffort,
@@ -147,10 +177,12 @@ async function runKnowledgeAgentTurn(input: {
   runtime: PreparedRuntime;
   repoRootPath: string;
   goal: string;
+  latestUserMessage: string;
   turnId: string;
   model: string;
   reasoningEffort: Args["reasoningEffort"];
   session: ProviderRunOptions["session"];
+  onStreamEvent?: ProviderRunOptions["onStreamEvent"];
 }): Promise<string> {
   const librarianContext = input.storage.createLibrarianContext(
     {
@@ -170,6 +202,7 @@ async function runKnowledgeAgentTurn(input: {
   const options: ProviderRunOptions = {
     repoRoot: input.repoRootPath,
     goal: input.goal,
+    latestUserMessage: input.latestUserMessage,
     model: input.model,
     reasoningEffort: input.reasoningEffort,
     client: input.parsed.client,
@@ -179,6 +212,8 @@ async function runKnowledgeAgentTurn(input: {
     librarianContext,
     conversationState,
     session: input.session,
+    memoryCurator: input.runtime.memoryCurator,
+    onStreamEvent: input.onStreamEvent,
   };
   const prompt = buildKnowledgeAgentPrompt(options);
   const result = await input.provider.runConversation(options);

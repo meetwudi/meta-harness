@@ -1,0 +1,11 @@
+id = "knowledge-agent.project-actor-identity"
+title = "Project-specific Knowledge Agent actor identity"
+source = "Human request on 2026-06-26: Quartz should use a distinct actor, such as a Quartz agent actor, so actor governance can protect system Libraries."
+text = "Knowledge Agent runs with the actor URI declared by the selected project configuration."
+clarifications = [
+  "The selected project config must supply an actor URI.",
+  "The Librarian context uses the project-configured actor URI as the active actor.",
+  "Storage grants and Library governance are evaluated against the configured active actor URI.",
+  "The configured actor URI must use the `actor://` protocol.",
+  "The runtime must fail clearly instead of substituting a fallback actor when the selected project config omits actor identity.",
+]

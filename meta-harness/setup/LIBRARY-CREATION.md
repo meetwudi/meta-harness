@@ -16,8 +16,8 @@ Gather these fields for a Library creation request:
 - Library description: the purpose of the Library and the knowledge it should
   hold.
 - Storage location: the named place where the Library will live.
-- Governance intent: any human-provided read or update access expectation that
-  should shape the created `LIBRARY.toml`.
+- Governance intent: any human-provided or project-configured read or update
+  access expectation that should shape the created `LIBRARY.toml`.
 
 ## Storage Location Selection
 
@@ -26,8 +26,16 @@ read `library://repository/.meta-harness.json`.
 Use the storage location names, descriptions, drivers, and capabilities from
 that knowledge.
 
+If the selected project marker contains `libraryCreation.policyUri`, read that
+Library creation policy before asking creation questions.
+
 Present writable storage locations to the human, including each location name
 and purpose.
+
+When the selected project knowledge designates exactly one default Library
+creation location and says not to ask, use that default without asking the human
+to choose a storage location. Do not expose the internal storage location in the
+user-facing response unless the human asks for internal details.
 
 Recommend a default storage location based on the human's request, the location
 descriptions, and writable capability. Ask the human to confirm the recommended
@@ -55,9 +63,48 @@ When the request describes the desired Library but gives no name, ask for the
 name.
 
 When the request gives a name but no purpose, ask for the Library description.
+Do not create a Library with an empty, inferred, placeholder, or generic
+description.
 
 Descriptions should help future humans and agents choose the Library from a
 list. Prefer a concise statement of what the Library holds and when to use it.
+
+When the human describes a durable remembering or observation workflow in
+ordinary language, translate that into Library and Memory primitives. For
+example, a request to remember customer notes by customer name can become a
+customer Memory Library with collection guidance for per-customer folders. Ask
+only for unresolved human-facing placeholders such as name or description; do
+not ask the human to write TOML.
+
+When the request asks for automatic capture, passive observation, remembering
+future conversations, or organization of future facts, create or update the
+Library's `MEMORY.toml` as part of the setup. A README or prose note may
+explain the Library for humans, but it does not make the Library a Memory
+primitive and is not sufficient for automatic curation.
+
+Write `MEMORY.toml` with:
+
+- instructions that say what user-stated information belongs in this Memory
+  collection
+- `[curation] auto_curated = true` unless the human asks not to curate
+  automatically
+- `[[collections]]` entries when the human describes natural buckets such as
+  customer names, stock symbols, companies, projects, or topics
+
+Each `MEMORY.toml` must follow the Memory primitive shape. Include a top-level
+`instructions` array. For each `[[collections]]` entry, include `name`,
+`location`, and `instructions`; do not use prose-only comments or a
+`description` field as a substitute for those required collection fields.
+
+Use `MEMORY.toml` to define the concrete memory layout. If the human says each
+thing should have its own folder, put that folder pattern in a collection
+`location`. If the human says memory should be sequential, specify the sequence
+rule in collection instructions, such as daily files, append-only dated entries,
+learned-at timestamps, learned-from source, and the exact user-stated content.
+
+Keep Memory instructions domain-shaped but not code-shaped. Translate the
+human's ordinary language into the primitive; do not ask the human to provide
+field names, TOML, file paths, or implementation details.
 
 ## Library URI Operations
 
@@ -76,10 +123,11 @@ Libraries, prepare the proposed wording for human review.
 
 1. Read storage guidance and storage location definitions through
    `librarian_read`.
-2. Present writable storage locations and recommend a default.
+2. Resolve storage location from project policy when available; otherwise
+   present writable storage locations and recommend a default.
 3. Gather missing creation fields from the human.
-4. Call `librarian_create_library` with the storage location name, Library
-   name, and description.
+4. Call `librarian_create_library` with the Library name, description, and
+   storage location name when project policy has not already resolved it.
 5. Verify the created Library through `librarian_list_libraries`.
 6. Refer to the new Library by its `library://` URI.
 

@@ -5,6 +5,7 @@
 // Supports librarian.tool-librarian-add-tags: verifies Tags can be added to a writable scope.
 // Supports librarian.tool-librarian-remove-tags: verifies Tags can be removed from a writable scope.
 // Supports librarian.tool-librarian-query-by-tags: verifies Tags can be queried structurally.
+// Supports librarian.tool-librarian-delete: verifies file and folder resources can be deleted from writable Libraries.
 // Supports librarian.library-uri-verification: verifies malformed or unresolved exact Library URIs fail.
 // Harness-Requirement: storage.actor-granted-location-access
 // Harness-Requirement: storage.driver-capabilities
@@ -40,6 +41,7 @@ await writeFile(
   [
     'name = "repository"',
     'description = "Fixture repository Library."',
+    "isSystemLibrary = true",
     'read_actors = ["actor://knowledge-agent"]',
     "update_actors = []",
     "",
@@ -119,6 +121,7 @@ await writeFile(
   [
     'name = "meta-harness"',
     'description = "Fixture Meta Harness Library."',
+    "isSystemLibrary = true",
     'read_actors = ["actor://knowledge-agent"]',
     'update_actors = ["actor://routine/proj-self/routines/concise-cleanup"]',
     "",
@@ -141,6 +144,7 @@ await writeFile(
   [
     'name = "fixture-manual"',
     'description = "Fixture manual Library."',
+    "isSystemLibrary = false",
     'read_actors = ["actor://knowledge-agent"]',
     'update_actors = []',
     "",
@@ -159,6 +163,7 @@ await writeFile(
   [
     'name = "fixture-memory"',
     'description = "Fixture writable memory Library."',
+    "isSystemLibrary = false",
     'read_actors = ["actor://knowledge-agent"]',
     'update_actors = ["actor://knowledge-agent"]',
     "",
@@ -201,6 +206,7 @@ const context = createLibrarianContext({
       libraryRootPath: createdLibrariesRoot,
       discoveryMode: "filesystem-root-and-direct-children",
       discoveryExcludes: [],
+      defaultForLibraryCreation: true,
       sourceUri: "library://repository/.meta-harness.json",
       guidanceUri: "library://meta-harness/storage/STORAGE.md",
     },
@@ -219,6 +225,8 @@ const expectedDescriptorNames = [
   "librarian_search",
   "librarian_update",
   "librarian_create_library",
+  "librarian_delete",
+  "librarian_delete_library",
   "librarian_add_tags",
   "librarian_remove_tags",
   "librarian_query_by_tags",
@@ -241,14 +249,23 @@ const recursiveFiles = await executeLibrarianTool(context, "librarian_list_files
   recursive: true,
 });
 await executeLibrarianTool(context, "librarian_create_library", {
-  storageLocationName: "tmp-local",
   name: "tmp-created-library",
   description: "Library created in tmp local storage.",
 });
+let missingDescriptionRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_create_library", {
+    name: "missing-description",
+  });
+} catch (error) {
+  missingDescriptionRejected = String((error as Error).message).includes("requires a non-empty description");
+}
+if (!missingDescriptionRejected) {
+  throw new Error("Library creation without a description was not rejected");
+}
 let invalidNameRejected = false;
 try {
   await executeLibrarianTool(context, "librarian_create_library", {
-    storageLocationName: "tmp-local",
     name: "spaced library",
     description: "Invalid Library created in tmp local storage.",
   });
@@ -288,6 +305,42 @@ await executeLibrarianTool(context, "librarian_search", {
   query: "12345",
   limit: 1,
 });
+await executeLibrarianTool(context, "librarian_update", {
+  uri: "library://fixture-memory/temp/delete-me.md",
+  content: "delete this file",
+});
+await executeLibrarianTool(context, "librarian_update", {
+  uri: "library://fixture-memory/temp-folder/nested/delete-me.md",
+  content: "delete this folder",
+});
+const deletedFile = await executeLibrarianTool(context, "librarian_delete", {
+  uri: "library://fixture-memory/temp/delete-me.md",
+});
+const deletedFolder = await executeLibrarianTool(context, "librarian_delete", {
+  uri: "library://fixture-memory/temp-folder",
+});
+let rootResourceDeleteRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_delete", {
+    uri: "library://fixture-memory",
+  });
+} catch (error) {
+  rootResourceDeleteRejected = String((error as Error).message).includes("must include a file path");
+}
+if (!rootResourceDeleteRejected) {
+  throw new Error("Exact Library root resource deletion was not rejected");
+}
+let readOnlyResourceDeleteRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_delete", {
+    uri: "library://fixture-manual/README.md",
+  });
+} catch (error) {
+  readOnlyResourceDeleteRejected = String((error as Error).message).includes("not writable");
+}
+if (!readOnlyResourceDeleteRejected) {
+  throw new Error("Read-only Library resource deletion was not rejected");
+}
 let nonCanonicalTagsUriRejected = false;
 try {
   await executeLibrarianTool(context, "librarian_add_tags", {
@@ -388,11 +441,36 @@ if (!listJson.includes('"writable":false')) {
 if (!listJson.includes('"writable":true')) {
   throw new Error("Memory Library writable state was not verified");
 }
+if (!listJson.includes('"deletable":false')) {
+  throw new Error("Manual Library deletable state was not verified");
+}
+if (!listJson.includes('"deletable":true')) {
+  throw new Error("Memory Library deletable state was not verified");
+}
 const listedLibraries = (list as {
-  libraries: Array<{ uri: string; writable: boolean }>;
+  libraries: Array<{
+    uri: string;
+    isSystemLibrary: boolean;
+    writable: boolean;
+    deletable: boolean;
+  }>;
 }).libraries;
 if (!listedLibraries.find((library) => library.uri === "library://meta-harness")?.writable) {
   throw new Error("Routine actor governance did not grant Meta Harness update access");
+}
+if (!listedLibraries.find((library) => library.uri === "library://meta-harness")?.isSystemLibrary) {
+  throw new Error("Meta Harness Library did not expose isSystemLibrary");
+}
+if (listedLibraries.find((library) => library.uri === "library://fixture-memory")?.isSystemLibrary) {
+  throw new Error("Memory fixture Library should not be marked as a system Library");
+}
+const firstSystemIndex = listedLibraries.findIndex((library) => library.isSystemLibrary);
+const lastNonSystemIndex = listedLibraries.reduce(
+  (index, library, currentIndex) => (library.isSystemLibrary ? index : currentIndex),
+  -1,
+);
+if (firstSystemIndex !== -1 && lastNonSystemIndex > firstSystemIndex) {
+  throw new Error("Non-system Libraries were not listed before system Libraries");
 }
 const storageDefinitionsContent = String(
   (storageDefinitions as { content?: unknown }).content,
@@ -455,14 +533,40 @@ if (removedTagsJson.includes('"routine/planning"') && !removedTagsJson.includes(
 if (JSON.stringify(queriedTagsAfterRemove).includes('"scopeUri":"library://fixture-memory/notes"')) {
   throw new Error("Query by Tags returned a removed tag");
 }
+const deletedFileJson = JSON.stringify(deletedFile);
+if (!deletedFileJson.includes('"uri":"library://fixture-memory/temp/delete-me.md"')) {
+  throw new Error("Delete file did not return the deleted resource URI");
+}
+if (!deletedFileJson.includes('"deleted":true')) {
+  throw new Error("Delete file did not report deletion");
+}
+const deletedFolderJson = JSON.stringify(deletedFolder);
+if (!deletedFolderJson.includes('"uri":"library://fixture-memory/temp-folder"')) {
+  throw new Error("Delete folder did not return the deleted folder URI");
+}
+if (!deletedFolderJson.includes('"deleted":true')) {
+  throw new Error("Delete folder did not report deletion");
+}
+if (await storage.exists(join(memoryRoot, "temp", "delete-me.md"))) {
+  throw new Error("Deleted file still exists");
+}
+if (await storage.exists(join(memoryRoot, "temp-folder"))) {
+  throw new Error("Deleted folder still exists");
+}
 
 const createdLibraryToml = await readFile(join(createdRoot, "LIBRARY.toml"), "utf8");
 if (!createdLibraryToml.includes('name = "tmp-created-library"')) {
   throw new Error("Created tmp Library did not write LIBRARY.toml");
 }
+if (!createdLibraryToml.includes("isSystemLibrary = false")) {
+  throw new Error("Created tmp Library did not default isSystemLibrary to false");
+}
 const listAfterCreate = await executeLibrarianTool(context, "librarian_list_libraries", {});
 if (!JSON.stringify(listAfterCreate).includes('"uri":"library://tmp-created-library"')) {
   throw new Error("Created tmp Library was not discovered from storage");
+}
+if (!JSON.stringify(listAfterCreate).includes('"isSystemLibrary":false')) {
+  throw new Error("Created tmp Library was not listed as non-system");
 }
 if (await storage.exists(join(createdLibrariesRoot, "spaced library"))) {
   throw new Error("Invalid spaced Library folder was created");
@@ -474,6 +578,27 @@ if (stored !== "12345") {
 const createdStored = await readFile(join(createdRoot, "note.md"), "utf8");
 if (createdStored !== "created in tmp locally") {
   throw new Error("Created tmp Library update did not write the expected value");
+}
+let readOnlyDeleteRejected = false;
+try {
+  await executeLibrarianTool(context, "librarian_delete_library", {
+    uri: "library://fixture-manual",
+  });
+} catch (error) {
+  readOnlyDeleteRejected = String((error as Error).message).includes("not writable");
+}
+if (!readOnlyDeleteRejected) {
+  throw new Error("Read-only Library deletion was not rejected");
+}
+await executeLibrarianTool(context, "librarian_delete_library", {
+  uri: "library://tmp-created-library",
+});
+if (await storage.exists(createdRoot)) {
+  throw new Error("Deleted tmp Library root still exists");
+}
+const listAfterDelete = await executeLibrarianTool(context, "librarian_list_libraries", {});
+if (JSON.stringify(listAfterDelete).includes('"uri":"library://tmp-created-library"')) {
+  throw new Error("Deleted tmp Library was still discovered from storage");
 }
 const tagsToml = await readFile(join(memoryRoot, "notes", "TAGS.toml"), "utf8");
 if (!tagsToml.includes('"retrieval"')) {
@@ -495,7 +620,7 @@ if (JSON.stringify(context.toolCallEvents).includes('"path"')) {
 }
 
 const callOrder = context.toolCallEvents.map((event) => event.toolName).join(",");
-if (callOrder !== "librarian_intro,librarian_list_libraries,librarian_read,librarian_list_files,librarian_list_files,librarian_create_library,librarian_update,librarian_update,librarian_read,librarian_read,librarian_search,librarian_add_tags,librarian_query_by_tags,librarian_query_by_tags,librarian_remove_tags,librarian_query_by_tags,librarian_list_libraries") {
+if (callOrder !== "librarian_intro,librarian_list_libraries,librarian_read,librarian_list_files,librarian_list_files,librarian_create_library,librarian_update,librarian_update,librarian_read,librarian_read,librarian_search,librarian_update,librarian_update,librarian_delete,librarian_delete,librarian_add_tags,librarian_query_by_tags,librarian_query_by_tags,librarian_remove_tags,librarian_query_by_tags,librarian_list_libraries,librarian_delete_library,librarian_list_libraries") {
   throw new Error(`Unexpected tool call order: ${callOrder}`);
 }
 if (!context.toolCallEvents.every((event) => event.input)) {

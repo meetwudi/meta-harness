@@ -1,9 +1,12 @@
 id = "librarian.tool-librarian-create-library"
 title = "`librarian_create_library` tool contract"
 source = "Human request on 2026-06-23 to spec each provided agent tool, applied to observed tool `librarian_create_library`."
-text = "`librarian_create_library` creates a filesystem Library in a named writable storage location."
+text = "`librarian_create_library` creates a Library in a named writable storage location or the selected project's configured default creation location."
 clarifications = [
-  "Input requires `storageLocationName` and canonical Library `name`, accepts optional `description`, and disallows additional properties.",
-  "The tool validates the Library name, checks that the target storage location can create Libraries, prevents duplicate Library URIs, and writes `LIBRARY.toml`.",
+  "Input requires canonical Library `name` and non-empty `description`, accepts optional `storageLocationName`, and disallows additional properties.",
+  "When `storageLocationName` is omitted, the tool uses the one materialized storage location marked `defaultForLibraryCreation`.",
+  "The tool validates the Library name and description, checks that the target storage location can create Libraries, prevents duplicate Library URIs, and writes `LIBRARY.toml`.",
+  "When the target storage location provides created-Library actor arrays, the tool writes those actors into `read_actors` and `update_actors`.",
+  "Created Library manifests include `isSystemLibrary = false`.",
   "Output returns the target storage location summary and the public listing for the created Library.",
 ]

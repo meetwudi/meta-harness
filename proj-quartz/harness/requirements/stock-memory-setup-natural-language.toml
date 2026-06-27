@@ -1,0 +1,14 @@
+id = "proj-quartz.stock-memory-setup-natural-language"
+title = "Stock memory setup from natural language"
+source = "Human request on 2026-06-26: a user should be able to ask in ordinary language to create a stocks Library and set up automatic capture organized by stock without writing TOML or implementation details."
+text = "PROJ-Quartz translates natural-language memory setup requests into Library and Memory primitives."
+clarifications = [
+  "The agent asks for unresolved human-facing placeholders such as the Library description.",
+  "The agent does not ask the user to choose the storage location when Quartz project knowledge resolves it.",
+  "The agent creates a Library through Librarian and writes `MEMORY.toml` curation guidance through Librarian.",
+  "The resulting Memory config is automatically curated unless the user asks otherwise.",
+  "`MEMORY.toml` specifies that each stock symbol has its own folder.",
+  "`MEMORY.toml` specifies sequential memory inside each stock folder, with dated entries and provenance such as when the fact was learned and who or what it was learned from.",
+  "A later separate Quartz conversation can add a user-stated stock fact to the configured Memory through automatic curation.",
+  "A third separate Quartz conversation can retrieve the captured stock fact by asking what is known about that stock.",
+]

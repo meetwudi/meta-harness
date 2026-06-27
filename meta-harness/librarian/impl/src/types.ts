@@ -41,6 +41,9 @@ export type StorageLocation = {
   discoveryMode: StorageDiscoveryMode;
   discoveryExcludes: string[];
   discoverLibraries?: boolean;
+  defaultForLibraryCreation?: boolean;
+  createdLibraryReadActors?: string[];
+  createdLibraryUpdateActors?: string[];
   sourceUri?: string;
   guidanceUri?: string;
 };
@@ -58,8 +61,10 @@ export type ResolvedLibrary = {
   name: string;
   uri: string;
   description: string;
+  isSystemLibrary: boolean;
   readable: boolean;
   writable: boolean;
+  deletable: boolean;
   rootPath: string;
   agentExcludes: string[];
   storage: LibrarianStorage;
@@ -70,8 +75,10 @@ export type LibraryListing = {
   name: string;
   uri: string;
   description: string;
+  isSystemLibrary: boolean;
   readable: boolean;
   writable: boolean;
+  deletable: boolean;
 };
 
 export type LibraryListResult = {

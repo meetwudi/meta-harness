@@ -6,5 +6,6 @@ clarifications = [
   "Input schema has no properties and disallows additional properties.",
   "Tool description identifies `librarian_list_libraries` as the Library discovery call to make immediately after `librarian_intro`.",
   "Output contains a `libraries` array.",
-  "Each listed Library includes name, URI, description, readable, and writable fields computed from storage discovery and actor governance.",
+  "Each listed Library includes name, URI, description, readable, writable, deletable, and isSystemLibrary fields computed from storage discovery, Library manifest metadata, and Library governance.",
+  "Non-system Libraries are listed before Libraries marked `isSystemLibrary`, and controllable Libraries are prioritized within each group.",
 ]

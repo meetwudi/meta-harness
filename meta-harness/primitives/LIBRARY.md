@@ -30,6 +30,7 @@ Example:
 ```toml
 name = "meta-harness"
 description = "Shared Meta Harness knowledge, primitives, setup guidance, templates, and tools."
+isSystemLibrary = true
 read_actors = ["actor://knowledge-agent"]
 update_actors = []
 ```
@@ -43,10 +44,17 @@ Required fields:
 Other supported fields:
 
 - `description`
+- `isSystemLibrary`
 - `agent_excludes`
 
 `description` is a concise human-readable summary of what the Library is for.
 Agents should use it when choosing among available Libraries.
+
+`isSystemLibrary` is an optional boolean. When omitted, it is treated as
+`false`. Library templates set `isSystemLibrary = false`; system,
+project-internal, and runtime-internal Libraries set it to `true` so agents can
+deprioritize them after user-created Libraries. This field does not grant or
+deny access. Actor governance still controls reads, writes, and deletion.
 
 Actor access entries are actor identity glob patterns expressed as `actor://`
 URI patterns.

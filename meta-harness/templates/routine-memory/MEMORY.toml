@@ -6,6 +6,9 @@ instructions = [
   "Do not invent product content, compliance obligations, engineering practices, acceptance tests, or open questions.",
 ]
 
+[curation]
+auto_curated = true
+
 [[collections]]
 name = "executions"
 location = "{routine-name}/executions/"

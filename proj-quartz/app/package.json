@@ -14,7 +14,14 @@
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",
-    "@copilotkit/react-core": "^1.61.2",
+    "@copilotkit/a2ui-renderer": "file:vendor/@copilotkit/a2ui-renderer",
+    "@copilotkit/core": "file:vendor/@copilotkit/core",
+    "@copilotkit/license-verifier": "file:vendor/@copilotkit/license-verifier",
+    "@copilotkit/react-core": "file:vendor/@copilotkit/react-core",
+    "@copilotkit/runtime-client-gql": "file:vendor/@copilotkit/runtime-client-gql",
+    "@copilotkit/shared": "file:vendor/@copilotkit/shared",
+    "@copilotkit/web-inspector": "file:vendor/@copilotkit/web-inspector",
+    "lucide-react": "^0.525.0",
     "next": "^16.2.9",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"

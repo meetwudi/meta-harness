@@ -1,0 +1,11 @@
+id = "knowledge-agent.web-search-tool"
+title = "Hosted web search tool"
+source = "Human request on 2026-06-26: enable web search if it is not already enabled."
+text = "Knowledge Agent exposes OpenAI hosted web search for current public information lookups."
+clarifications = [
+  "The primary Knowledge Agent session includes the hosted `web_search` tool.",
+  "Routine handoff agents include the hosted `web_search` tool so Routine knowledge can use current public information when appropriate.",
+  "Memory Curator mode does not include web search because passive memory capture must learn only from the latest user message and existing Libraries.",
+  "Goal Auditor mode does not include web search by default; Goal audits rely on cited Goal and Library evidence unless a separate requirement enables external lookup.",
+  "The web search tool uses explicit external web access and medium search context size.",
+]

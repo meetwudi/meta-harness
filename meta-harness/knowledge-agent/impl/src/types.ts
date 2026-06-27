@@ -7,6 +7,8 @@
 // Supports knowledge-agent.project-config-selection: carries selected project config through local runtime context.
 // Supports knowledge-agent.postgres-runtime-storage: carries the runtime text storage driver through the runtime.
 // Supports knowledge-agent.openai-reasoning-effort: carries selected reasoning effort through provider runs.
+// Supports knowledge-agent.library-scoped-memory-curator: carries the raw latest user message separately from contextualized goal text.
+// Supports knowledge-agent.provider-stream-events: defines sanitized stream events for host applications.
 
 import type {
   DockerSandboxClient,
@@ -18,6 +20,10 @@ import type {
 } from "../../../librarian/impl/dist/index.js";
 import type { ConversationStateRuntime } from "./conversation-state.js";
 import type { KnowledgeAgentSession } from "./local-jsonl-session.js";
+import type {
+  ResolvedMemoryCuratorConfig,
+  ResolvedRuntimeLibraryConfig,
+} from "./load-meta-harness-config.js";
 
 export type ReasoningEffort = "none" | "minimal" | "low" | "medium" | "high" | "xhigh";
 
@@ -25,6 +31,7 @@ export type Args = {
   command?: string;
   repoRoot: string;
   goal?: string;
+  latestUserMessage?: string;
   provider: string;
   model?: string;
   reasoningEffort: ReasoningEffort;
@@ -34,11 +41,23 @@ export type Args = {
   turnId: string;
   localRoot: string;
   sandboxWorkspace: string;
+  streamEvents: boolean;
 };
+
+export type KnowledgeAgentStreamEvent =
+  | {
+      type: "progress";
+      message: string;
+    }
+  | {
+      type: "text_delta";
+      delta: string;
+    };
 
 export type ProviderRunOptions = {
   repoRoot: string;
   goal: string;
+  latestUserMessage: string;
   model: string;
   reasoningEffort: ReasoningEffort;
   client: string;
@@ -48,12 +67,15 @@ export type ProviderRunOptions = {
   librarianContext: LibrarianContext;
   conversationState: ConversationStateRuntime;
   session: KnowledgeAgentSession;
+  memoryCurator: ResolvedMemoryCuratorConfig;
+  onStreamEvent?: (event: KnowledgeAgentStreamEvent) => void;
 };
 
 export type PreparedRuntime = {
   localRoot: string;
   conversationsLibrary: string;
   memoryLibrary: string;
+  memoryCurator: ResolvedMemoryCuratorConfig;
   conversationRoot: string;
   sessionFile: string;
   tmpStorageLibrariesRoot: string;
@@ -63,9 +85,17 @@ export type PreparedRuntime = {
 
 export type StoragePrepareInput = {
   repoRootPath: string;
+  projectRootPath: string;
   configuredLocalRoot: string;
   sandboxWorkspaceInput: string;
   conversationId: string;
+  actorUri: string;
+  conversationLibrary: ResolvedRuntimeLibraryConfig;
+  memoryCurator: ResolvedMemoryCuratorConfig;
+  sharedMemory: {
+    enabled: boolean;
+    library?: ResolvedRuntimeLibraryConfig;
+  };
 };
 
 export type OpenAISandboxRunOptions = ProviderRunOptions & {

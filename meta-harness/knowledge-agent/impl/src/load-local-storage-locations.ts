@@ -76,6 +76,9 @@ function materializeStorageLocation(
     discoveryMode: requiredDiscoveryMode(definition, "discoveryMode"),
     discoveryExcludes: optionalStringArray(definition, "discoveryExcludes"),
     discoverLibraries: requiredBoolean(definition, "discoverLibraries"),
+    defaultForLibraryCreation: optionalBoolean(definition, "defaultForLibraryCreation"),
+    createdLibraryReadActors: optionalActorArray(definition, "createdLibraryReadActors"),
+    createdLibraryUpdateActors: optionalActorArray(definition, "createdLibraryUpdateActors"),
     sourceUri: optionalString(definition, "sourceUri"),
     guidanceUri: optionalString(definition, "guidanceUri"),
   };
@@ -138,6 +141,20 @@ function optionalStringArray(
   }
   if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
     throw new Error(`storage location definition has invalid string array field: ${key}`);
+  }
+  return value as string[];
+}
+
+function optionalActorArray(
+  definition: StorageLocationDefinition,
+  key: string,
+): string[] | undefined {
+  const value = definition[key as keyof StorageLocationDefinition];
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(value) || value.some((item) => typeof item !== "string" || !item.startsWith("actor://"))) {
+    throw new Error(`storage location definition has invalid actor array field: ${key}`);
   }
   return value as string[];
 }

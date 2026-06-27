@@ -3,6 +3,7 @@
 // Supports storage.postgres-schema-bootstrap: verifies schema bootstrap against Postgres.
 // Supports storage.postgres-deployment-configuration: verifies explicit table configuration against a local Postgres deployment.
 // Supports librarian.postgres-backed-library-interface: verifies Library tools over Postgres.
+// Supports librarian.tool-librarian-delete: verifies file and folder resource deletion over Postgres.
 
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
@@ -76,6 +77,21 @@ try {
     actorUri: "actor://knowledge-agent",
     sessionId: "postgres-storage-integration",
   });
+  await storage.makeDirectory("/libraries/pg-read-only");
+  await storage.writeText(
+    "/libraries/pg-read-only/LIBRARY.toml",
+    [
+      "# This is a Harness primitive.",
+      "# See also: library://meta-harness",
+      "",
+      'name = "pg-read-only"',
+      'description = "Read-only fixture Library stored in Postgres."',
+      "isSystemLibrary = true",
+      'read_actors = ["actor://knowledge-agent"]',
+      "update_actors = []",
+      "",
+    ].join("\n"),
+  );
 
   const created = await executeLibrarianTool(context, "librarian_create_library", {
     storageLocationName: "postgres-test",
@@ -88,6 +104,14 @@ try {
   assert.ok(
     arrayAt(listed, ["libraries"]).some(
       (library) => readPath(library, ["uri"]) === "library://pg-fixture",
+    ),
+  );
+  assert.equal(readPath(created, ["library", "isSystemLibrary"]), false);
+  assert.ok(
+    arrayAt(listed, ["libraries"]).some(
+      (library) =>
+        readPath(library, ["uri"]) === "library://pg-read-only" &&
+        readPath(library, ["isSystemLibrary"]) === true,
     ),
   );
 
@@ -124,6 +148,30 @@ try {
     ),
   );
 
+  await executeLibrarianTool(context, "librarian_update", {
+    uri: "library://pg-fixture/temp-folder/a.md",
+    content: "temporary folder file\n",
+  });
+  await executeLibrarianTool(context, "librarian_update", {
+    uri: "library://pg-fixture/temp-folder/nested/b.md",
+    content: "temporary nested folder file\n",
+  });
+  const deletedFolder = await executeLibrarianTool(context, "librarian_delete", {
+    uri: "library://pg-fixture/temp-folder",
+  });
+  assert.equal(readPath(deletedFolder, ["uri"]), "library://pg-fixture/temp-folder");
+  assert.equal(readPath(deletedFolder, ["deleted"]), true);
+  const filesAfterResourceDelete = await executeLibrarianTool(context, "librarian_list_files", {
+    uri: "library://pg-fixture",
+    recursive: true,
+  });
+  assert.equal(
+    arrayAt(filesAfterResourceDelete, ["files"]).some((file) =>
+      String(readPath(file, ["uri"])).startsWith("library://pg-fixture/temp-folder/"),
+    ),
+    false,
+  );
+
   await executeLibrarianTool(context, "librarian_add_tags", {
     scopeUri: "library://pg-fixture/notes",
     tags: ["information-trading"],
@@ -135,6 +183,30 @@ try {
   assert.equal(
     readPath(tagQuery, ["results", 0, "matches", 0, "scopeUri"]),
     "library://pg-fixture/notes",
+  );
+
+  await assert.rejects(
+    executeLibrarianTool(context, "librarian_delete_library", {
+      uri: "library://pg-read-only",
+    }),
+    /not writable/,
+  );
+  await assert.rejects(
+    executeLibrarianTool(context, "librarian_delete", {
+      uri: "library://pg-read-only/LIBRARY.toml",
+    }),
+    /not writable/,
+  );
+  const deleted = await executeLibrarianTool(context, "librarian_delete_library", {
+    uri: "library://pg-fixture",
+  });
+  assert.equal(readPath(deleted, ["uri"]), "library://pg-fixture");
+  const afterDelete = await executeLibrarianTool(context, "librarian_list_libraries", {});
+  assert.equal(
+    arrayAt(afterDelete, ["libraries"]).some(
+      (library) => readPath(library, ["uri"]) === "library://pg-fixture",
+    ),
+    false,
   );
 } finally {
   await storage?.close();

@@ -15,10 +15,13 @@ requirements = [
   "knowledge-agent.goal-update-interface",
   "knowledge-agent.routine-handoffs",
   "knowledge-agent.uses-librarian",
+  "knowledge-agent.web-search-tool",
 ]
 procedure = [
   "Inspect the Knowledge Agent tool and handoff assembly point.",
-  "Verify that the primary Knowledge Agent session includes Routine handoffs, the Goal Auditor handoff, Librarian tools, and Goal tools.",
+  "Verify that the primary Knowledge Agent session includes Routine handoffs, the Goal Auditor handoff, Librarian tools, Goal tools, and hosted web search.",
+  "Verify that Routine handoff agents include hosted web search.",
+  "Verify that Memory Curator mode and Goal Auditor mode do not include hosted web search unless separately specified.",
   "Inspect the Librarian OpenAI tool adapter and verify it preserves Librarian descriptor names, descriptions, and parameter schemas.",
   "Inspect the Goal tool registry and verify default exposure of `goal_create`, `goal_update`, `goal_request_audit`, and `goal_list`.",
   "Inspect Goal Auditor tool exposure and verify `goal_complete_audit` is exposed only for the Goal Auditor path.",
@@ -30,4 +33,5 @@ expected = [
   "The Librarian adapter is covered by a Spec requirement and delegates tool contracts to Librarian Spec knowledge.",
   "Routine and Goal Auditor handoffs have handoff-specific Spec requirements.",
   "Routine-specific behavior remains in Routine knowledge while the generic Routine exposure and handoff interface is Spec-backed.",
+  "Hosted web search is available to the primary Knowledge Agent and Routine handoff agents for current public information, while passive Memory curation remains Library-only.",
 ]

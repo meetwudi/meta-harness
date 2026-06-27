@@ -1,0 +1,9 @@
+id = "knowledge-agent.main-run-turn-budget"
+title = "Main run supports long tool-rich conversations"
+source = "Human request on 2026-06-27 after a YouTube transcript analysis run failed with `Max turns (24) exceeded`: raise the Knowledge Agent main run limit to 100 turns and retry."
+text = "The Knowledge Agent main conversation run uses a 100-turn budget so long, tool-rich requests have enough room to inspect Libraries, use search/tools, and produce an answer."
+
+criteria = [
+  "The main Knowledge Agent OpenAI SDK run sets `maxTurns` to 100.",
+  "This requirement applies to the main conversation run and does not imply changing specialized post-run agents such as the memory curator.",
+]
