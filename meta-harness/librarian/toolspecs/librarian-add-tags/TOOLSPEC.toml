@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_add_tags"
+description = "Add tag values to the TAGS.toml record for a writable Library knowledge scope."
+implementation = "../../impl/src/add-tags.ts"
+allowed_actors = ["actor://*"]
+order = 100
+
+[input_schema]
+type = "object"
+required = ["scopeUri", "tags"]
+additional_properties = false
+properties_json = "{\"scopeUri\":{\"type\":\"string\",\"pattern\":\"^library://\"},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}"
+
+[output_schema]
+type = "object"
+description = "Canonical scope URI, Tags record URI, and resulting tag values."
+
+[[test_cases]]
+id = "add-tags"
+input_json = "{\"scopeUri\":\"library://example/scope\",\"tags\":[\"research\"]}"
+expected = "Adds tag values to the writable scope's independent TAGS.toml record."

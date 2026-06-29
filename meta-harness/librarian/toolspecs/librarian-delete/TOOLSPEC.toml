@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_delete"
+description = "Delete a file or folder resource inside a writable Library. Exact Library roots must use librarian_delete_library."
+implementation = "../../impl/src/delete-library-resource.ts"
+allowed_actors = ["actor://*"]
+order = 80
+
+[input_schema]
+type = "object"
+required = ["uri"]
+additional_properties = false
+properties_json = "{\"uri\":{\"type\":\"string\",\"pattern\":\"^library://\"}}"
+
+[output_schema]
+type = "object"
+description = "Canonical deleted resource URI, public Library listing, and deletion status."
+
+[[test_cases]]
+id = "delete-resource"
+input_json = "{\"uri\":\"library://example/path.md\"}"
+expected = "Deletes the writable file or folder resource and rejects exact Library roots."

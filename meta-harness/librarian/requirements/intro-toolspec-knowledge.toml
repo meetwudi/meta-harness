@@ -1,0 +1,8 @@
+id = "librarian.intro-toolspec-knowledge"
+title = "Librarian intro surfaces ToolSpec knowledge"
+source = "Human request on 2026-06-27: in the intro and related onboarding, include enough information for an agent to make its own tool."
+text = "Librarian intro includes ToolSpec primitive guidance so agents can discover how to define new tools as governed knowledge."
+clarifications = [
+  "Intro onboarding includes the ToolSpec primitive document from `library://meta-harness/primitives/TOOLSPEC.md`.",
+  "ToolSpec onboarding is returned with primitive orientation, Library creation protocol, and storage guidance.",
+]

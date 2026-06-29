@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_remove_tags"
+description = "Remove tag values from the TAGS.toml record for a writable Library knowledge scope."
+implementation = "../../impl/src/remove-tags.ts"
+allowed_actors = ["actor://*"]
+order = 110
+
+[input_schema]
+type = "object"
+required = ["scopeUri", "tags"]
+additional_properties = false
+properties_json = "{\"scopeUri\":{\"type\":\"string\",\"pattern\":\"^library://\"},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}"
+
+[output_schema]
+type = "object"
+description = "Canonical scope URI, Tags record URI, remaining tags, and removed tags."
+
+[[test_cases]]
+id = "remove-tags"
+input_json = "{\"scopeUri\":\"library://example/scope\",\"tags\":[\"research\"]}"
+expected = "Removes tag values from the writable scope's independent TAGS.toml record."

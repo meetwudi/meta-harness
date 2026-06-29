@@ -1,0 +1,4 @@
+id = "librarian-read.unit.read-resource"
+tool = "librarian_read"
+input_json = "{\"uri\":\"library://example/path.md\"}"
+expected = "The tool resolves and reads a canonical Library resource URI."

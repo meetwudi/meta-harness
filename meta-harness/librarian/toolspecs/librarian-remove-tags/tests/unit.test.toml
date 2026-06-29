@@ -1,0 +1,4 @@
+id = "librarian-remove-tags.unit.remove"
+tool = "librarian_remove_tags"
+input_json = "{\"scopeUri\":\"library://example/scope\",\"tags\":[\"research\"]}"
+expected = "The tool removes tags from a writable Library knowledge scope."

@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_read"
+description = "Read a file from a readable Library by resource URI."
+implementation = "../../impl/src/read-library-file.ts"
+allowed_actors = ["actor://*"]
+order = 30
+
+[input_schema]
+type = "object"
+required = ["uri"]
+additional_properties = false
+properties_json = "{\"uri\":{\"type\":\"string\"}}"
+
+[output_schema]
+type = "object"
+description = "Canonical resource URI, public Library listing, and file text content."
+
+[[test_cases]]
+id = "read-resource"
+input_json = "{\"uri\":\"library://example/path.md\"}"
+expected = "Reads the requested Library resource when it resolves and is readable."

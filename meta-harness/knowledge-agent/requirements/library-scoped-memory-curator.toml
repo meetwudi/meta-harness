@@ -1,6 +1,6 @@
 id = "knowledge-agent.library-scoped-memory-curator"
 title = "Library-scoped memory curator"
-source = "Human request on 2026-06-26: passive memory capture should be Library-scoped, happen after the main agent, use a separate agent/process, share the master Knowledge Agent prompt, and capture strictly what the user said."
+source = "Human request on 2026-06-26: passive memory capture should be Library-scoped, happen after the main agent, use a separate agent/process, share the master Knowledge Agent prompt, and capture strictly what the user said. Human clarification on 2026-06-27: the Memory Curator should also stream as part of the back-to-back agent sequence."
 text = "Knowledge Agent memory capture is sequenced after the main agent as a separate Library-scoped curator mode using the shared Knowledge Agent prompt."
 clarifications = [
   "The curator runs with its own configured actor URI.",
@@ -13,4 +13,5 @@ clarifications = [
   "The curator captures only user-stated information, with provenance, and must not invent facts, analysis, decisions, or obligations.",
   "Read-only Libraries are not considered memory write targets.",
   "The curator uses the same master Knowledge Agent prompt with mode-specific context rather than a separate prompt file.",
+  "When provider stream events are enabled, the curator streams its model-origin events after the main agent stream rather than only emitting host start and finish progress.",
 ]

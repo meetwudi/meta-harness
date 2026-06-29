@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_list_libraries"
+description = "Call this immediately after librarian_intro to list storage-discovered Libraries with access and system metadata."
+implementation = "../../impl/src/list-libraries.ts"
+allowed_actors = ["actor://*"]
+order = 20
+
+[input_schema]
+type = "object"
+required = []
+additional_properties = false
+properties_json = "{}"
+
+[output_schema]
+type = "object"
+description = "A libraries array with visible Library metadata and access booleans."
+
+[[test_cases]]
+id = "empty-input"
+input_json = "{}"
+expected = "Returns storage-discovered Libraries visible to the active actor identities."

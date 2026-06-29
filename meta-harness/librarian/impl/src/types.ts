@@ -3,6 +3,7 @@
 // Supports librarian.shared-tool-context: defines the context shared by Librarian operations.
 // Supports librarian.actor-session-tool-context: carries actor identity and session id in runtime context.
 // Supports librarian.tool-call-observability: defines recorded tool call events.
+// Supports librarian.toolspec-backed-agent-tools: defines ToolSpec runtime records.
 // Supports knowledge-agent.local-filesystem-storage-compatibility: keeps storage callers behind the backend-neutral boundary.
 // Supports storage.postgres-driver: allows resource-backed discovery modes alongside filesystem modes.
 
@@ -89,6 +90,36 @@ export type LibrarianToolDescriptor = {
   name: string;
   description: string;
   parameters: Record<string, unknown>;
+};
+
+export type ToolSpecSchema = {
+  type: string;
+  properties?: Record<string, unknown>;
+  required?: string[];
+  additionalProperties?: boolean;
+  description?: string;
+};
+
+export type ToolSpecTestCase = {
+  id: string;
+  inputJson?: string;
+  expected?: string;
+  expectedOutputJson?: string;
+  expectedError?: string;
+};
+
+export type ToolSpecDefinition = {
+  name: string;
+  description: string;
+  implementation: string;
+  implementationPath: string;
+  allowedActors: string[];
+  order: number;
+  inputSchema: ToolSpecSchema;
+  outputSchema: ToolSpecSchema;
+  testCases: ToolSpecTestCase[];
+  rootPath: string;
+  toolSpecPath: string;
 };
 
 export type LibrarianToolCallEvent = {

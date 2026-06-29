@@ -1,6 +1,6 @@
 ---
 name: meta-harness
-description: Use Meta Harness through the shared Knowledge Agent entrypoint. Use when the user asks about Meta Harness Libraries, library:// resources, Routines, Goals, Memory, Compliance, Specs, Tags, acceptance tests, Librarian behavior, Knowledge Agent behavior, or governed knowledge/tools in this repository.
+description: Use Meta Harness through the shared Knowledge Agent entrypoint. Use when the user asks about Meta Harness Libraries, library:// resources, Routines, Goals, Memory, Compliance, Specs, ToolSpecs, Tags, acceptance tests, Librarian behavior, Knowledge Agent behavior, or governed knowledge/tools in this repository.
 ---
 
 # Meta Harness
@@ -33,6 +33,7 @@ Load the relevant primitive before acting:
 - Memory: `meta-harness/primitives/MEMORY.md`
 - Compliance obligations: `meta-harness/primitives/COMPLIANCE.md`
 - Specs and acceptance criteria: `meta-harness/primitives/SPEC.md`
+- ToolSpecs and governed agent tools: `meta-harness/primitives/TOOLSPEC.md`
 - Tags, tag updates, or tag queries: `meta-harness/primitives/TAGS.md`
 
 Use the Knowledge Agent prompt's actor model as the authority for claims about

@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_search"
+description = "Search readable Library files by Library URI patterns and query, returning resource URI and content snippets grouped by Library."
+implementation = "../../impl/src/search-library-files.ts"
+allowed_actors = ["actor://*"]
+order = 50
+
+[input_schema]
+type = "object"
+required = ["libraryUriPatterns", "query"]
+additional_properties = false
+properties_json = "{\"libraryUriPatterns\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"number\"}}"
+
+[output_schema]
+type = "object"
+description = "Search query, Library URI patterns, and matching resource snippets grouped by Library."
+
+[[test_cases]]
+id = "search-patterns"
+input_json = "{\"libraryUriPatterns\":[\"library://example\"],\"query\":\"needle\",\"limit\":5}"
+expected = "Returns matching readable Library resources and snippets."

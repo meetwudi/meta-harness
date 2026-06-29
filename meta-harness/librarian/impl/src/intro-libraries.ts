@@ -1,6 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports librarian.intro-resource-interface: returns primitive onboarding content.
 // Supports librarian.library-creation-knowledge: returns Library creation protocol content.
+// Supports librarian.intro-toolspec-knowledge: returns ToolSpec primitive guidance.
 // Supports storage.storage-agent-guidance: returns agent-readable storage guidance.
 
 import { loadResolvedLibraries } from "./load-resolved-libraries.js";
@@ -14,6 +15,7 @@ const primitiveOnboardingLibraryUri = "library://meta-harness";
 const introPaths = [
   "setup/PRIMITIVE-ORIENTATION.md",
   "setup/LIBRARY-CREATION.md",
+  "primitives/TOOLSPEC.md",
   "storage/STORAGE.md",
 ];
 
@@ -30,13 +32,13 @@ export async function introLibraries(
   if (!onboardingLibrary) {
     return {
       libraryUriPatterns: [primitiveOnboardingLibraryUri],
-      query: "primitive onboarding, Library creation, and storage guidance",
+      query: "primitive onboarding, Library creation, ToolSpec, and storage guidance",
       results: [],
     };
   }
   return {
     libraryUriPatterns: [primitiveOnboardingLibraryUri],
-    query: "primitive onboarding, Library creation, and storage guidance",
+    query: "primitive onboarding, Library creation, ToolSpec, and storage guidance",
     results: [
       {
         library: publicLibraryListing(onboardingLibrary),

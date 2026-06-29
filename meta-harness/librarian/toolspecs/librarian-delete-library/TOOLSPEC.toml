@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_delete_library"
+description = "Delete an exact Library URI when the active actor can update the Library and the storage location grants delete capability."
+implementation = "../../impl/src/delete-library.ts"
+allowed_actors = ["actor://*"]
+order = 90
+
+[input_schema]
+type = "object"
+required = ["uri"]
+additional_properties = false
+properties_json = "{\"uri\":{\"type\":\"string\",\"pattern\":\"^library://\"}}"
+
+[output_schema]
+type = "object"
+description = "Canonical deleted Library URI and deletion status."
+
+[[test_cases]]
+id = "delete-library"
+input_json = "{\"uri\":\"library://example\"}"
+expected = "Deletes the exact Library when actor and storage governance allow deletion."

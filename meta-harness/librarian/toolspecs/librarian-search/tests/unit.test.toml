@@ -1,0 +1,4 @@
+id = "librarian-search.unit.patterns"
+tool = "librarian_search"
+input_json = "{\"libraryUriPatterns\":[\"library://example\"],\"query\":\"needle\",\"limit\":5}"
+expected = "The tool searches readable Libraries matching the provided URI patterns."

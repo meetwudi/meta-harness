@@ -1,45 +1,157 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.agent-tool-assembly: verifies the primary tool assembly surface.
 // Supports knowledge-agent.web-search-tool: verifies hosted web search is exposed only to eligible agent modes.
+// Supports knowledge-agent.library-toolspec-openai-tools: verifies Library ToolSpecs can add primary tools.
+// Supports knowledge-agent.provider-stream-events: verifies public provider stream events keep progress, reasoning, and text deltas distinct.
 
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import type { Tool } from "@openai/agents";
-import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
+import {
+  createLibrarianContext,
+  createLocalFileSystemStorage,
+} from "../../../librarian/impl/dist/index.js";
 import type { ConversationStateRuntime } from "./conversation-state.js";
 import { createKnowledgeAgentOpenAITools } from "./create-knowledge-agent-openai-tools.js";
 import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
+import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream-events.js";
 
 const fakeConversationState = {
   update: async () => ({}),
 } as unknown as ConversationStateRuntime;
 
-const fakeLibrarianContext = {
+const storage = createLocalFileSystemStorage();
+const storageRoot = await mkdtemp(join(tmpdir(), "knowledge-agent-toolspec-"));
+const toolsRoot = join(storageRoot, "youtube-transcript-tool");
+await storage.makeDirectory(toolsRoot);
+await storage.makeDirectory(join(toolsRoot, "tests"));
+await writeFile(
+  join(toolsRoot, "LIBRARY.toml"),
+  [
+    'name = "youtube-transcript-tool"',
+    'description = "Fixture ToolSpec Library."',
+    "isSystemLibrary = false",
+    'read_actors = ["actor://knowledge-agent"]',
+    'update_actors = ["actor://knowledge-agent"]',
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(toolsRoot, "TOOLSPEC.toml"),
+  [
+    "# This is a Harness primitive.",
+    "# See also: library://meta-harness",
+    "",
+    'name = "fetch_youtube_transcript"',
+    'description = "Fetch transcript text and timestamped segments for a YouTube video."',
+    'implementation = "builtin/fetch-youtube-transcript"',
+    'allowed_actors = ["actor://knowledge-agent"]',
+    "order = 10",
+    "",
+    "[input_schema]",
+    'type = "object"',
+    'required = ["url"]',
+    "additional_properties = false",
+    'properties_json = "{\\"url\\":{\\"type\\":\\"string\\"},\\"language\\":{\\"type\\":\\"string\\"}}"',
+    "",
+    "[output_schema]",
+    'type = "object"',
+    'description = "Transcript text, timestamped segments, language, source, and retrieval time."',
+    "",
+    "[[test_cases]]",
+    'id = "fetch-transcript"',
+    'input_json = "{\\"url\\":\\"https://www.youtube.com/watch?v=J9AOaINKy0E\\"}"',
+    'expected = "Returns visible transcript text for the requested video."',
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(toolsRoot, "tests", "unit.test.toml"),
+  [
+    'id = "fetch-youtube-transcript.unit.fixture"',
+    'tool = "fetch_youtube_transcript"',
+    'input_json = "{\\"url\\":\\"https://www.youtube.com/watch?v=J9AOaINKy0E\\"}"',
+    'expected = "The tool returns transcript text."',
+    "",
+  ].join("\n"),
+);
+
+const fakeLibrarianContext = createLibrarianContext({
+  storage,
+  storageLocations: [
+    {
+      name: "toolspec-fixture",
+      description: "Fixture ToolSpec storage.",
+      driverName: "filesystem",
+      storage,
+      capabilities: {
+        readable: true,
+        writable: true,
+        deletable: true,
+        queryable: true,
+        blob: true,
+      },
+      libraryRootPath: storageRoot,
+      discoveryMode: "filesystem-root-and-direct-children",
+      discoveryExcludes: [],
+    },
+  ],
   actorUri: "actor://knowledge-agent",
   actorUris: ["actor://knowledge-agent"],
   sessionId: "agent-tool-assembly-test",
-  toolCallEvents: [],
-} as unknown as LibrarianContext;
+});
 
 const webSearchTools = createWebSearchOpenAITools();
 assert.equal(webSearchTools.length, 1);
 assertWebSearchTool(webSearchTools[0]);
 
-const primaryToolNames = createKnowledgeAgentOpenAITools({
+const primaryToolNames = (await createKnowledgeAgentOpenAITools({
   conversationState: fakeConversationState,
   librarianContext: fakeLibrarianContext,
-}).map((tool) => tool.name);
+})).map((tool) => tool.name);
 assert.ok(primaryToolNames.includes("web_search"));
 assert.ok(primaryToolNames.includes("librarian_intro"));
 assert.ok(primaryToolNames.includes("goal_create"));
 assert.ok(primaryToolNames.includes("conversation_state_update"));
+assert.ok(primaryToolNames.includes("fetch_youtube_transcript"));
+
+const toolSpecToolsSource = readFileSync(
+  resolve("src/create-toolspec-openai-tools.ts"),
+  "utf8",
+);
+const toolSpecImplementationResolverSource = readFileSync(
+  resolve("src/resolve-toolspec-implementation.ts"),
+  "utf8",
+);
+const fetchYouTubeTranscriptSource = readFileSync(
+  resolve("src/fetch-youtube-transcript.ts"),
+  "utf8",
+);
+assert.match(toolSpecToolsSource, /discoverLibraryToolSpecs/);
+assert.match(toolSpecToolsSource, /executeToolSpecImplementation/);
+assert.doesNotMatch(toolSpecToolsSource, /builtin\/fetch-youtube-transcript/);
+assert.doesNotMatch(toolSpecToolsSource, /fetchYouTubeTranscript/);
+assert.doesNotMatch(toolSpecToolsSource, /fetch-youtube-transcript/);
+assert.doesNotMatch(
+  toolSpecToolsSource,
+  /implementationPath\.endsWith/,
+);
+assert.match(toolSpecImplementationResolverSource, /pathToFileURL/);
+assert.match(toolSpecImplementationResolverSource, /await import\(moduleUrl\.href\)/);
+assert.match(toolSpecImplementationResolverSource, /executeToolSpec/);
+assert.doesNotMatch(toolSpecImplementationResolverSource, /builtin\/fetch-youtube-transcript/);
+assert.doesNotMatch(toolSpecImplementationResolverSource, /fetch-youtube-transcript/);
+assert.match(fetchYouTubeTranscriptSource, /export async function executeToolSpec/);
 
 const routineSource = readFileSync(
   resolve("src/create-routine-handoff-agents.ts"),
   "utf8",
 );
 assert.match(routineSource, /createWebSearchOpenAITools/);
+assert.match(routineSource, /openAIReasoningSettings/);
 
 const memoryCuratorSource = readFileSync(
   resolve("src/run-memory-curator.ts"),
@@ -47,6 +159,24 @@ const memoryCuratorSource = readFileSync(
 );
 assert.doesNotMatch(memoryCuratorSource, /createWebSearchOpenAITools/);
 assert.doesNotMatch(memoryCuratorSource, /webSearchTool/);
+assert.match(memoryCuratorSource, /knowledgeAgentStreamEventsFromRunEvent/);
+assert.match(memoryCuratorSource, /source: "memory_curator"/);
+assert.match(memoryCuratorSource, /stream: true/);
+
+const mainRunSource = readFileSync(
+  resolve("src/execute-openai-sandbox-run.ts"),
+  "utf8",
+);
+assert.match(mainRunSource, /source: "main"/);
+assert.match(mainRunSource, /result\.finalOutput/);
+assert.match(mainRunSource, /type: "text_delta"/);
+
+const openAIConversationSource = readFileSync(
+  resolve("src/run-openai-conversation.ts"),
+  "utf8",
+);
+assert.match(openAIConversationSource, /openAIReasoningSettings/);
+assert.match(memoryCuratorSource, /openAIReasoningSettings/);
 
 const goalAuditorSource = readFileSync(
   resolve("src/create-goal-auditor-handoff-agent.ts"),
@@ -54,6 +184,90 @@ const goalAuditorSource = readFileSync(
 );
 assert.doesNotMatch(goalAuditorSource, /createWebSearchOpenAITools/);
 assert.doesNotMatch(goalAuditorSource, /webSearchTool/);
+assert.match(goalAuditorSource, /openAIReasoningSettings/);
+
+assert.deepEqual(
+  knowledgeAgentStreamEventsFromRunEvent({
+    type: "raw_model_stream_event",
+    data: {
+      event: {
+        type: "response.reasoning_summary_text.delta",
+        delta: "Inspecting Library context.",
+      },
+    },
+  } as Parameters<typeof knowledgeAgentStreamEventsFromRunEvent>[0]),
+  [{ type: "reasoning_delta", delta: "Inspecting Library context." }],
+);
+assert.deepEqual(
+  knowledgeAgentStreamEventsFromRunEvent({
+    type: "raw_model_stream_event",
+    data: {
+      event: {
+        type: "response.output_text.delta",
+        delta: "Intermediate narration.",
+      },
+    },
+  } as Parameters<typeof knowledgeAgentStreamEventsFromRunEvent>[0]),
+  [],
+);
+assert.deepEqual(
+  knowledgeAgentStreamEventsFromRunEvent({
+    type: "raw_model_stream_event",
+    data: {
+      event: {
+        type: "output_text_delta",
+        delta: "Answer text",
+      },
+    },
+  } as Parameters<typeof knowledgeAgentStreamEventsFromRunEvent>[0]),
+  [],
+);
+assert.deepEqual(
+  knowledgeAgentStreamEventsFromRunEvent({
+    type: "raw_model_stream_event",
+    data: {
+      event: {
+        type: "response.created",
+      },
+    },
+  } as Parameters<typeof knowledgeAgentStreamEventsFromRunEvent>[0]),
+  [],
+);
+assert.deepEqual(
+  knowledgeAgentStreamEventsFromRunEvent({
+    type: "raw_model_stream_event",
+    data: {
+      event: {
+        type: "response.completed",
+      },
+    },
+  } as Parameters<typeof knowledgeAgentStreamEventsFromRunEvent>[0]),
+  [],
+);
+assert.deepEqual(
+  knowledgeAgentStreamEventsFromRunEvent({
+    type: "run_item_stream_event",
+    name: "tool_called",
+    item: {
+      rawItem: {
+        name: "librarian_read",
+      },
+    },
+  } as Parameters<typeof knowledgeAgentStreamEventsFromRunEvent>[0]),
+  [{ type: "progress", message: "Reading governed knowledge." }],
+);
+assert.deepEqual(
+  knowledgeAgentStreamEventsFromRunEvent({
+    type: "run_item_stream_event",
+    name: "tool_output",
+    item: {
+      rawItem: {
+        name: "librarian_read",
+      },
+    },
+  } as Parameters<typeof knowledgeAgentStreamEventsFromRunEvent>[0]),
+  [],
+);
 
 console.log(
   JSON.stringify(

@@ -1,0 +1,162 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian-acceptance"
+version = "v0.0.0"
+source = "Migrated on 2026-06-28 from Spec-owned Librarian acceptance-test files after human direction to make Acceptance a separate primitive."
+scope = [
+  "meta-harness/librarian/**",
+]
+trigger = "Run the applicable Librarian acceptance scenarios when scoped Librarian files change or when a human asks to run Librarian acceptance."
+
+[[tests]]
+id = "librarian.acceptance.filesystem-storage-end-to-end"
+title = "Filesystem-backed Librarian end-to-end"
+requirements = [
+  "librarian.shamanistic-library-tools",
+  "librarian.tool-descriptor-registry",
+  "librarian.tool-router",
+  "librarian.library-uri-verification",
+  "librarian.tool-librarian-intro",
+  "librarian.tool-librarian-list-libraries",
+  "librarian.tool-librarian-read",
+  "librarian.tool-librarian-list-files",
+  "librarian.tool-librarian-search",
+  "librarian.tool-librarian-update",
+  "librarian.tool-librarian-create-library",
+  "librarian.tool-librarian-delete",
+  "librarian.tool-librarian-delete-library",
+  "librarian.tool-librarian-add-tags",
+  "librarian.tool-librarian-remove-tags",
+  "librarian.tool-librarian-query-by-tags",
+  "librarian.storage-discovery-tool-context",
+  "librarian.shared-tool-context",
+  "librarian.intro-resource-interface",
+  "librarian.resource-uri-tool-inputs",
+  "librarian.file-listing",
+  "librarian.update-through-librarian",
+  "librarian.direct-storage-updates",
+  "librarian.tool-call-observability",
+  "librarian.actor-library-governance",
+  "librarian.active-actor-identities",
+  "librarian.routine-actor-governance",
+  "librarian.library-creation-knowledge",
+  "librarian.library-name-format",
+  "librarian.create-library-in-storage-location",
+  "librarian.library-delete-governance",
+  "storage.storage-agent-guidance",
+  "storage.library-creation-target-location",
+  "storage.all-known-storage-locations",
+  "storage.location-library-placement",
+]
+circumstances = []
+execution = "command"
+procedure = [
+  "Run the Librarian filesystem storage end-to-end integration test.",
+]
+expected = [
+  "The test completes using local filesystem storage pointed at a temporary folder.",
+  "The test verifies storage-discovered listing, primitive onboarding content, Library creation protocol content, storage guidance content, project-marker storage location knowledge read through Library URIs, Library creation in tmp local storage with a canonical Library name, URI-native reads and updates, governed file, folder, and Library deletes, governance-derived readable, writable, and deletable state, and direct update to the temporary storage root.",
+  "The test verifies the recorded tool call sequence from runtime observability, with active actor URI, inputs present, and file contents redacted from outputs.",
+]
+
+[[tests]]
+id = "librarian.acceptance.query-by-tags"
+title = "Query by tags"
+requirements = [
+  "librarian.query-by-tags",
+  "librarian.tool-librarian-query-by-tags",
+  "librarian.library-uri-verification",
+  "storage.query-by-tags",
+]
+circumstances = []
+procedure = [
+  "Create readable Library scopes that contain TAGS.toml records with simple tags and slash-separated tag values.",
+  "Run `librarian_query_by_tags` without a Library filter.",
+  "Run `librarian_query_by_tags` with exact `libraryUris` filters.",
+  "Run `librarian_query_by_tags` with readable Library URI patterns.",
+  "Inspect the query results.",
+]
+expected = [
+  "The query uses structured tag filters rather than free-text search.",
+  "Without a Library filter, the query searches all readable Libraries.",
+  "With exact `libraryUris`, the query searches only those actual storage-discovered Libraries.",
+  "The query reads tag data from TAGS.toml records rather than tag fields embedded in other primitive schemas.",
+  "The results identify matching scoped knowledge with Library resource URIs.",
+]
+
+[[tests]]
+id = "librarian.acceptance.spec-backed-agent-tools"
+title = "Spec-backed Librarian agent tools"
+requirements = [
+  "librarian.tool-descriptor-registry",
+  "librarian.tool-router",
+  "librarian.toolspec-backed-agent-tools",
+  "librarian.toolspec-actor-invocation",
+  "librarian.intro-toolspec-knowledge",
+  "librarian.library-uri-verification",
+  "librarian.tool-librarian-intro",
+  "librarian.tool-librarian-list-libraries",
+  "librarian.tool-librarian-read",
+  "librarian.tool-librarian-list-files",
+  "librarian.tool-librarian-search",
+  "librarian.tool-librarian-update",
+  "librarian.tool-librarian-create-library",
+  "librarian.tool-librarian-delete",
+  "librarian.tool-librarian-delete-library",
+  "librarian.tool-librarian-add-tags",
+  "librarian.tool-librarian-remove-tags",
+  "librarian.tool-librarian-query-by-tags",
+  "librarian.tool-comments",
+]
+circumstances = []
+procedure = [
+  "Inspect the Librarian tool descriptor registry.",
+  "Inspect `meta-harness/librarian/toolspecs` and verify each exposed Librarian tool has its own ToolSpec folder.",
+  "Inspect each ToolSpec's `TOOLSPEC.toml`, implementation reference, allowed actor patterns, input schema, output schema, and test cases.",
+  "Verify that the descriptor registry exposes exactly the implemented Librarian tool names: `librarian_intro`, `librarian_list_libraries`, `librarian_read`, `librarian_list_files`, `librarian_search`, `librarian_update`, `librarian_create_library`, `librarian_delete`, `librarian_delete_library`, `librarian_add_tags`, `librarian_remove_tags`, and `librarian_query_by_tags`.",
+  "Inspect each tool descriptor's description and JSON parameter schema.",
+  "Inspect the Librarian tool router for dispatch coverage for each descriptor name.",
+  "Verify that every exposed tool name has a corresponding tool-specific requirement file.",
+  "Call URI-accepting tools with an exact malformed or unresolved Library URI.",
+]
+expected = [
+  "Every implemented Librarian tool exposed to agents is explicitly named in the descriptor registry.",
+  "Every implemented Librarian tool exposed to agents has a ToolSpec folder with `TOOLSPEC.toml` and a `tests` folder.",
+  "The descriptor registry derives tool names, descriptions, and parameter schemas from ToolSpecs.",
+  "The router rejects invocation when no active actor identity matches a ToolSpec `allowed_actors` pattern.",
+  "Every implemented Librarian tool has a tool-specific Spec requirement covering its input, behavior, and output contract.",
+  "The router handles every descriptor name and records each tool call through Librarian observability.",
+  "The descriptor registry and router are themselves covered by Spec requirements.",
+  "URI-accepting tools fail when the exact Library URI or Library resource URI is not actual and storage-discovered.",
+]
+
+[[tests]]
+id = "librarian.acceptance.tags-interface"
+title = "Tags operations"
+requirements = [
+  "librarian.tool-librarian-add-tags",
+  "librarian.tool-librarian-remove-tags",
+  "librarian.tool-librarian-query-by-tags",
+  "librarian.query-by-tags",
+  "librarian.library-uri-verification",
+  "storage.query-by-tags",
+]
+circumstances = []
+procedure = [
+  "Create readable and writable Library scopes that can contain TAGS.toml records.",
+  "Run `librarian_add_tags` against a writable Library scope.",
+  "Read the scope's TAGS.toml record through Librarian.",
+  "Run `librarian_remove_tags` against the same writable Library scope.",
+  "Run `librarian_query_by_tags` with no Library filter across all readable Libraries.",
+  "Run `librarian_query_by_tags` with exact `libraryUris` for the writable Library scopes.",
+  "Run a Tags tool with an exact Library URI that does not resolve to a storage-discovered Library.",
+]
+expected = [
+  "`librarian_add_tags` creates or updates the independent TAGS.toml record for the selected knowledge scope.",
+  "`librarian_remove_tags` updates the independent TAGS.toml record for the selected knowledge scope.",
+  "Tag operations honor Library read and update governance.",
+  "`librarian_query_by_tags` uses structured tag filters over TAGS.toml records and returns Library resource URIs for matching knowledge scopes.",
+  "`librarian_query_by_tags` can query all readable Libraries by default or narrow to exact storage-discovered Library URIs.",
+  "Tags tools fail when an exact Library URI or Library resource URI is not actual and storage-discovered.",
+]

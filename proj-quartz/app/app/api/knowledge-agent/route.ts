@@ -1,8 +1,23 @@
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { loadEnvConfig } from "@next/env";
+import nextEnv from "@next/env";
 import { NextRequest } from "next/server";
+import {
+  createKnowledgeAgentSseStream,
+  type AgUiMessage,
+  type KnowledgeAgentChatConfig,
+  type KnowledgeAgentStreamSource,
+  type ModelOption,
+  type ReasoningEffort,
+  type RunAgentInput,
+} from "./stream-response";
+import {
+  writeThreadTurnReasoning,
+  type ReasoningDeltaRecord,
+} from "./conversations/route";
+
+const { loadEnvConfig } = nextEnv;
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,52 +32,15 @@ export const maxDuration = 180;
 // Harness-Requirement: proj-quartz.reasoning-effort-selector
 // Harness-Requirement: proj-quartz.reasoning-event-rendering
 // Harness-Requirement: proj-quartz.model-selector
-type AgUiContentPart = {
-  type?: string;
-  text?: string;
-};
-
-type AgUiMessage = {
-  role?: string;
-  content?: string | AgUiContentPart[];
-};
-
-type RunAgentInput = {
-  threadId?: string;
-  runId?: string;
-  messages?: AgUiMessage[];
-  forwardedProps?: unknown;
-};
-
-type AgUiEvent = Record<string, unknown> & {
-  type: string;
-};
-
-type ReasoningEffort =
-  | "none"
-  | "low"
-  | "medium"
-  | "high"
-  | "xhigh";
-
-type ModelOption = {
-  id: string;
-  label: string;
-};
-
-type KnowledgeAgentChatConfig = {
-  defaultModel: string;
-  modelOptions: ModelOption[];
-};
 
 type KnowledgeAgentSubprocessEvent = {
   type?: unknown;
   message?: unknown;
   delta?: unknown;
   output?: unknown;
+  source?: unknown;
 };
 
-const textEncoder = new TextEncoder();
 const defaultTimeoutMs = 180_000;
 const defaultReasoningEffort: ReasoningEffort = "medium";
 let quartzProjectEnvLoaded = false;
@@ -96,7 +74,8 @@ function loadQuartzProjectEnv(): void {
   if (quartzProjectEnvLoaded) {
     return;
   }
-  loadEnvConfig(quartzProjectRootPath(), process.env.NODE_ENV !== "production");
+  // Next dev preloads app-level env; force the project-root Quartz env here.
+  loadEnvConfig(quartzProjectRootPath(), process.env.NODE_ENV !== "production", console, true);
   quartzProjectEnvLoaded = true;
 }
 
@@ -111,15 +90,9 @@ function projectConfigFilePath(): string {
   return path.join(process.cwd(), "..", ".meta-harness.json");
 }
 
-function eventBytes(event: AgUiEvent): Uint8Array {
-  return textEncoder.encode(
-    `data: ${JSON.stringify({ timestamp: Date.now(), ...event })}\n\n`,
-  );
-}
-
-function safeId(value: string, fallback: string): string {
+function safeId(value: string, defaultValue: string): string {
   const cleaned = value.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 96);
-  return cleaned || fallback;
+  return cleaned || defaultValue;
 }
 
 function objectRecord(value: unknown): Record<string, unknown> {
@@ -137,6 +110,12 @@ function isReasoningEffort(value: string): value is ReasoningEffort {
 function isModelOption(value: unknown): value is ModelOption {
   const candidate = objectRecord(value);
   return typeof candidate.id === "string" && typeof candidate.label === "string";
+}
+
+function streamSource(value: unknown): KnowledgeAgentStreamSource {
+  return typeof value === "string" && value.trim()
+    ? value.trim()
+    : "main";
 }
 
 function loadKnowledgeAgentChatConfig(): KnowledgeAgentChatConfig {
@@ -311,26 +290,6 @@ function contextualUserGoal(input: RunAgentInput): string {
   return promptParts.join("\n");
 }
 
-function chunkText(value: string, size = 1200): string[] {
-  const chunks: string[] = [];
-  for (let index = 0; index < value.length; index += size) {
-    chunks.push(value.slice(index, index + size));
-  }
-  return chunks.length > 0 ? chunks : [""];
-}
-
-function reasoningTraceStart(
-  reasoningEffort: ReasoningEffort,
-  model: string,
-): string {
-  return [
-    "Preparing the Quartz Knowledge Agent run.",
-    `Model: ${model}.`,
-    `Reasoning effort: ${reasoningEffort}.`,
-    "Inspecting governed project knowledge, Library context, and available tools.",
-  ].join("\n");
-}
-
 function parseKnowledgeAgentSubprocessEvent(
   line: string,
 ): KnowledgeAgentSubprocessEvent | undefined {
@@ -349,7 +308,9 @@ async function runKnowledgeAgent(input: {
   runId: string;
   model: string;
   reasoningEffort: ReasoningEffort;
-  onProgress?: (message: string) => void;
+  onProgress?: (message: string, source: KnowledgeAgentStreamSource) => void;
+  onReasoningDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
+  onTextDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
 }): Promise<string> {
   assertQuartzPostgresConfigured();
   const repoRoot = repoRootPath();
@@ -364,8 +325,10 @@ async function runKnowledgeAgent(input: {
   const timeoutMs = Number(
     process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS ?? defaultTimeoutMs,
   );
+  const turnId = `quartz-${safeId(input.runId, "run")}`;
 
   return new Promise((resolve, reject) => {
+    const reasoningRecords: ReasoningDeltaRecord[] = [];
     const child = spawn(
       process.execPath,
       [
@@ -378,7 +341,7 @@ async function runKnowledgeAgent(input: {
         "--conversation-id",
         `quartz-${safeId(input.threadId, "thread")}`,
         "--turn-id",
-        `quartz-${safeId(input.runId, "run")}`,
+        turnId,
         "--model",
         input.model,
         "--reasoning-effort",
@@ -401,6 +364,7 @@ async function runKnowledgeAgent(input: {
     let stdoutLineBuffer = "";
     let finalOutput = "";
     let streamedText = "";
+    let streamedMainText = "";
     const timeout = setTimeout(() => {
       child.kill("SIGTERM");
       reject(new Error("Knowledge Agent run timed out."));
@@ -419,12 +383,28 @@ async function runKnowledgeAgent(input: {
       }
 
       if (event.type === "progress" && typeof event.message === "string") {
-        input.onProgress?.(event.message);
+        input.onProgress?.(event.message, streamSource(event.source));
+        return;
+      }
+
+      if (event.type === "reasoning_delta" && typeof event.delta === "string") {
+        const source = streamSource(event.source);
+        reasoningRecords.push({
+          source,
+          delta: event.delta,
+          recordedAt: new Date().toISOString(),
+        });
+        input.onReasoningDelta?.(event.delta, source);
         return;
       }
 
       if (event.type === "text_delta" && typeof event.delta === "string") {
+        const source = streamSource(event.source);
         streamedText += event.delta;
+        if (source === "main") {
+          streamedMainText += event.delta;
+        }
+        input.onTextDelta?.(event.delta, source);
         return;
       }
 
@@ -450,14 +430,23 @@ async function runKnowledgeAgent(input: {
       clearTimeout(timeout);
       reject(error);
     });
-    child.on("close", (code) => {
+    child.on("close", async (code) => {
       clearTimeout(timeout);
       if (stdoutLineBuffer) {
         handleStdoutLine(stdoutLineBuffer);
         stdoutLineBuffer = "";
       }
       if (code === 0) {
-        resolve((finalOutput || streamedText || stdout).trim());
+        try {
+          await writeThreadTurnReasoning({
+            threadId: input.threadId,
+            turnId,
+            records: reasoningRecords,
+          });
+          resolve((finalOutput || streamedMainText || streamedText || stdout).trim());
+        } catch (error) {
+          reject(error);
+        }
         return;
       }
 
@@ -490,150 +479,16 @@ export async function POST(request: NextRequest) {
   const threadId = safeId(input.threadId ?? crypto.randomUUID(), "thread");
   const runId = safeId(input.runId ?? crypto.randomUUID(), "run");
 
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const messageId = `quartz-message-${crypto.randomUUID()}`;
-      const reasoningMessageId = `quartz-reasoning-${crypto.randomUUID()}`;
-      let reasoningStarted = false;
-      let lastReasoningProgress = "";
-      const send = (event: AgUiEvent) => controller.enqueue(eventBytes(event));
-      const startReasoning = (
-        reasoningEffort: ReasoningEffort,
-        model: string,
-      ) => {
-        reasoningStarted = true;
-        send({
-          type: "REASONING_START",
-          messageId: reasoningMessageId,
-        });
-        send({
-          type: "REASONING_MESSAGE_START",
-          messageId: reasoningMessageId,
-          role: "reasoning",
-        });
-        send({
-          type: "REASONING_MESSAGE_CONTENT",
-          messageId: reasoningMessageId,
-          delta: reasoningTraceStart(reasoningEffort, model),
-        });
-      };
-      const appendReasoningProgress = (message: string) => {
-        const cleanMessage = message.trim();
-        if (
-          !reasoningStarted
-          || !cleanMessage
-          || cleanMessage === lastReasoningProgress
-        ) {
-          return;
-        }
-        lastReasoningProgress = cleanMessage;
-        send({
-          type: "REASONING_MESSAGE_CONTENT",
-          messageId: reasoningMessageId,
-          delta: `\n${cleanMessage}`,
-        });
-      };
-      const finishReasoning = (delta: string) => {
-        if (!reasoningStarted) {
-          return;
-        }
-        if (delta) {
-          send({
-            type: "REASONING_MESSAGE_CONTENT",
-            messageId: reasoningMessageId,
-            delta,
-          });
-        }
-        send({
-          type: "REASONING_MESSAGE_END",
-          messageId: reasoningMessageId,
-        });
-        send({
-          type: "REASONING_END",
-          messageId: reasoningMessageId,
-        });
-        reasoningStarted = false;
-      };
-
-      send({
-        type: "RUN_STARTED",
-        threadId,
-        runId,
-        input,
-      });
-
-      try {
-        const latestUserMessage = latestUserGoal(input);
-        const goal = contextualUserGoal(input);
-        const chatConfig = loadKnowledgeAgentChatConfig();
-        const reasoningEffort = reasoningEffortFromInput(input);
-        const model = modelFromInput(input, chatConfig);
-        if (!latestUserMessage || !goal) {
-          throw new Error("Send a message for the Knowledge Agent to answer.");
-        }
-
-        startReasoning(reasoningEffort, model);
-        const output = await runKnowledgeAgent({
-          goal,
-          latestUserMessage,
-          threadId,
-          runId,
-          model,
-          reasoningEffort,
-          onProgress: appendReasoningProgress,
-        });
-        finishReasoning("\nKnowledge Agent run finished. Preparing the answer.");
-        send({
-          type: "TEXT_MESSAGE_START",
-          messageId,
-          role: "assistant",
-        });
-        for (const chunk of chunkText(output)) {
-          if (chunk) {
-            send({
-              type: "TEXT_MESSAGE_CONTENT",
-              messageId,
-              delta: chunk,
-            });
-          }
-        }
-        send({
-          type: "TEXT_MESSAGE_END",
-          messageId,
-        });
-        send({
-          type: "RUN_FINISHED",
-          threadId,
-          runId,
-          result: { messageId },
-        });
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Knowledge Agent run failed.";
-        finishReasoning("\nKnowledge Agent run failed before completing.");
-        send({
-          type: "TEXT_MESSAGE_START",
-          messageId,
-          role: "assistant",
-        });
-        send({
-          type: "TEXT_MESSAGE_CONTENT",
-          messageId,
-          delta: `Knowledge Agent run failed: ${message}`,
-        });
-        send({
-          type: "TEXT_MESSAGE_END",
-          messageId,
-        });
-        send({
-          type: "RUN_ERROR",
-          message,
-          code: "knowledge_agent_error",
-        });
-      } finally {
-        controller.close();
-      }
-    },
+  const stream = createKnowledgeAgentSseStream({
+    runInput: input,
+    threadId,
+    runId,
+    loadChatConfig: loadKnowledgeAgentChatConfig,
+    latestUserGoal,
+    contextualUserGoal,
+    reasoningEffortFromInput,
+    modelFromInput,
+    runKnowledgeAgent,
   });
 
   return new Response(stream, {

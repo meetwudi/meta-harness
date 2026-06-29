@@ -1,0 +1,4 @@
+id = "librarian-update.unit.write-resource"
+tool = "librarian_update"
+input_json = "{\"uri\":\"library://example/path.md\",\"content\":\"hello\"}"
+expected = "The tool writes text content into a writable Library resource URI."

@@ -1,0 +1,11 @@
+id = "librarian.toolspec-backed-agent-tools"
+title = "Librarian tools are ToolSpec-backed"
+source = "Human request on 2026-06-27: create a new ToolSpec primitive distinct from Spec; each ToolSpec defines one agent-usable tool with description, input, output, allowed actor glob patterns, test cases, and generated code referenced by TOML; migrate existing Librarian tools into separate ToolSpec folders."
+text = "Each Librarian tool exposed to agents is defined by a ToolSpec primitive in its own folder, and the runtime derives agent-facing descriptors from those ToolSpecs."
+clarifications = [
+  "Each ToolSpec folder contains `TOOLSPEC.toml` and a `tests` folder.",
+  "`TOOLSPEC.toml` describes what the tool does, its agent-facing input schema, output contract, allowed actor URI glob patterns, implementation file, and test cases.",
+  "The ToolSpec implementation reference points to the generated code file that implements the tool.",
+  "Generated Librarian tool registry code reads ToolSpecs rather than hand-maintaining tool descriptions and input schemas in the registry.",
+  "The existing Librarian tools are migrated into ToolSpec folders before adding new tools such as a YouTube transcript fetcher.",
+]

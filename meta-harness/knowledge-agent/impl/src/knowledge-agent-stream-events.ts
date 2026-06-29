@@ -1,5 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.provider-stream-events: converts provider stream events into public progress summaries.
+// Supports knowledge-agent.provider-stream-events: converts provider stream events into public progress, reasoning, and text deltas.
 
 import type { RunStreamEvent } from "@openai/agents";
 import type { KnowledgeAgentStreamEvent } from "./types.js";
@@ -47,32 +47,55 @@ function progress(message: string): KnowledgeAgentStreamEvent[] {
   return [{ type: "progress", message }];
 }
 
+function humanizeIdentifier(value: string): string {
+  return value
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function progressFromToolCall(tool: string): KnowledgeAgentStreamEvent[] {
+  if (!tool) {
+    return progress("Using a configured tool.");
+  }
+  if (tool.startsWith("librarian_")) {
+    return progress("Reading governed knowledge.");
+  }
+  if (tool === "conversation_state_update") {
+    return progress("Updating conversation context.");
+  }
+  if (tool.startsWith("goal_")) {
+    return progress("Working with goal records.");
+  }
+  if (tool.startsWith("routine_")) {
+    return progress("Working with routine knowledge.");
+  }
+  if (tool.includes("web_search") || tool.includes("search")) {
+    return progress("Searching public sources.");
+  }
+  if (tool === "fetch_youtube_transcript") {
+    return progress("Fetching a YouTube transcript.");
+  }
+
+  return progress(`Using ${humanizeIdentifier(tool)}.`);
+}
+
 function modelEventFromRaw(rawEvent: Record<string, unknown>): Record<string, unknown> {
   const data = objectRecord(rawEvent.data);
   const nested = objectRecord(data.event);
   return nested.type ? nested : data;
 }
 
-function textDeltaFromModelEvent(
+function reasoningDeltaFromModelEvent(
   modelEvent: Record<string, unknown>,
 ): KnowledgeAgentStreamEvent[] {
   const type = stringValue(modelEvent.type);
   const delta = stringValue(modelEvent.delta);
-  if ((type === "output_text_delta" || type === "response.output_text.delta") && delta) {
-    return [{ type: "text_delta", delta }];
-  }
-  return [];
-}
-
-function progressFromModelEvent(
-  modelEvent: Record<string, unknown>,
-): KnowledgeAgentStreamEvent[] {
-  const type = stringValue(modelEvent.type);
-  if (type === "response_started" || type === "response.created") {
-    return progress("Model response started.");
-  }
-  if (type === "response_done" || type === "response.completed") {
-    return progress("Model response completed.");
+  if (type === "response.reasoning_summary_text.delta" && delta) {
+    return [{ type: "reasoning_delta", delta }];
   }
   return [];
 }
@@ -86,21 +109,21 @@ function eventsFromRunItem(
 
   switch (name) {
     case "tool_called":
-      return progress(`Tool called: ${nameSuffix}.`);
+      return progressFromToolCall(nameSuffix);
     case "tool_output":
-      return progress(`Tool output received: ${nameSuffix}.`);
+      return [];
     case "tool_search_called":
-      return progress("Search tool called.");
+      return progress("Searching public sources.");
     case "tool_search_output_created":
-      return progress("Search results received.");
+      return [];
     case "handoff_requested":
-      return progress("Agent handoff requested.");
+      return progress("Preparing a specialized agent handoff.");
     case "handoff_occurred":
-      return progress("Agent handoff occurred.");
+      return progress("Working with a specialized agent.");
     case "reasoning_item_created":
-      return progress("Reasoning checkpoint recorded.");
+      return [];
     case "message_output_created":
-      return progress("Assistant message created.");
+      return [];
     default:
       return [];
   }
@@ -113,7 +136,10 @@ export function knowledgeAgentStreamEventsFromRunEvent(
   const type = stringValue(record.type);
 
   if (type === "agent_updated_stream_event") {
-    return progress(`Active agent: ${agentName(record.agent)}.`);
+    const name = agentName(record.agent);
+    return name.includes("Memory Curator")
+      ? progress("Reviewing memory.")
+      : progress("Working on the request.");
   }
 
   if (type === "run_item_stream_event") {
@@ -122,10 +148,7 @@ export function knowledgeAgentStreamEventsFromRunEvent(
 
   if (type === "raw_model_stream_event") {
     const modelEvent = modelEventFromRaw(record);
-    return [
-      ...progressFromModelEvent(modelEvent),
-      ...textDeltaFromModelEvent(modelEvent),
-    ];
+    return reasoningDeltaFromModelEvent(modelEvent);
   }
 
   return [];

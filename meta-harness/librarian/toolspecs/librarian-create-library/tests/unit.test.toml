@@ -1,0 +1,4 @@
+id = "librarian-create-library.unit.default-location"
+tool = "librarian_create_library"
+input_json = "{\"name\":\"example-library\",\"description\":\"Example Library.\"}"
+expected = "The tool creates a Library with a required description."

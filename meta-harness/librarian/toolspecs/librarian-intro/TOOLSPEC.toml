@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_intro"
+description = "Call this first before any other Librarian tool. Returns primitive onboarding content using the search result shape."
+implementation = "../../impl/src/intro-libraries.ts"
+allowed_actors = ["actor://*"]
+order = 10
+
+[input_schema]
+type = "object"
+required = []
+additional_properties = false
+properties_json = "{}"
+
+[output_schema]
+type = "object"
+description = "Primitive onboarding, Library creation, ToolSpec, and storage guidance content using the search result shape."
+
+[[test_cases]]
+id = "empty-input"
+input_json = "{}"
+expected = "Returns onboarding resources for primitive orientation, Library creation, ToolSpec, and storage guidance."

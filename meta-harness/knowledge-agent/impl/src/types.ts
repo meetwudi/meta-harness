@@ -48,11 +48,20 @@ export type KnowledgeAgentStreamEvent =
   | {
       type: "progress";
       message: string;
+      source?: KnowledgeAgentStreamSource;
+    }
+  | {
+      type: "reasoning_delta";
+      delta: string;
+      source?: KnowledgeAgentStreamSource;
     }
   | {
       type: "text_delta";
       delta: string;
+      source?: KnowledgeAgentStreamSource;
     };
+
+export type KnowledgeAgentStreamSource = string;
 
 export type ProviderRunOptions = {
   repoRoot: string;

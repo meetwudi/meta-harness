@@ -14,6 +14,24 @@ import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream
 import { knowledgeAgentSessionInputCallback } from "./knowledge-agent-session-input.js";
 import type { OpenAISandboxRunOptions } from "./types.js";
 
+function finalOutputText(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value === undefined || value === null) {
+    return "";
+  }
+  return JSON.stringify(value);
+}
+
+function chunkText(value: string, size = 1200): string[] {
+  const chunks: string[] = [];
+  for (let index = 0; index < value.length; index += size) {
+    chunks.push(value.slice(index, index + size));
+  }
+  return chunks;
+}
+
 /**
  * Executes the SandboxAgent run and returns the result together with trace metadata.
  */
@@ -43,10 +61,17 @@ export async function executeOpenAISandboxRun(
     const result = await run(agent, prompt, { ...runOptions, stream: true });
     for await (const event of result) {
       for (const streamEvent of knowledgeAgentStreamEventsFromRunEvent(event)) {
-        options.onStreamEvent(streamEvent);
+        options.onStreamEvent({ ...streamEvent, source: "main" });
       }
     }
     await result.completed;
+    for (const delta of chunkText(finalOutputText(result.finalOutput))) {
+      options.onStreamEvent({
+        type: "text_delta",
+        delta,
+        source: "main",
+      });
+    }
     return {
       result,
       trace: trace.toJSON(),

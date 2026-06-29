@@ -9,17 +9,31 @@ requirements = [
   "knowledge-agent.routine-handoffs",
   "knowledge-agent.goal-auditor-agent",
   "knowledge-agent.library-scoped-memory-curator",
+  "knowledge-agent.library-toolspec-openai-tools",
+  "knowledge-agent.youtube-transcript-toolspec-implementation",
+  "knowledge-agent.provider-stream-events",
 ]
 procedure = [
   "Create the hosted web search OpenAI tool through the Knowledge Agent web-search tool helper.",
   "Create the primary Knowledge Agent tool list through the primary tool assembly helper.",
+  "Seed a readable Library with a ToolSpec for `fetch_youtube_transcript` using implementation `builtin/fetch-youtube-transcript` and verify the primary tool assembly includes it for an allowed actor.",
+  "Inspect the ToolSpec OpenAI adapter and verify it delegates invocation to the generic ToolSpec implementation resolver without branching on YouTube-specific implementation tokens or file names.",
+  "Inspect the ToolSpec implementation resolver and verify implementation modules are dynamically imported from ToolSpec implementation references instead of statically imported at module load.",
   "Inspect Routine handoff assembly and verify it includes the web-search helper.",
   "Inspect Memory Curator and Goal Auditor assembly and verify they do not include the web-search helper.",
+  "Inspect main Knowledge Agent and Memory Curator streaming execution and verify stream events carry source context when stream events are enabled.",
+  "Inspect Knowledge Agent and Memory Curator model settings and verify both use the shared OpenAI reasoning settings helper.",
+  "Convert fixture provider stream events and verify model reasoning summary deltas, model output text deltas, and tool activity map to distinct public event types.",
 ]
 expected = [
   "The hosted web search tool has name `web_search`, provider type `web_search`, explicit external web access, and medium search context size.",
-  "The primary Knowledge Agent tool list includes `web_search`, `librarian_intro`, `goal_create`, and `conversation_state_update`.",
+  "The primary Knowledge Agent tool list includes `web_search`, `librarian_intro`, `goal_create`, `conversation_state_update`, and the allowed discovered ToolSpec tool.",
+  "The ToolSpec OpenAI adapter contains no per-tool hard-coded implementation branch for the YouTube transcript tool.",
+  "Implementation modules are not top-level loaded by generic ToolSpec tool assembly; they are loaded lazily behind the discovered allowed ToolSpec invocation path.",
   "Routine handoff agents include hosted web search.",
   "Memory Curator mode does not include hosted web search.",
+  "Main Knowledge Agent and Memory Curator mode stream through the same public provider stream-event converter with distinct source context when stream events are enabled.",
+  "Knowledge Agent and Memory Curator mode request safe OpenAI reasoning summaries through shared reasoning settings.",
   "Goal Auditor mode does not include hosted web search.",
+  "Model reasoning summary text maps to `reasoning_delta`, model output text maps to `text_delta`, and tool activity maps to `progress`.",
 ]

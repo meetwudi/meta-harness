@@ -3,11 +3,11 @@
 A Spec is a modular requirement map.
 
 Specs live in a Library. `SPEC.toml` marks a place as a Spec primitive and
-points agents to requirement collections, acceptance-test collections, and any
+points agents to requirement collections, integration-test collections, and any
 test guidance or executable test maps the Spec declares.
 
 A Spec is not a long prose document. It is a structured map to smaller,
-citable requirement files and separate acceptance-test files.
+citable requirement files and implementation-facing integration-test files.
 
 ## Shape
 
@@ -17,8 +17,6 @@ citable requirement files and separate acceptance-test files.
   SPEC.toml
   requirements/
     {requirement-id}.toml
-  acceptance-tests/
-    {acceptance-test-id}.toml
   test-guidelines/
     integration.md
   integration-tests/
@@ -58,7 +56,6 @@ Generated file. Do not edit directly; update the Spec first.
 - `version`
 - `source`
 - `[[requirement_collections]]`
-- `[[acceptance_test_collections]]`
 
 `SPEC.toml` may also include:
 
@@ -75,10 +72,6 @@ source = "Human request captured on 2026-06-17."
 [[requirement_collections]]
 name = "requirements"
 location = "requirements"
-
-[[acceptance_test_collections]]
-name = "acceptance-tests"
-location = "acceptance-tests"
 
 [[test_guideline_collections]]
 name = "test-guidelines"
@@ -118,34 +111,10 @@ Use lowercase dotted identifiers, such as:
 knowledge-agent.storage-discovery-runtime
 ```
 
-## Acceptance Tests
-
-Acceptance-test files are separate from requirements because one acceptance test
-may verify one requirement or a collection of requirements.
-
-Acceptance-test files are source-governed. AI agents must not create, infer,
-split, merge, elaborate, add, change, or delete acceptance tests unless a human
-explicitly requests or approves that acceptance-test change, or the
-acceptance-test content is already present in sourced material. When permitted,
-transcribe acceptance tests while preserving the human- or source-stated
-procedure and expected behavior.
-
-Acceptance tests must live outside the requirements folder.
-
-Each acceptance-test file includes:
-
-- `id`
-- `title`
-- `requirements`
-- `procedure`
-- `expected`
-
-The `requirements` field contains requirement IDs.
-
 ## Test Guidelines
 
 Specs may include test-guideline collections for guidance that applies across
-integration and acceptance tests.
+integration tests.
 
 Guideline files may be Markdown when the guidance is prose. Test guidelines
 should explain testing style, boundaries, fixtures, storage setup, and when to
@@ -176,7 +145,7 @@ Implementation code cites requirements with this parseable token:
 Harness-Requirement: <requirement-id>
 ```
 
-Acceptance-test files do not satisfy implementation citation coverage.
+Acceptance primitives do not satisfy implementation citation coverage.
 
 Pre-commit hooks and repository checks should fail when a requirement lacks an
 implementation citation in checked implementation code.
@@ -185,7 +154,6 @@ implementation citation in checked implementation code.
 
 Spec updates are spec-first. Update `SPEC.toml` and human-listed requirements
 before implementation code when behavior, interfaces, prompts, provider
-choices, runtime rules, or validation expectations change. Update acceptance
-tests only when the acceptance-test change is human-requested, human-approved,
-or already sourced. Update test guidelines or integration tests when those
-expectations change.
+choices, runtime rules, or validation expectations change. Update test
+guidelines or integration tests when those expectations change. Use the
+Acceptance primitive for end-to-end acceptance scenarios.

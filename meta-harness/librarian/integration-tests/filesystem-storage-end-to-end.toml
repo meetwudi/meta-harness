@@ -4,6 +4,9 @@ requirements = [
   "librarian.shamanistic-library-tools",
   "librarian.tool-descriptor-registry",
   "librarian.tool-router",
+  "librarian.toolspec-backed-agent-tools",
+  "librarian.toolspec-actor-invocation",
+  "librarian.intro-toolspec-knowledge",
   "librarian.library-uri-verification",
   "librarian.tool-librarian-intro",
   "librarian.tool-librarian-list-libraries",
@@ -80,7 +83,7 @@ procedure = [
 ]
 expected = [
   "Library listing returns exactly the four storage-discovered Libraries with name, URI, description, isSystemLibrary, readable, writable, and deletable.",
-  "Intro returns primitive onboarding, Library creation protocol, and storage guidance content in the same result shape as search.",
+  "Intro returns primitive onboarding, Library creation protocol, ToolSpec guidance, and storage guidance content in the same result shape as search.",
   "Non-recursive file listing returns direct file resource URIs under the requested URI.",
   "Recursive file listing returns nested file resource URIs under the requested URI.",
   "`library://fixture-manual` is readable and not writable for `actor://knowledge-agent`.",

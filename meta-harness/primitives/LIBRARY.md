@@ -8,7 +8,7 @@ Storage discovery says where the place is. The place itself carries the
 knowledge.
 
 Libraries organize knowledge, including Routines, Goals, Memory, Compliance,
-Specs, and Tags.
+Specs, Acceptance suites, ToolSpecs, and Tags.
 
 ## Discovery
 
@@ -18,8 +18,9 @@ Library manifests.
 Every filesystem Library root must contain `LIBRARY.toml`. The manifest names
 the Library and describes that place's access governance.
 
-A Library may contain Routines, Goals, Memory, Compliance, Specs, Tags,
-references, and other Libraries; the place's own files define what is inside.
+A Library may contain Routines, Goals, Memory, Compliance, Specs, Acceptance
+suites, ToolSpecs, Tags, references, and other Libraries; the place's own files
+define what is inside.
 
 ## Definition
 

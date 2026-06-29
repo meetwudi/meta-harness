@@ -1,6 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.routine-handoffs: creates OpenAI Agents SDK handoffs for Meta Harness Routines.
 // Supports knowledge-agent.web-search-tool: attaches hosted web search to Routine handoff agents.
+// Supports knowledge-agent.provider-stream-events: requests safe reasoning summaries for Routine handoff streaming.
 
 import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
 import {
@@ -17,6 +18,7 @@ import { createRoutineLibrarianContext } from "./create-routine-librarian-contex
 import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
 import { discoverRepositoryRoutines } from "./discover-repository-routines.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
+import { openAIReasoningSettings } from "./openai-reasoning-settings.js";
 import type { ReasoningEffort } from "./types.js";
 
 /**
@@ -45,9 +47,7 @@ export function createRoutineHandoffAgents(input: {
       handoffDescription: `Execute Meta Harness Routine ${routine.name}: ${routine.purpose}`,
       model: input.model,
       modelSettings: {
-        reasoning: {
-          effort: input.reasoningEffort,
-        },
+        reasoning: openAIReasoningSettings(input.reasoningEffort),
       },
       instructions: [
         RECOMMENDED_PROMPT_PREFIX,

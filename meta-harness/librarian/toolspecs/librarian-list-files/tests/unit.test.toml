@@ -1,0 +1,4 @@
+id = "librarian-list-files.unit.direct"
+tool = "librarian_list_files"
+input_json = "{\"uri\":\"library://example\",\"recursive\":false}"
+expected = "The tool lists direct Library file resource URIs."

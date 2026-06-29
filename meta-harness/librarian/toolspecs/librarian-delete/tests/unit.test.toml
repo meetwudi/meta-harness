@@ -1,0 +1,4 @@
+id = "librarian-delete.unit.resource"
+tool = "librarian_delete"
+input_json = "{\"uri\":\"library://example/path.md\"}"
+expected = "The tool deletes a writable file or folder resource."

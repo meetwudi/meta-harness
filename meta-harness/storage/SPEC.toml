@@ -9,7 +9,3 @@ source = "Human-listed Storage requirements captured starting on 2026-06-20, inc
 [[requirement_collections]]
 name = "requirements"
 location = "requirements"
-
-[[acceptance_test_collections]]
-name = "acceptance-tests"
-location = "acceptance-tests"

@@ -6,6 +6,7 @@
 // Supports knowledge-agent.goal-auditor-agent: renders the shared prompt in Goal Audit mode.
 // Supports knowledge-agent.goal-shared-interface: tells agents to use shared Goal tools.
 // Supports knowledge-agent.conversation-state: injects generated TOML conversation state into the prompt.
+// Supports knowledge-agent.library-toolspec-openai-tools: renders active actor identity for ToolSpec allowed_actors.
 
 import type { ProviderRunOptions } from "./types.js";
 import type { RoutineDefinition } from "./routine-definition.js";
@@ -17,6 +18,7 @@ export type KnowledgeAgentPromptOptions = Pick<
   ProviderRunOptions,
   "goal" | "repoRoot"
 > & {
+  librarianContext?: Pick<ProviderRunOptions["librarianContext"], "actorUri" | "actorUris">;
   conversationState?: Pick<ProviderRunOptions["conversationState"], "promptToml">;
   memoryCuratorMode?: {
     actorUri: string;
@@ -51,6 +53,12 @@ export function buildKnowledgeAgentPrompt(
   return Mustache.render(template, {
     goal: options.goal,
     conversationStateToml: options.conversationState?.promptToml ?? "",
+    activeActor: options.librarianContext
+      ? {
+        actorUri: options.librarianContext.actorUri,
+        actorUris: options.librarianContext.actorUris.join(", "),
+      }
+      : false,
     memoryCuratorMode: options.memoryCuratorMode ?? false,
     routine: options.routine
       ? {

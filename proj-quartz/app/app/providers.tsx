@@ -1,7 +1,7 @@
 "use client";
 
-import { HttpAgent, type AgentSubscriber } from "@ag-ui/client";
-import type { Message, RunAgentInput } from "@ag-ui/core";
+import { HttpAgent } from "@ag-ui/client";
+import type { RunAgentInput } from "@ag-ui/core";
 import { CopilotKit } from "@copilotkit/react-core/v2";
 import {
   createContext,
@@ -75,44 +75,6 @@ function withQuartzChatConfig(
   return agent;
 }
 
-function latestReasoningStatus(delta: string): string {
-  const parts = delta
-    .split("\n")
-    .map((part) => part.trim())
-    .filter(Boolean);
-  return parts.at(-1) ?? delta.trim();
-}
-
-function withLiveReasoningStatus(agent: HttpAgent) {
-  const subscriber: AgentSubscriber = {
-    onReasoningMessageContentEvent({ event, messages }) {
-      const status = latestReasoningStatus(event.delta);
-      if (!status) {
-        return { stopPropagation: true };
-      }
-
-      const nextMessages = messages.map((message): Message => {
-        if (message.id !== event.messageId || message.role !== "reasoning") {
-          return message as Message;
-        }
-
-        return {
-          ...message,
-          content: status,
-        } as Message;
-      });
-
-      return {
-        messages: nextMessages,
-        stopPropagation: true,
-      };
-    },
-  };
-
-  agent.subscribe(subscriber);
-  return agent;
-}
-
 export function useReasoningEffort() {
   const context = useContext(ReasoningEffortContext);
   if (!context) {
@@ -138,6 +100,7 @@ function isModelOption(value: unknown): value is ModelOption {
 
 // Harness-Requirement: proj-quartz.knowledge-agent-chat-service
 // Harness-Requirement: proj-quartz.reasoning-effort-selector
+// Harness-Requirement: proj-quartz.reasoning-event-rendering
 // Harness-Requirement: proj-quartz.model-selector
 export function Providers({ children }: { children: React.ReactNode }) {
   const [reasoningEffort, setReasoningEffort] =
@@ -195,25 +158,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   const agents = useMemo(
     () => ({
-      default: withLiveReasoningStatus(
-        withQuartzChatConfig(
-          new HttpAgent({
-            agentId: "default",
-            url: "/api/knowledge-agent",
-          }),
-          () => reasoningEffortRef.current,
-          () => selectedModelRef.current,
-        ),
+      default: withQuartzChatConfig(
+        new HttpAgent({
+          agentId: "default",
+          url: "/api/knowledge-agent",
+        }),
+        () => reasoningEffortRef.current,
+        () => selectedModelRef.current,
       ),
-      "knowledge-agent": withLiveReasoningStatus(
-        withQuartzChatConfig(
-          new HttpAgent({
-            agentId: "knowledge-agent",
-            url: "/api/knowledge-agent",
-          }),
-          () => reasoningEffortRef.current,
-          () => selectedModelRef.current,
-        ),
+      "knowledge-agent": withQuartzChatConfig(
+        new HttpAgent({
+          agentId: "knowledge-agent",
+          url: "/api/knowledge-agent",
+        }),
+        () => reasoningEffortRef.current,
+        () => selectedModelRef.current,
       ),
     }),
     [],

@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_query_by_tags"
+description = "Query readable Library knowledge scopes by structured tag filters from TAGS.toml records. Searches all readable Libraries unless exact libraryUris or wildcard libraryUriPatterns filters are supplied."
+implementation = "../../impl/src/query-by-tags.ts"
+allowed_actors = ["actor://*"]
+order = 120
+
+[input_schema]
+type = "object"
+required = ["tags"]
+additional_properties = false
+properties_json = "{\"libraryUris\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"libraryUriPatterns\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"tags\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"match\":{\"type\":\"string\",\"enum\":[\"all\",\"any\"]},\"limit\":{\"type\":\"number\"}}"
+
+[output_schema]
+type = "object"
+description = "Matching tagged knowledge scopes with canonical Library resource URIs and matched tags."
+
+[[test_cases]]
+id = "query-tags"
+input_json = "{\"tags\":[\"research\"],\"match\":\"all\"}"
+expected = "Returns readable scopes whose independent TAGS.toml records match the requested tag filters."

@@ -1,9 +1,10 @@
 id = "librarian.tool-descriptor-registry"
 title = "Librarian tool descriptor registry"
-source = "Human request on 2026-06-23 to spec each provided agent tool and the file that puts the tools together, applied to the observed Librarian tool descriptor registry."
-text = "Librarian has a Spec-backed descriptor registry for every Librarian tool exposed to agents."
+source = "Human request on 2026-06-23 to spec each provided agent tool and the file that puts the tools together, applied to the observed Librarian tool descriptor registry. Updated by human request on 2026-06-27 to migrate Librarian tools into ToolSpec primitives."
+text = "Librarian has a ToolSpec-backed descriptor registry for every Librarian tool exposed to agents."
 clarifications = [
   "The descriptor registry lists the exact agent-facing Librarian tool names, descriptions, and JSON parameter schemas.",
   "The registry includes `librarian_intro`, `librarian_list_libraries`, `librarian_read`, `librarian_list_files`, `librarian_search`, `librarian_update`, `librarian_create_library`, `librarian_delete`, `librarian_delete_library`, `librarian_add_tags`, `librarian_remove_tags`, and `librarian_query_by_tags` for the current implemented tool surface.",
+  "The registry derives agent-facing names, descriptions, and JSON parameter schemas from ToolSpec primitives.",
   "Tags tools include Spec-backed parameter schemas.",
 ]

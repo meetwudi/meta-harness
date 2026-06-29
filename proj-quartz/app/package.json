@@ -7,6 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:conversations": "../../meta-harness/knowledge-agent/impl/node_modules/.bin/tsx app/api/knowledge-agent/conversations/route.test.ts",
+    "test:streaming": "../../meta-harness/knowledge-agent/impl/node_modules/.bin/tsx app/api/knowledge-agent/stream-response.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "overrides": {

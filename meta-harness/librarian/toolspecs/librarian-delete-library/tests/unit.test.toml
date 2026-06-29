@@ -1,0 +1,4 @@
+id = "librarian-delete-library.unit.library"
+tool = "librarian_delete_library"
+input_json = "{\"uri\":\"library://example\"}"
+expected = "The tool deletes an exact governed Library URI."

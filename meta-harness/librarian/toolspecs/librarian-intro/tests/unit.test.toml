@@ -1,0 +1,4 @@
+id = "librarian-intro.unit.empty-input"
+tool = "librarian_intro"
+input_json = "{}"
+expected = "The tool returns onboarding knowledge before other Librarian operations."

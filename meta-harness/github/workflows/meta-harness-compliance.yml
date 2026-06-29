@@ -31,6 +31,10 @@ jobs:
         run: |
           python3 meta-harness/tools/check-skill-definitions
 
+      - name: Verify ToolSpec definitions
+        run: |
+          python3 meta-harness/tools/check-toolspec-definitions
+
       - name: Verify harness file metadata
         run: |
           python3 meta-harness/tools/check-harness-file-metadata

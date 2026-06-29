@@ -6,6 +6,9 @@
 // Supports librarian.tool-librarian-remove-tags: verifies Tags can be removed from a writable scope.
 // Supports librarian.tool-librarian-query-by-tags: verifies Tags can be queried structurally.
 // Supports librarian.tool-librarian-delete: verifies file and folder resources can be deleted from writable Libraries.
+// Supports librarian.toolspec-backed-agent-tools: verifies ToolSpecs back the Librarian descriptor registry.
+// Supports librarian.toolspec-actor-invocation: verifies ToolSpec actor matching.
+// Supports librarian.intro-toolspec-knowledge: verifies intro returns ToolSpec guidance.
 // Supports librarian.library-uri-verification: verifies malformed or unresolved exact Library URIs fail.
 // Harness-Requirement: storage.actor-granted-location-access
 // Harness-Requirement: storage.driver-capabilities
@@ -17,11 +20,16 @@ import { createLibrarianContext } from "./create-librarian-context.js";
 import { createLocalFileSystemStorage } from "./create-local-file-system-storage.js";
 import { executeLibrarianTool } from "./execute-librarian-tool.js";
 import { librarianToolDescriptors } from "./librarian-tool-descriptors.js";
+import {
+  librarianToolSpecs,
+  toolSpecAllowsActor,
+} from "./librarian-toolspecs.js";
 
 const storageRoot = await mkdtemp(join(tmpdir(), "librarian-integration-"));
 const createdStorageRoot = await mkdtemp(join(tmpdir(), "librarian-created-"));
 const librariesRoot = join(storageRoot, "libraries");
 const metaHarnessRoot = join(librariesRoot, "meta-harness");
+const metaHarnessPrimitivesRoot = join(metaHarnessRoot, "primitives");
 const metaHarnessSetupRoot = join(metaHarnessRoot, "setup");
 const metaHarnessStorageRoot = join(metaHarnessRoot, "storage");
 const manualRoot = join(librariesRoot, "manual");
@@ -32,6 +40,7 @@ const createdRoot = join(createdLibrariesRoot, "tmp-created-library");
 const storage = createLocalFileSystemStorage();
 
 await storage.makeDirectory(metaHarnessSetupRoot);
+await storage.makeDirectory(metaHarnessPrimitivesRoot);
 await storage.makeDirectory(metaHarnessStorageRoot);
 await storage.makeDirectory(manualDocsRoot);
 await storage.makeDirectory(memoryRoot);
@@ -136,6 +145,10 @@ await writeFile(
   "Library creation protocol fixture.\n",
 );
 await writeFile(
+  join(metaHarnessPrimitivesRoot, "TOOLSPEC.md"),
+  "ToolSpec guidance fixture.\n",
+);
+await writeFile(
   join(metaHarnessStorageRoot, "STORAGE.md"),
   "Storage guidance fixture.\n",
 );
@@ -233,6 +246,26 @@ const expectedDescriptorNames = [
 ];
 if (descriptorNames.join(",") !== expectedDescriptorNames.join(",")) {
   throw new Error(`Unexpected Librarian tool descriptors: ${descriptorNames.join(",")}`);
+}
+const toolSpecs = librarianToolSpecs();
+if (toolSpecs.map((toolSpec) => toolSpec.name).join(",") !== expectedDescriptorNames.join(",")) {
+  throw new Error(`Unexpected Librarian ToolSpecs: ${toolSpecs.map((toolSpec) => toolSpec.name).join(",")}`);
+}
+if (!toolSpecs.every((toolSpec) => toolSpec.testCases.length > 0)) {
+  throw new Error("Every Librarian ToolSpec must include at least one test case");
+}
+const readToolSpec = toolSpecs.find((toolSpec) => toolSpec.name === "librarian_read");
+if (!readToolSpec) {
+  throw new Error("Missing librarian_read ToolSpec");
+}
+if (!readToolSpec.implementation.endsWith("read-library-file.ts")) {
+  throw new Error("librarian_read ToolSpec did not reference the generated implementation file");
+}
+if (!toolSpecAllowsActor(readToolSpec, ["actor://knowledge-agent"])) {
+  throw new Error("ToolSpec actor governance did not allow knowledge-agent");
+}
+if (toolSpecAllowsActor({ allowedActors: ["actor://allowed/*"] }, ["actor://blocked"])) {
+  throw new Error("ToolSpec actor governance allowed a non-matching actor");
 }
 
 const intro = await executeLibrarianTool(context, "librarian_intro", {});
@@ -411,6 +444,9 @@ if (!introJson.includes('"uri":"library://meta-harness/setup/PRIMITIVE-ORIENTATI
 if (!introJson.includes('"uri":"library://meta-harness/setup/LIBRARY-CREATION.md"')) {
   throw new Error("Intro did not point to Library creation protocol");
 }
+if (!introJson.includes('"uri":"library://meta-harness/primitives/TOOLSPEC.md"')) {
+  throw new Error("Intro did not point to ToolSpec guidance");
+}
 if (!introJson.includes('"uri":"library://meta-harness/storage/STORAGE.md"')) {
   throw new Error("Intro did not point to storage guidance");
 }
@@ -419,6 +455,9 @@ if (!introJson.includes("Primitive orientation fixture.")) {
 }
 if (!introJson.includes("Library creation protocol fixture.")) {
   throw new Error("Intro did not return Library creation protocol content");
+}
+if (!introJson.includes("ToolSpec guidance fixture.")) {
+  throw new Error("Intro did not return ToolSpec guidance content");
 }
 if (!introJson.includes("Storage guidance fixture.")) {
   throw new Error("Intro did not return storage guidance content");

@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_update"
+description = "Write a file into a writable Library by resource URI."
+implementation = "../../impl/src/update-library-file.ts"
+allowed_actors = ["actor://*"]
+order = 60
+
+[input_schema]
+type = "object"
+required = ["uri", "content"]
+additional_properties = false
+properties_json = "{\"uri\":{\"type\":\"string\"},\"content\":{\"type\":\"string\"}}"
+
+[output_schema]
+type = "object"
+description = "Canonical resource URI, public Library listing, and bytes written."
+
+[[test_cases]]
+id = "write-resource"
+input_json = "{\"uri\":\"library://example/path.md\",\"content\":\"hello\"}"
+expected = "Writes the requested Library resource when it resolves and is writable."

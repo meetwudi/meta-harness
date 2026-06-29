@@ -2,6 +2,7 @@
 // Supports librarian.shamanistic-library-tools: executes Librarian tools by name.
 // Supports librarian.tool-call-observability: records every Librarian tool call.
 // Supports librarian.tool-router: routes each agent-facing Librarian tool.
+// Supports librarian.toolspec-actor-invocation: enforces ToolSpec allowed actors before invocation.
 // Supports librarian.tool-librarian-add-tags: routes the add Tags tool.
 // Supports librarian.tool-librarian-remove-tags: routes the remove Tags tool.
 // Supports librarian.tool-librarian-query-by-tags: routes the query by Tags tool.
@@ -12,6 +13,10 @@ import { createLibraryInStorageLocation } from "./create-library-in-storage-loca
 import { deleteLibrary } from "./delete-library.js";
 import { deleteLibraryResource } from "./delete-library-resource.js";
 import { introLibraries } from "./intro-libraries.js";
+import {
+  librarianToolSpecByName,
+  toolSpecAllowsActor,
+} from "./librarian-toolspecs.js";
 import { listLibraryFiles } from "./list-library-files.js";
 import { listLibraries } from "./list-libraries.js";
 import { queryByTags } from "./query-by-tags.js";
@@ -30,6 +35,15 @@ export async function executeLibrarianTool(
   toolName: string,
   input: Record<string, unknown>,
 ): Promise<unknown> {
+  const toolSpec = librarianToolSpecByName(toolName);
+  if (!toolSpec) {
+    throw new Error(`Unknown Librarian tool: ${toolName}`);
+  }
+  if (!toolSpecAllowsActor(toolSpec, context.actorUris)) {
+    throw new Error(
+      `Librarian tool ${toolName} is not allowed for active actors: ${context.actorUris.join(", ")}`,
+    );
+  }
   let output: unknown;
   if (toolName === "librarian_intro") {
     output = await introLibraries(context);
@@ -94,7 +108,7 @@ export async function executeLibrarianTool(
       limit: typeof input.limit === "number" ? input.limit : undefined,
     });
   } else {
-    throw new Error(`Unknown Librarian tool: ${toolName}`);
+    throw new Error(`No Librarian implementation routed for ToolSpec tool: ${toolName}`);
   }
   recordToolCall(context, toolName, input, output);
   return output;

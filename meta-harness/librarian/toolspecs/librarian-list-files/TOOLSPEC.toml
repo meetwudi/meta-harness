@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_list_files"
+description = "List file resource URIs under a readable Library URI or Library folder URI, optionally recursively."
+implementation = "../../impl/src/list-library-files.ts"
+allowed_actors = ["actor://*"]
+order = 40
+
+[input_schema]
+type = "object"
+required = ["uri"]
+additional_properties = false
+properties_json = "{\"uri\":{\"type\":\"string\"},\"recursive\":{\"type\":\"boolean\"}}"
+
+[output_schema]
+type = "object"
+description = "Canonical listed Library resource URIs under the requested scope."
+
+[[test_cases]]
+id = "list-direct-files"
+input_json = "{\"uri\":\"library://example\",\"recursive\":false}"
+expected = "Returns direct file resource URIs under the requested Library scope."

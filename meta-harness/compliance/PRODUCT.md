@@ -15,5 +15,5 @@ to turn them into requirements or the source material already contains
 requirement-shaped structure.
 
 Product requirements are recorded modularly and must trace to sourced material.
-Acceptance tests are added, changed, or deleted only when the acceptance-test
+Acceptance scenarios are added, changed, or deleted only when the acceptance
 change is human-requested, human-approved, or already sourced.

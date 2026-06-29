@@ -1,0 +1,55 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "storage-acceptance"
+version = "v0.0.0"
+source = "Migrated on 2026-06-28 from Spec-owned Storage acceptance-test files after human direction to make Acceptance a separate primitive."
+scope = [
+  "meta-harness/storage/**",
+]
+trigger = "Run the applicable Storage acceptance scenarios when scoped Storage files change or when a human asks to run Storage acceptance."
+
+[[tests]]
+id = "storage.acceptance.storage-model-review"
+title = "Storage model review"
+requirements = [
+  "storage.shared-driver-interface",
+  "storage.driver-unit-operations",
+  "storage.driver-query",
+  "storage.query-by-tags",
+  "storage.driver-capabilities",
+  "storage.actor-granted-location-access",
+  "storage.storage-location",
+  "storage.storage-location-description",
+  "storage.storage-location-knowledge",
+  "storage.storage-library-discovery",
+  "storage.storage-agent-guidance",
+  "storage.all-known-storage-locations",
+  "storage.library-creation-target-location",
+  "storage.location-library-placement",
+]
+circumstances = []
+procedure = [
+  "Review the Storage Spec requirements before implementing storage changes.",
+  "Check that storage driver and storage location are separate concepts.",
+  "Check that storage driver requirements cover shared interface, unit operations, query, and capability reporting.",
+  "Check that storage query behavior covers structured query by tags over tag records.",
+  "Check that storage location requirements cover named configured places and purpose descriptions.",
+  "Check that storage location definitions can live in structured knowledge.",
+  "Check that storage location access is expressed with actor URI grants instead of standalone readable or writable booleans.",
+  "Check that storage locations define Library discovery within a query scope.",
+  "Check that storage knowledge includes agent-readable guidance.",
+  "Check that storage locations include known places where Libraries live.",
+  "Check that Library creation targets a storage location.",
+]
+expected = [
+  "The spec distinguishes storage drivers from storage locations.",
+  "The spec is reviewable before implementation code changes.",
+  "The spec covers storage locations as materialized knowledge.",
+  "The spec covers actor-granted storage location access.",
+  "The spec covers storage-backed Library discovery.",
+  "The spec covers storage support for structured query by tags.",
+  "The spec covers storage guidance as Library knowledge agents can read.",
+  "The spec covers Library places with read and write grants as storage locations.",
+  "The spec covers how Library creation selects a storage location.",
+]

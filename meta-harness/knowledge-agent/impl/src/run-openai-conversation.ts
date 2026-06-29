@@ -22,6 +22,7 @@ import { createSandboxClient } from "./create-sandbox-client.js";
 import { createRoutineHandoffAgents } from "./create-routine-handoff-agents.js";
 import { executeOpenAISandboxRun } from "./execute-openai-sandbox-run.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
+import { openAIReasoningSettings } from "./openai-reasoning-settings.js";
 import { runMemoryCurator } from "./run-memory-curator.js";
 import type { ProviderRunOptions } from "./types.js";
 
@@ -48,13 +49,15 @@ export async function runOpenAIConversation(
     manifest,
     librarianContext: options.librarianContext,
   });
+  const tools = await createKnowledgeAgentOpenAITools({
+    conversationState: options.conversationState,
+    librarianContext: options.librarianContext,
+  });
   const agent = new SandboxAgent({
     name: "Meta Harness Knowledge Agent",
     model: options.model,
     modelSettings: {
-      reasoning: {
-        effort: options.reasoningEffort,
-      },
+      reasoning: openAIReasoningSettings(options.reasoningEffort),
     },
     instructions: [
       RECOMMENDED_PROMPT_PREFIX,
@@ -67,10 +70,7 @@ export async function runOpenAIConversation(
       ...routineHandoffs,
       goalAuditorHandoff,
     ],
-    tools: createKnowledgeAgentOpenAITools({
-      conversationState: options.conversationState,
-      librarianContext: options.librarianContext,
-    }),
+    tools,
     defaultManifest: manifest,
     capabilities: knowledgeAgentCapabilities(),
   });
@@ -89,12 +89,14 @@ export async function runOpenAIConversation(
   await getGlobalTraceProvider().forceFlush();
   options.onStreamEvent?.({
     type: "progress",
-    message: "Memory curator started.",
+    message: "Reviewing memory.",
+    source: "memory_curator",
   });
   const memoryCurator = await runMemoryCurator(options);
   options.onStreamEvent?.({
     type: "progress",
-    message: "Memory curator finished.",
+    message: "Memory review complete.",
+    source: "memory_curator",
   });
   return {
     ...tracedResult,

@@ -1,0 +1,9 @@
+id = "librarian.toolspec-actor-invocation"
+title = "ToolSpec actor invocation governance"
+source = "Human request on 2026-06-27: each ToolSpec should include allowed actors, with actor glob patterns supported, so only allowed actors can invoke the tool."
+text = "Librarian enforces each ToolSpec's allowed actor URI glob patterns before invoking that tool."
+clarifications = [
+  "ToolSpec actor patterns use the same `actor://` URI glob pattern style as Library governance.",
+  "Invocation is allowed when any active actor identity for the current Librarian context matches any ToolSpec `allowed_actors` pattern.",
+  "When no active actor identity matches, the tool invocation fails clearly instead of routing to the implementation.",
+]

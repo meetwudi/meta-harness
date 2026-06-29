@@ -3,12 +3,12 @@
 
 name = "proj-quartz"
 version = "v0.0.0"
-source = "Human request on 2026-06-25 to add a project-local harness for PROJ-Quartz, including use of Meta Harness Postgres-backed Libraries through the Library interface, local Docker-oriented Postgres deployment, project-owned runtime configuration, no Quartz local Library storage, follow-up chat context for short confirmations, medium-default reasoning effort selectable from the chat, Information Trading project positioning captured on 2026-06-26, Quartz actor/no-general-memory direction captured on 2026-06-26, default DB-backed Library creation, Quartz Memory Curator actor, natural-language stock memory setup captured on 2026-06-26, and vendored chat UI plus ChatGPT-style model/reasoning controls and reasoning rendering captured on 2026-06-27."
+source = "Human request on 2026-06-25 to add a project-local harness for PROJ-Quartz, including use of Meta Harness Postgres-backed Libraries through the Library interface, local Docker-oriented Postgres deployment, project-owned runtime configuration, no Quartz local Library storage, follow-up chat context for short confirmations, medium-default reasoning effort selectable from the chat, Information Trading project positioning captured on 2026-06-26, Quartz actor/no-general-memory direction captured on 2026-06-26, default DB-backed Library creation, Quartz Memory Curator actor, natural-language stock memory setup captured on 2026-06-26, vendored chat UI plus ChatGPT-style model/reasoning controls and reasoning rendering captured on 2026-06-27, YouTube transcript ToolSpec creation flow captured on 2026-06-27, ChatGPT-style conversation sidebar/history captured on 2026-06-27, chat URL/home-submit routing captured on 2026-06-28, and persistent source-labeled reasoning history plus authorized governed conversation clearing captured on 2026-06-28."
 
 [[requirement_collections]]
 name = "requirements"
 location = "requirements"
 
-[[acceptance_test_collections]]
-name = "acceptance-tests"
-location = "acceptance-tests"
+[[integration_test_collections]]
+name = "integration-tests"
+location = "integration-tests"

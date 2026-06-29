@@ -1,0 +1,245 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "knowledge-agent-acceptance"
+version = "v0.0.0"
+source = "Migrated on 2026-06-28 from Spec-owned Knowledge Agent acceptance-test files after human direction to make Acceptance a separate primitive. Updated by human review on 2026-06-28 to remove low-value scenarios and make Goal, Memory, and dynamic ToolSpec acceptance messages concrete."
+scope = [
+  "meta-harness/knowledge-agent/**",
+]
+trigger = "Run the applicable Knowledge Agent acceptance scenarios when scoped Knowledge Agent files change or when a human asks to run Knowledge Agent acceptance."
+
+[[tests]]
+id = "knowledge-agent.acceptance.conversation-state"
+title = "Conversation state"
+requirements = [
+  "knowledge-agent.conversation-state",
+  "knowledge-agent.conversation-turns",
+  "knowledge-agent.harness-owned-session",
+  "knowledge-agent.uses-librarian",
+]
+circumstances = []
+procedure = [
+  "Start a fresh Knowledge Agent conversation.",
+  "Ask the agent to create a Library.",
+  "Ask the agent to tag that Library.",
+  "Ask the agent to query Libraries by that tag.",
+  "Inspect the conversation Library turn records and latest conversation state.",
+]
+expected = [
+  "Each turn record stores the TOML conversation state injected into that turn.",
+  "The rendered prompt for each turn includes the same TOML conversation state stored for that turn.",
+  "The conversation root stores the latest TOML conversation state for the next turn.",
+  "The conversation root stores `conversation-state-history.toml` with before and after state snapshot entries for each turn.",
+  "State history entries reference per-turn state file paths and checksums without duplicating state TOML content.",
+  "The latest conversation state contains `actor_uri`.",
+  "The created Library appears as a repeated `[[mentioned_library]]` entry after the turn that creates or mentions it.",
+  "Mentioned Library entries contain `uri` and do not duplicate Library contents.",
+  "The tag query returns the Library that was tagged.",
+]
+
+[[tests]]
+id = "knowledge-agent.acceptance.goal-primitive-lifecycle"
+title = "Goal primitive lifecycle"
+requirements = [
+  "knowledge-agent.goal-primitive",
+  "knowledge-agent.goal-location-knowledge-driven",
+  "knowledge-agent.goal-clarification-loop",
+  "knowledge-agent.goal-progress-grounding",
+  "knowledge-agent.goal-routine-relationship",
+  "knowledge-agent.goal-query-interface",
+  "knowledge-agent.goal-frameworks-are-knowledge",
+  "knowledge-agent.goal-auditor-agent",
+  "knowledge-agent.goal-shared-interface",
+  "knowledge-agent.goal-update-interface",
+  "knowledge-agent.goal-audit-lifecycle",
+  "knowledge-agent.tool-goal-registry",
+  "knowledge-agent.tool-goal-create",
+  "knowledge-agent.tool-goal-update",
+  "knowledge-agent.tool-goal-request-audit",
+  "knowledge-agent.tool-goal-list",
+  "knowledge-agent.tool-goal-complete-audit",
+  "knowledge-agent.handoff-routine-agent",
+  "knowledge-agent.handoff-goal-auditor",
+  "knowledge-agent.agent-tool-assembly",
+  "knowledge-agent.prompt-calls-librarian-intro",
+  "knowledge-agent.uses-librarian",
+  "knowledge-agent.storage-discovery-runtime",
+  "knowledge-agent.storage-agnostic-runtime",
+]
+circumstances = [
+  "Run Knowledge Agent with a writable storage location where it may create a new Library and Goal record.",
+  "Use the date on the day the acceptance test is run as the expected date value.",
+]
+procedure = [
+  "Start a fresh Knowledge Agent conversation without an initial explicit Goal.",
+  "Send this exact user message: `Create a new Library named date-goal-acceptance for acceptance evidence. Then create a Goal whose desired outcome is: write today's date into library://date-goal-acceptance/today.md. Pursue the Goal immediately, update it with evidence, and request independent audit when the evidence is sufficient.`",
+  "If the agent asks for a human-facing Library description, answer: `Use it for Goal acceptance evidence.`",
+  "Let the main Knowledge Agent create or select the governed Library, create the Goal through the Goal creation interface, write the date evidence through Librarian, update the Goal with the evidence URI, and request audit without a separate human audit prompt once the evidence is sufficient.",
+  "Let the Knowledge Agent hand off to the Goal Auditor agent.",
+  "Inspect Librarian activity, selected Library governance, the Goal primitive record, the evidence file, and actor-tagged tool-call history.",
+  "Ask the Goal query interface to list met and unmet Goals after the audit completes.",
+]
+expected = [
+  "Knowledge Agent can create a Goal after the conversation begins from the exact user message.",
+  "Knowledge Agent does not require an initial Goal input for a conversation.",
+  "Knowledge Agent uses Librarian, storage discovery, and Library governance knowledge to create or select `library://date-goal-acceptance` and choose or confirm where the Goal lives.",
+  "Knowledge Agent does not assume one hard-coded Goal folder or storage backend.",
+  "The Goal primitive record stores or references the desired outcome to write today's date, current state, evidence, progress, blockers, and clarifications.",
+  "The Goal primitive record exposes enough current-state knowledge to distinguish met and unmet Goals.",
+  "Knowledge Agent asks human clarification questions while setting the Goal when outcome, scope, timeline, or framework knowledge is ambiguous.",
+  "Clarification results are added to or referenced by the Goal knowledge record.",
+  "Goal progress updates are grounded in the Goal primitive record and related Library evidence.",
+  "The main agent writes the date evidence to `library://date-goal-acceptance/today.md` through Librarian.",
+  "Auditable Goal evidence is addressed through `library://date-goal-acceptance/today.md` or another `library://...` resource URI instead of raw sandbox workspace paths or external URLs.",
+  "When the main agent records evidence that appears to satisfy the desired outcome, it requests independent audit without a separate human audit prompt.",
+  "Goal queries can list met and unmet Goals without depending on a specific CLI or conversation driver.",
+  "Routine knowledge can be loosely associated with a Goal, fulfill a Goal, or create a Goal.",
+  "Goal clarification and evaluation can reference goal-setting framework knowledge such as SMART without hard-coding that framework into the Goal primitive.",
+  "Goal creation and Goal updates use shared driver-independent interfaces.",
+  "Goal updates use a shared driver-independent update interface.",
+  "Goal audit request and audit completion are explicit lifecycle steps.",
+  "An independent Goal Auditor agent with its own actor evaluates whether the Goal is met.",
+  "The Goal Auditor uses the shared Knowledge Agent starter prompt rendered for Goal Audit mode.",
+  "The Goal Auditor's recorded Librarian tool calls begin with librarian_intro before other Library operations.",
+  "The Goal Auditor returns a met, unmet, or needs-clarification signal and identifies gaps when evidence is insufficient.",
+  "If the Goal Auditor returns met, the Goal query interface lists the date-writing Goal as met.",
+]
+
+[[tests]]
+id = "knowledge-agent.acceptance.live-goal-auditor-openai"
+title = "Live Goal Auditor through OpenAI"
+requirements = [
+  "knowledge-agent.goal-primitive",
+  "knowledge-agent.goal-update-interface",
+  "knowledge-agent.goal-audit-lifecycle",
+  "knowledge-agent.goal-auditor-agent",
+  "knowledge-agent.goal-shared-interface",
+  "knowledge-agent.goal-query-interface",
+  "knowledge-agent.tool-goal-create",
+  "knowledge-agent.tool-goal-update",
+  "knowledge-agent.tool-goal-request-audit",
+  "knowledge-agent.tool-goal-list",
+  "knowledge-agent.tool-goal-complete-audit",
+  "knowledge-agent.handoff-goal-auditor",
+  "knowledge-agent.prompt-calls-librarian-intro",
+  "knowledge-agent.uses-librarian",
+  "knowledge-agent.storage-discovery-runtime",
+]
+circumstances = [
+  "Run Knowledge Agent with the OpenAI provider enabled and a writable temporary Library available through storage discovery.",
+  "Use the date and time on the day the acceptance test is run as the expected evidence value.",
+]
+procedure = [
+  "Send this exact user message: `Create a Goal to write the current date and time into a new Library named live-goal-audit-acceptance. Create the Library if needed, write the date/time file through Librarian, update the Goal with evidence, and request an independent audit once you believe the evidence satisfies the Goal.`",
+  "If the agent asks for a human-facing Library description, answer: `Use it for live Goal audit acceptance evidence.`",
+  "Let the Knowledge Agent create the Goal through the Goal creation interface.",
+  "Let the Knowledge Agent write the current date/time file through Librarian.",
+  "Let the Knowledge Agent update the Goal with evidence through the Goal update interface.",
+  "Let the Knowledge Agent request independent audit through the Goal audit request interface once it considers the Library evidence sufficient.",
+  "Let the Knowledge Agent hand off to the Goal Auditor agent.",
+  "Inspect the conversation trace, Goal record, and actor-tagged Librarian tool-call history.",
+]
+expected = [
+  "The test uses a live OpenAI agent turn and is not satisfied by direct host-side service calls.",
+  "The Goal record is created as governed Library knowledge.",
+  "The evidence file is written through Librarian and referenced by the Goal record.",
+  "The Goal record and audit request use `library://...` evidence references instead of raw workspace paths or external URLs.",
+  "Goal Auditor actor behavior is grounded in the Goal primitive, handoff metadata, and Librarian actor context rather than a broad actor-model reminder in the shared starter prompt.",
+  "The Knowledge Agent may proactively request audit when the Goal appears ready, but does not declare the Goal met.",
+  "The Goal audit request is recorded before audit completion.",
+  "A separate Goal Auditor agent turn occurs with the Goal Auditor actor active in Librarian tool-call history.",
+  "The Goal Auditor's first actor-tagged Library operation is librarian_intro.",
+  "The Goal Auditor reads evidence through Librarian and has no need to inspect sandbox filesystem paths.",
+  "The Goal Auditor completes the audit through the audit completion interface.",
+  "The Goal Auditor returns met, unmet, or needs-clarification with gaps when applicable.",
+  "If the Goal Auditor returns met, the Goal query interface lists the Goal as met.",
+]
+
+[[tests]]
+id = "knowledge-agent.acceptance.memory-round-trip"
+title = "Memory round trip across conversations"
+requirements = [
+  "knowledge-agent.storage-discovery-runtime",
+  "knowledge-agent.provider-interface",
+  "knowledge-agent.library-writes-memory",
+  "knowledge-agent.openai-trace-conversation-history",
+  "knowledge-agent.harness-owned-session",
+  "knowledge-agent.resume-conversation",
+]
+circumstances = [
+  "Use a Knowledge Agent runtime with configured conversation and memory Libraries.",
+  "Run the two user messages in separate conversations so recall does not depend on the Harness-owned session state from the first conversation.",
+]
+procedure = [
+  "Use the project local root containing Knowledge Agent conversations and memory Libraries.",
+  "In the first conversation, send this exact user message: `Please remember this acceptance canary for future conversations: KA-MEMORY-ROUND-TRIP-2026-06-28.`",
+  "Let the Knowledge Agent write the canary value to Memory without the user naming the memory Library path.",
+  "Start a second fresh conversation.",
+  "In the second conversation, send this exact user message: `What is the acceptance canary value I asked you to remember? Print only the value.`",
+]
+expected = [
+  "Knowledge Agent can find the repository root from .meta-harness.json and meta-harness/ without requiring harness/.",
+  "Each conversation has a timestamped folder under the conversations Library.",
+  "The conversations Library and memory Library each have a LIBRARY.toml.",
+  "The second conversation retrieves `KA-MEMORY-ROUND-TRIP-2026-06-28` from memory written by the first conversation.",
+  "The second conversation prints only `KA-MEMORY-ROUND-TRIP-2026-06-28`.",
+]
+
+[[tests]]
+id = "knowledge-agent.acceptance.routine-handoff-actor"
+title = "Routine handoff actor"
+requirements = [
+  "knowledge-agent.routine-handoffs",
+  "knowledge-agent.handoff-routine-agent",
+  "knowledge-agent.uses-librarian",
+  "knowledge-agent.library-scoped-access",
+  "knowledge-agent.prompt-calls-librarian-intro",
+]
+circumstances = []
+procedure = [
+  "Start Knowledge Agent with a repository that contains at least one Meta Harness Routine.",
+  "Ask the Knowledge Agent to start that Routine execution.",
+  "Inspect the Routine handoff agent's Librarian context and conversation trace.",
+]
+expected = [
+  "The Knowledge Agent exposes the matching Routine as an OpenAI Agents SDK handoff.",
+  "Routine actor behavior is grounded in the Routine primitive, handoff metadata, and Librarian actor context rather than a broad actor-model reminder in the shared starter prompt.",
+  "The handoff agent receives the shared Knowledge Agent starter prompt rendered in Routine mode with Routine selection metadata.",
+  "The handoff input includes the Routine-mode starter prompt for the selected Routine.",
+  "The Routine-mode prompt points the agent to the Routine primitive and source Library instead of duplicating the Routine execution procedure.",
+  "The handoff agent uses Librarian tools with both the base Knowledge Agent actor and the Routine actor identity active.",
+  "The Routine actor identity follows the source Library and Routine identity.",
+  "The handoff agent's recorded Librarian tool calls begin with librarian_intro before other Library operations.",
+  "The handoff agent updates Library resources through Librarian instead of sandbox filesystem patch tools.",
+  "Librarian tool calls from the handoff agent are recorded in the conversation trace.",
+  "The Routine handoff produces a non-empty final response with completion evidence or a blocker.",
+]
+
+[[tests]]
+id = "knowledge-agent.acceptance.dynamic-library-toolspec"
+title = "Dynamic Library ToolSpec tool"
+requirements = [
+  "knowledge-agent.agent-tool-assembly",
+  "knowledge-agent.uses-librarian",
+  "knowledge-agent.library-toolspec-openai-tools",
+]
+circumstances = [
+  "Use a writable Library location where the Knowledge Agent can create a Library containing a ToolSpec.",
+  "The ToolSpec implementation should return a deterministic number and should be loadable only from the discovered Library ToolSpec execution path.",
+]
+procedure = [
+  "In the first conversation, send this exact user message: `Create a new Library named acceptance-number-tool. In that Library, create a ToolSpec named acceptance_number that takes no input and returns the number 42. Make it available to the current Knowledge Agent actor.`",
+  "Verify that the Library contains governed ToolSpec knowledge for `acceptance_number`, including allowed actors, input schema, output contract, test cases, and an implementation reference.",
+  "Start a second fresh conversation.",
+  "Send this exact user message: `Call the acceptance_number tool from the acceptance-number-tool Library and print only the returned number.`",
+  "Inspect the Knowledge Agent tool assembly and invocation trace for the second conversation.",
+]
+expected = [
+  "The first conversation creates `library://acceptance-number-tool` without asking the user to write TOML by hand.",
+  "The created Library contains a ToolSpec named `acceptance_number` whose test case expects the output number `42`.",
+  "The second conversation discovers the ToolSpec from the Library before exposing it as an agent tool.",
+  "The ToolSpec is exposed only when the active actor identity matches the ToolSpec allowed actor patterns.",
+  "The implementation for `acceptance_number` is dynamically loaded from the discovered Library ToolSpec execution path rather than being statically imported by generic Knowledge Agent startup.",
+  "The agent invokes the `acceptance_number` tool and prints only `42`.",
+]

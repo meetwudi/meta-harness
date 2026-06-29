@@ -1,0 +1,13 @@
+id = "knowledge-agent.library-toolspec-openai-tools"
+title = "Library ToolSpecs become agent tools"
+source = "Human request on 2026-06-27: tools are driven by knowledge; agents should discover Library-defined ToolSpecs and dynamically plug in new tools, including tools created in one Quartz conversation becoming usable in a separate conversation. Human clarification on 2026-06-28: tool implementation code should be dynamically loaded only after the relevant Library ToolSpec is discovered from conversation Library context. Human correction on 2026-06-28: the ToolSpec OpenAI adapter must not contain per-tool hard-coded implementation branches; as Libraries and ToolSpecs are discovered, allowed tools are added to the agent through generic ToolSpec resolution."
+text = "Knowledge Agent exposes allowed ToolSpec primitives discovered from readable Libraries as OpenAI agent tools."
+clarifications = [
+  "The primary Knowledge Agent session discovers ToolSpecs from readable Libraries before constructing the agent tool list.",
+  "Discovered ToolSpecs are exposed only when the active actor identities match the ToolSpec `allowed_actors` glob patterns.",
+  "Discovered ToolSpecs do not replace built-in Librarian, Goal, conversation state, or hosted web search tool names.",
+  "When a discovered ToolSpec references an unsupported implementation, invocation fails clearly instead of executing ungoverned code.",
+  "Supported ToolSpec implementation modules are not statically imported during generic Knowledge Agent startup or ToolSpec adapter load; they stay behind the discovered and allowed ToolSpec execution path.",
+  "The ToolSpec OpenAI adapter delegates invocation to a generic ToolSpec implementation resolver instead of branching on specific tool names, implementation tokens, or implementation file names.",
+  "The rendered Knowledge Agent prompt includes the exact active actor URI when available so newly authored ToolSpecs can set `allowed_actors` deterministically.",
+]

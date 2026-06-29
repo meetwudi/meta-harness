@@ -1,5 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.library-scoped-memory-curator: runs a sequenced curator trace after the main agent.
+// Supports knowledge-agent.provider-stream-events: streams Memory Curator model events after the main agent stream.
 
 import { getGlobalTraceProvider, run, withTrace } from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
@@ -10,7 +11,9 @@ import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
 import { createMemoryCuratorLibrarianContext } from "./memory-curator-context.js";
 import { createSandboxClient } from "./create-sandbox-client.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
+import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream-events.js";
 import { memoryCuratorRecentContext } from "./memory-curator-recent-context.js";
+import { openAIReasoningSettings } from "./openai-reasoning-settings.js";
 import { resultSummary } from "./result-summary.js";
 import type { ProviderRunOptions } from "./types.js";
 
@@ -51,9 +54,7 @@ export async function runMemoryCurator(
     name: "Meta Harness Memory Curator",
     model: options.model,
     modelSettings: {
-      reasoning: {
-        effort: options.reasoningEffort,
-      },
+      reasoning: openAIReasoningSettings(options.reasoningEffort),
     },
     instructions: [
       RECOMMENDED_PROMPT_PREFIX,
@@ -68,7 +69,7 @@ export async function runMemoryCurator(
   const tracedResult = await withTrace(
     `knowledge-agent-memory-curator:${options.conversationId}:${options.turnId}`,
     async (trace) => {
-      const result = await run(agent, prompt, {
+      const runOptions = {
         maxTurns: 12,
         sandbox: {
           client: createSandboxClient(options.client),
@@ -81,7 +82,22 @@ export async function runMemoryCurator(
             localDirFiles: 16,
           },
         },
-      });
+      };
+      if (options.onStreamEvent) {
+        const result = await run(agent, prompt, { ...runOptions, stream: true });
+        for await (const event of result) {
+          for (const streamEvent of knowledgeAgentStreamEventsFromRunEvent(event)) {
+            options.onStreamEvent({ ...streamEvent, source: "memory_curator" });
+          }
+        }
+        await result.completed;
+        return {
+          result,
+          trace: trace.toJSON(),
+        };
+      }
+
+      const result = await run(agent, prompt, runOptions);
       return {
         result,
         trace: trace.toJSON(),

@@ -1,0 +1,4 @@
+id = "librarian-add-tags.unit.add"
+tool = "librarian_add_tags"
+input_json = "{\"scopeUri\":\"library://example/scope\",\"tags\":[\"research\"]}"
+expected = "The tool adds tags to a writable Library knowledge scope."

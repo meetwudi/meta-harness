@@ -1,6 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.goal-auditor-agent: creates an independent Goal Auditor handoff agent.
 // Supports knowledge-agent.prompt-calls-librarian-intro: gives the auditor the shared starter prompt.
+// Supports knowledge-agent.provider-stream-events: requests safe reasoning summaries for Goal Auditor streaming.
 
 import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
 import {
@@ -17,6 +18,7 @@ import { createGoalAuditorLibrarianContext } from "./create-goal-auditor-librari
 import { createGoalOpenAITools } from "./create-goal-openai-tools.js";
 import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
 import { knowledgeAgentCapabilities } from "./knowledge-agent-capabilities.js";
+import { openAIReasoningSettings } from "./openai-reasoning-settings.js";
 import type { ReasoningEffort } from "./types.js";
 
 const GOAL_AUDITOR_ACTOR_URI = "actor://goal-auditor";
@@ -56,9 +58,7 @@ export function createGoalAuditorHandoffAgent(input: {
     handoffDescription: "Audit whether a Meta Harness Goal is met and record an independent audit signal.",
     model: input.model,
     modelSettings: {
-      reasoning: {
-        effort: input.reasoningEffort,
-      },
+      reasoning: openAIReasoningSettings(input.reasoningEffort),
     },
     instructions: [
       RECOMMENDED_PROMPT_PREFIX,

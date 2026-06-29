@@ -1,0 +1,9 @@
+id = "proj-quartz.youtube-transcript-toolspec-flow"
+title = "YouTube transcript tool creation flow"
+source = "Human acceptance request on 2026-06-27: use the app via browser to ask the agent `create a tool that fetches youtube transcript`; in a separate conversation, ask `fetch youtube transcript https://www.youtube.com/watch?v=J9AOaINKy0E` and see the transcript come back."
+text = "PROJ-Quartz can create a governed YouTube transcript ToolSpec through chat and use it as a tool in a later chat conversation."
+clarifications = [
+  "The created tool is represented as ToolSpec knowledge in a writable Quartz Library.",
+  "A separate Quartz conversation discovers the ToolSpec and exposes the transcript fetcher as an agent tool.",
+  "The transcript fetch returns visible transcript content for the requested YouTube URL.",
+]

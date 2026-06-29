@@ -14,7 +14,11 @@ Some knowledge is a primitive:
   clarifications, and independent audit.
 - Memory: agent-usable knowledge carried across time.
 - Compliance: human-approved obligations and explicit checks used to govern and verify work.
-- Spec: a modular requirement map with separate acceptance tests.
+- Spec: a modular requirement map with implementation-facing integration tests.
+- Acceptance: end-to-end acceptance testing scenarios with circumstances,
+  trigger scope, procedure, and expected behavior.
+- ToolSpec: a modular definition of one agent-usable tool, including actor
+  invocation governance, schemas, implementation reference, and test cases.
 - Tags: independent retrieval metadata for scoped knowledge.
 
 The primitives compose:
@@ -32,8 +36,12 @@ The primitives compose:
 - Routines use Compliance to make procedure and outcomes verifiable.
 - Goals may be created by conversations, Routines, or other governed agents.
 - Goals are declared met by independent Goal Auditor agents.
-- Specs connect sourced requirements, acceptance tests, and implementation
+- Specs connect sourced requirements, integration tests, and implementation
   citations.
+- Acceptance suites define end-to-end scenarios to run when scoped knowledge or
+  implementation changes.
+- ToolSpecs define discoverable tools whose generated code is derived from
+  knowledge and whose invocation is governed by actor URI patterns.
 - Tags help agents query by tags without requiring every primitive schema to
   include tag fields.
 - Libraries organize all primitives.
@@ -52,8 +60,8 @@ Primitive TOML files identify themselves with a short comment header:
 For `COMPLIANCE.toml`, the `# Harness-Compliance:` review notice remains the
 first content line; the primitive header follows that notice.
 
-Requirement files and acceptance-test files are structured harness files, but
-they are not primitives.
+Requirement files are structured harness files, but they are not primitives.
 
 When starting work, first discover the relevant Libraries, then identify
-applicable Routines, Goals, Memory, Compliance, Specs, and Tags.
+applicable Routines, Goals, Memory, Compliance, Specs, Acceptance suites,
+ToolSpecs, and Tags.

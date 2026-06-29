@@ -1,0 +1,4 @@
+id = "librarian-query-by-tags.unit.query"
+tool = "librarian_query_by_tags"
+input_json = "{\"tags\":[\"research\"],\"match\":\"all\"}"
+expected = "The tool queries readable Library knowledge scopes by independent TAGS.toml records."

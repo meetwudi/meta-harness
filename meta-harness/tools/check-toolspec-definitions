@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+import argparse
+import ast
+import json
+import re
+import sys
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    tomllib = None
+
+
+TOOL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$")
+
+
+def fail(failures, message):
+    failures.append(message)
+
+
+def strip_comment(line):
+    in_string = False
+    result = []
+    for char in line:
+        if char == '"':
+            in_string = not in_string
+        if char == "#" and not in_string:
+            break
+        result.append(char)
+    return "".join(result).strip()
+
+
+def parse_value(raw):
+    raw = raw.strip()
+    if raw == "true":
+        return True
+    if raw == "false":
+        return False
+    if raw.startswith("["):
+        return ast.literal_eval(raw)
+    if raw.startswith('"') and raw.endswith('"'):
+        return ast.literal_eval(raw)
+    return raw
+
+
+def parse_minimal_toml(text):
+    data = {}
+    current = data
+    pending_key = None
+    pending_lines = []
+
+    def finish_pending():
+        nonlocal pending_key, pending_lines, current
+        if pending_key is None:
+            return
+        current[pending_key] = parse_value("\n".join(pending_lines))
+        pending_key = None
+        pending_lines = []
+
+    for raw_line in text.splitlines():
+        line = strip_comment(raw_line)
+        if not line:
+            continue
+        if pending_key is not None:
+            pending_lines.append(line)
+            if line.endswith("]"):
+                finish_pending()
+            continue
+        if line.startswith("[[") and line.endswith("]]"):
+            finish_pending()
+            table = line.strip("[]")
+            item = {}
+            data.setdefault(table, []).append(item)
+            current = item
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            finish_pending()
+            table = line.strip("[]")
+            current = data.setdefault(table, {})
+            continue
+        if "=" not in line:
+            continue
+        key, value = [part.strip() for part in line.split("=", 1)]
+        if value.startswith("[") and not value.endswith("]"):
+            pending_key = key
+            pending_lines = [value]
+            continue
+        current[key] = parse_value(value)
+
+    finish_pending()
+    return data
+
+
+def load_toml(path, failures):
+    try:
+        if tomllib is not None:
+            return tomllib.loads(path.read_text())
+        return parse_minimal_toml(path.read_text())
+    except Exception as exc:
+        fail(failures, f"{path}: invalid TOML: {exc}")
+    return None
+
+
+def validate_string(path, data, field, failures):
+    value = data.get(field)
+    if not isinstance(value, str) or not value.strip():
+        fail(failures, f"{path}: {field} must be a non-empty string")
+        return ""
+    return value
+
+
+def validate_tool_name(path, name, failures):
+    if name and not TOOL_NAME_PATTERN.fullmatch(name):
+        fail(failures, f"{path}: name must use lowercase letters, digits, hyphens, or underscores: {name!r}")
+
+
+def validate_actor_patterns(path, data, failures):
+    value = data.get("allowed_actors")
+    if not isinstance(value, list) or not value:
+        fail(failures, f"{path}: allowed_actors must be a non-empty list")
+        return
+    for pattern in value:
+        if not isinstance(pattern, str) or not pattern.strip():
+            fail(failures, f"{path}: allowed_actors must contain non-empty strings")
+            continue
+        if pattern != pattern.strip():
+            fail(failures, f"{path}: allowed_actors pattern must not have surrounding whitespace: {pattern!r}")
+            continue
+        if not pattern.startswith("actor://"):
+            fail(failures, f"{path}: allowed_actors pattern must use actor://: {pattern}")
+
+
+def validate_schema(path, data, field, failures):
+    value = data.get(field)
+    if not isinstance(value, dict):
+        fail(failures, f"{path}: [{field}] table is required")
+        return
+    schema_type = value.get("type")
+    if not isinstance(schema_type, str) or not schema_type.strip():
+        fail(failures, f"{path}: {field}.type must be a non-empty string")
+    required = value.get("required")
+    if required is not None and (
+        not isinstance(required, list)
+        or any(not isinstance(item, str) or not item.strip() for item in required)
+    ):
+        fail(failures, f"{path}: {field}.required must be a list of non-empty strings")
+    additional = value.get("additional_properties")
+    if additional is not None and not isinstance(additional, bool):
+        fail(failures, f"{path}: {field}.additional_properties must be a boolean")
+    properties_json = value.get("properties_json")
+    if properties_json is not None:
+        if not isinstance(properties_json, str):
+            fail(failures, f"{path}: {field}.properties_json must be a string")
+            return
+        try:
+            parsed = json.loads(properties_json)
+        except Exception as exc:
+            fail(failures, f"{path}: {field}.properties_json must be valid JSON: {exc}")
+            return
+        if not isinstance(parsed, dict):
+            fail(failures, f"{path}: {field}.properties_json must parse to an object")
+
+
+def validate_test_cases(path, data, failures):
+    cases = data.get("test_cases")
+    if not isinstance(cases, list) or not cases:
+        fail(failures, f"{path}: at least one [[test_cases]] table is required")
+        return
+    for index, case in enumerate(cases):
+        if not isinstance(case, dict):
+            fail(failures, f"{path}: test_cases[{index}] must be a table")
+            continue
+        case_id = case.get("id")
+        if not isinstance(case_id, str) or not case_id.strip():
+            fail(failures, f"{path}: test_cases[{index}].id must be a non-empty string")
+        if not any(case.get(field) for field in ("expected", "expected_output_json", "expected_error")):
+            fail(failures, f"{path}: test_cases[{index}] must include expected, expected_output_json, or expected_error")
+        for field in ("input_json", "expected_output_json"):
+            value = case.get(field)
+            if value is None:
+                continue
+            if not isinstance(value, str):
+                fail(failures, f"{path}: test_cases[{index}].{field} must be a string")
+                continue
+            try:
+                json.loads(value)
+            except Exception as exc:
+                fail(failures, f"{path}: test_cases[{index}].{field} must be valid JSON: {exc}")
+
+
+def validate_tests_folder(path, failures):
+    tests_dir = path.parent / "tests"
+    if not tests_dir.is_dir():
+        fail(failures, f"{path}: tests folder is required")
+        return
+    if not any(child.is_file() for child in tests_dir.iterdir()):
+        fail(failures, f"{path}: tests folder must contain at least one test file")
+
+
+def validate_implementation(path, implementation, failures):
+    if not implementation:
+        return
+    implementation_path = (path.parent / implementation).resolve()
+    if not implementation_path.is_file():
+        fail(failures, f"{path}: implementation does not resolve to a file: {implementation}")
+
+
+def toolspec_tomls(repo_root):
+    ignored_roots = {".git", "node_modules", "dist"}
+    for path in sorted(repo_root.rglob("TOOLSPEC.toml")):
+        parts = path.relative_to(repo_root).parts
+        if any(part in ignored_roots for part in parts):
+            continue
+        yield path
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Verify Meta Harness ToolSpec definitions.")
+    parser.add_argument("--repo-root", default=".")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    failures = []
+    seen_names = set()
+    count = 0
+    for path in toolspec_tomls(repo_root):
+        data = load_toml(path, failures)
+        if not isinstance(data, dict):
+            continue
+        name = validate_string(path, data, "name", failures)
+        validate_tool_name(path, name, failures)
+        if name in seen_names:
+            fail(failures, f"{path}: duplicate ToolSpec name: {name}")
+        seen_names.add(name)
+        validate_string(path, data, "description", failures)
+        implementation = validate_string(path, data, "implementation", failures)
+        validate_implementation(path, implementation, failures)
+        validate_actor_patterns(path, data, failures)
+        validate_schema(path, data, "input_schema", failures)
+        validate_schema(path, data, "output_schema", failures)
+        validate_test_cases(path, data, failures)
+        validate_tests_folder(path, failures)
+        count += 1
+
+    if failures:
+        print("Meta Harness ToolSpec definition check failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
+        return 1
+
+    print(f"Meta Harness ToolSpec definitions passed for {count} ToolSpec(s).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,4 @@
+id = "librarian-list-libraries.unit.empty-input"
+tool = "librarian_list_libraries"
+input_json = "{}"
+expected = "The tool returns visible Library listings with governance-derived access fields."
