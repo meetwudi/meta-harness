@@ -87,17 +87,21 @@ export async function runOpenAIConversation(
     },
   );
   await getGlobalTraceProvider().forceFlush();
-  options.onStreamEvent?.({
-    type: "progress",
-    message: "Reviewing memory.",
-    source: "memory_curator",
-  });
-  const memoryCurator = await runMemoryCurator(options);
-  options.onStreamEvent?.({
-    type: "progress",
-    message: "Memory review complete.",
-    source: "memory_curator",
-  });
+  const memoryCurationLibraryUris = options.conversationState.memoryCurationLibraryUris();
+  let memoryCurator: Awaited<ReturnType<typeof runMemoryCurator>> = undefined;
+  if (options.memoryCurator.enabled && memoryCurationLibraryUris.length > 0) {
+    options.onStreamEvent?.({
+      type: "progress",
+      message: "Reviewing memory.",
+      source: "memory_curator",
+    });
+    memoryCurator = await runMemoryCurator(options);
+    options.onStreamEvent?.({
+      type: "progress",
+      message: "Memory review complete.",
+      source: "memory_curator",
+    });
+  }
   return {
     ...tracedResult,
     memoryCurator,

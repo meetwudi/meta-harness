@@ -30,6 +30,13 @@ Use `conversation_state_update` to carry forward updated conversation state.
 The injected Conversation State block and callback tool schema define that
 state.
 </important>
+
+For Memory curation routing, use `conversation_state_update` to return a simple
+`memoryCurationLibraries` list of Library URIs that may need Memory Curator
+review for the latest user message. Empty is fine when nothing should be
+curated. Do not return curation candidates, confidence, provenance, reasons, or
+memory entries. This routing does not replace direct Librarian memory writes
+when the user explicitly asks you to remember something.
 {{/memoryCuratorMode}}
 
 Keep answers user-facing; avoid exposing internal mechanisms or system
@@ -68,11 +75,20 @@ main agent, in your own trace, and only for memory curation.
 Inspect before writing:
 
 - Call `librarian_intro`, then `librarian_list_libraries`.
-- Consider only writable Libraries.
-- Read each writable Library's `LIBRARY.toml` and `MEMORY.toml` when present.
+- Consider only routed target Libraries that are writable.
+- Read each routed writable Library's `LIBRARY.toml` and `MEMORY.toml` when present.
 - A Memory collection is automatically curatable unless
   `MEMORY.toml` has `[curation] auto_curated = false`.
 - Inspect existing memory before writing.
+
+Target Memory curation Libraries from the main agent state:
+
+```json
+{{{memoryCurationLibraryUrisJson}}}
+```
+
+Treat this as routing only. Do not treat it as evidence or a candidate payload.
+If the list is empty, write nothing. Do not widen beyond these Library URIs.
 
 Capture guardrails:
 
@@ -84,6 +100,11 @@ Capture guardrails:
   auto-curated Memory collection, write nothing.
 - Capture only what the user said. Do not invent facts, analysis, decisions,
   compliance obligations, or investment conclusions.
+- When a routed Memory config requires preserving a user-supplied stock symbol
+  or identifier in a folder path, duplicate checks for that fact must preserve
+  the required folder identity. A matching fact under a different canonicalized
+  symbol folder does not block writing the same user-stated fact to the
+  user-supplied symbol folder.
 - You may update no Libraries, one Library, or multiple Libraries.
 
 Recent message limit: `{{recentMessageLimit}}`
@@ -142,6 +163,20 @@ When the user directly asks to fetch a YouTube transcript, invoke the governed
 ToolSpec tool when it is available and include transcript text in the answer.
 If the transcript is long, include the opening transcript chunk directly before
 offering continuation or analysis.
+
+When the active actor is `actor://proj-quartz/agent` and the user asks in
+ordinary language to set up ongoing stock observation memory, create or update
+`library://stocks` through Librarian. Read the existing `MEMORY.toml` if the
+Library already exists. Treat the Memory config as matching only when it
+explicitly says all of the following: stock-specific memory uses one folder per
+stock symbol under `symbols/{symbol}/`; curation preserves the user-supplied
+stock symbol token exactly for the folder name instead of canonicalizing it to
+another ticker; an equivalent fact under a different canonicalized symbol folder
+does not satisfy the user-supplied symbol folder; entries use sequential
+`YYYY-MM-DD.md` files; entries preserve learned-at/learned-from provenance. If
+any of those details are absent, update `library://stocks/MEMORY.toml` through
+Librarian before saying setup is ready. Do not ask the user to choose a storage
+location.
 {{/routine}}
 {{/memoryCuratorMode}}
 {{/goalAudit}}

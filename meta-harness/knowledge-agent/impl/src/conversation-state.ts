@@ -1,5 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.conversation-state: validates and renders compact turn-to-turn conversation state.
+// Supports knowledge-agent.library-scoped-memory-curator: carries transient Memory Curator routing from the state callback.
 // Supports knowledge-agent.postgres-runtime-storage: persists state through the runtime storage driver.
 
 import {
@@ -24,11 +25,13 @@ export type ConversationState = {
 export type ConversationStateUpdateInput = {
   mentionedGoals?: ConversationStateMention[];
   mentionedLibraries?: ConversationStateMention[];
+  memoryCurationLibraries?: ConversationStateMention[];
 };
 
 export class ConversationStateRuntime {
   readonly promptToml: string;
   private state: ConversationState;
+  private memoryCurationLibraries: ConversationStateMention[] = [];
 
   constructor(
     private readonly storage: LibrarianStorage,
@@ -62,23 +65,45 @@ export class ConversationStateRuntime {
     return renderConversationState(this.state);
   }
 
+  memoryCurationLibraryUris(): string[] {
+    return this.memoryCurationLibraries.map((mention) => mention.uri);
+  }
+
   async persistLatest(): Promise<void> {
     await writeText(this.storage, this.path, this.currentToml());
   }
 
   async update(input: ConversationStateUpdateInput): Promise<Record<string, unknown>> {
     assertUpdateShape(input);
+    const hasMemoryCurationLibraries = Object.prototype.hasOwnProperty.call(
+      input,
+      "memoryCurationLibraries",
+    );
     const mentionedGoals = normalizeMentionArray(input.mentionedGoals ?? [], "mentionedGoals");
     const mentionedLibraries = normalizeMentionArray(
       input.mentionedLibraries ?? [],
       "mentionedLibraries",
     );
+    const memoryCurationLibraries = hasMemoryCurationLibraries
+      ? normalizeMentionArray(input.memoryCurationLibraries ?? [], "memoryCurationLibraries")
+      : undefined;
 
     for (const mention of mentionedGoals) {
       verifyLibrarySchemeUri(mention.uri, "mentionedGoals.uri");
     }
     for (const mention of mentionedLibraries) {
-      await verifyMentionedLibraryUri(this.librarianContext, mention.uri);
+      await verifyResolvedLibraryUri(
+        this.librarianContext,
+        mention.uri,
+        "mentionedLibraries.uri",
+      );
+    }
+    for (const mention of memoryCurationLibraries ?? []) {
+      await verifyResolvedLibraryUri(
+        this.librarianContext,
+        mention.uri,
+        "memoryCurationLibraries.uri",
+      );
     }
 
     this.state = normalizeConversationState({
@@ -86,12 +111,16 @@ export class ConversationStateRuntime {
       mentionedGoals: mergeMentions(this.state.mentionedGoals, mentionedGoals),
       mentionedLibraries: mergeMentions(this.state.mentionedLibraries, mentionedLibraries),
     });
+    if (memoryCurationLibraries !== undefined) {
+      this.memoryCurationLibraries = dedupeMentions(memoryCurationLibraries);
+    }
     await this.persistLatest();
 
     return {
       actorUri: this.state.actorUri,
       mentionedGoalUris: this.state.mentionedGoals.map((mention) => mention.uri),
       mentionedLibraryUris: this.state.mentionedLibraries.map((mention) => mention.uri),
+      memoryCurationLibraryUris: this.memoryCurationLibraryUris(),
       conversationStateToml: this.currentToml(),
     };
   }
@@ -175,7 +204,11 @@ function normalizeMentionArray(value: unknown, label: string): ConversationState
 
 function assertUpdateShape(input: ConversationStateUpdateInput): void {
   const record = input as Record<string, unknown>;
-  const allowedKeys = new Set(["mentionedGoals", "mentionedLibraries"]);
+  const allowedKeys = new Set([
+    "mentionedGoals",
+    "mentionedLibraries",
+    "memoryCurationLibraries",
+  ]);
   for (const key of Object.keys(record)) {
     if (!allowedKeys.has(key)) {
       throw new Error(`Unsupported conversation state update field: ${key}`);
@@ -183,13 +216,14 @@ function assertUpdateShape(input: ConversationStateUpdateInput): void {
   }
 }
 
-async function verifyMentionedLibraryUri(
+async function verifyResolvedLibraryUri(
   context: LibrarianContext,
   uri: string,
+  label: string,
 ): Promise<void> {
   const location = await resolveLibraryLocation(context, uri);
   if (location.path || location.library.uri !== uri) {
-    throw new Error(`mentioned_library.uri must be an exact resolved Library URI: ${uri}`);
+    throw new Error(`${label} must be an exact resolved Library URI: ${uri}`);
   }
 }
 

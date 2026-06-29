@@ -27,11 +27,12 @@ import {
   loadMetaHarnessConfig,
   resolveMemoryCuratorConfig,
 } from "./load-meta-harness-config.js";
+import { ConversationStateRuntime } from "./conversation-state.js";
 import { loadLocalStorageLocations } from "./load-local-storage-locations.js";
 import type { KnowledgeAgentSession } from "./local-jsonl-session.js";
 import { memoryCuratorRecentContext } from "./memory-curator-recent-context.js";
-import { buildMemoryCuratorPrompt } from "./run-memory-curator.js";
-import type { PreparedRuntime } from "./types.js";
+import { buildMemoryCuratorPrompt, runMemoryCurator } from "./run-memory-curator.js";
+import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
 
 const postgresCommand = requireCommand("postgres");
 const initdbCommand = requireCommand("initdb");
@@ -283,6 +284,8 @@ try {
       "instructions = [",
       '  "Capture only user-stated stock observations and preferences from conversation.",',
       '  "Use one folder per stock symbol under symbols/{symbol}/.",',
+      '  "Use the stock symbol token exactly as the user supplied it for the folder name, including legacy or common symbols such as FB.",',
+      '  "A matching fact under a different canonicalized symbol folder does not satisfy the user-supplied symbol folder.",',
       '  "Within each stock folder, store sequential memory by day using YYYY-MM-DD.md files.",',
       '  "Each entry must include learned_at, learned_from, and the exact user-stated fact or observation.",',
       '  "Inspect existing memory before writing and do not duplicate facts already captured.",',
@@ -297,6 +300,8 @@ try {
       'location = "symbols/{symbol}/"',
       "instructions = [",
       '  "Treat this location as the folder for one stock symbol.",',
+      '  "Use the stock symbol token exactly as supplied by the user when choosing the symbol folder.",',
+      '  "If the same fact exists under a different canonicalized symbol folder, still write it here when this is the user-supplied symbol folder.",',
       '  "Store sequential daily memory inside the stock folder using files named YYYY-MM-DD.md.",',
       '  "Append new entries in chronological order within the day file when multiple facts are learned on the same day.",',
       '  "Each entry must include learned_at, learned_from, and statement fields or equivalent labeled lines.",',
@@ -361,6 +366,8 @@ try {
   assert.match(String(readPath(stocksMemory, ["content"])), /\[curation\]/);
   assert.match(String(readPath(stocksMemory, ["content"])), /auto_curated = true/);
   assert.match(String(readPath(stocksMemory, ["content"])), /location = "symbols\/\{symbol\}\/"/);
+  assert.match(String(readPath(stocksMemory, ["content"])), /symbol token exactly as the user supplied it/);
+  assert.match(String(readPath(stocksMemory, ["content"])), /different canonicalized symbol folder/);
   assert.match(String(readPath(stocksMemory, ["content"])), /YYYY-MM-DD\.md/);
   assert.match(String(readPath(stocksMemory, ["content"])), /learned_at/);
   assert.match(String(readPath(stocksMemory, ["content"])), /learned_from/);
@@ -373,6 +380,33 @@ try {
       (file) => readPath(file, ["uri"]) === "library://stocks/symbols/FB/2026-06-26.md",
     ),
   );
+
+  const conversationState = await ConversationStateRuntime.create({
+    runtime,
+    librarianContext: context,
+  });
+  const emptyRoutingUpdate = await conversationState.update({
+    memoryCurationLibraries: [],
+  });
+  assert.deepEqual(readPath(emptyRoutingUpdate, ["memoryCurationLibraryUris"]), []);
+  assert.deepEqual(conversationState.memoryCurationLibraryUris(), []);
+  const skippedCurator = await runMemoryCurator({
+    memoryCurator: runtime.memoryCurator,
+    conversationState,
+  } as unknown as ProviderRunOptions);
+  assert.equal(skippedCurator, undefined);
+
+  const routedUpdate = await conversationState.update({
+    memoryCurationLibraries: [{ uri: "library://stocks" }],
+  });
+  assert.deepEqual(readPath(routedUpdate, ["memoryCurationLibraryUris"]), [
+    "library://stocks",
+  ]);
+  assert.deepEqual(conversationState.memoryCurationLibraryUris(), [
+    "library://stocks",
+  ]);
+  assert.equal(conversationState.currentToml().includes("memoryCurationLibraries"), false);
+  assert.equal(conversationState.currentToml().includes("memory_curation"), false);
 
   const contextualMainAgentGoal = [
     "Recent chat transcript:",
@@ -419,6 +453,7 @@ try {
     recentMessageLimit: 10,
     latestUserMessage: secondUserMessage,
     recentContext,
+    memoryCurationLibraryUris: conversationState.memoryCurationLibraryUris(),
   });
   assert.match(curatorPrompt, /## Memory Curator Mode/);
   assert.match(curatorPrompt, /Active Memory Curator Actor: `actor:\/\/proj-quartz\/memory-curator`/);
@@ -427,6 +462,8 @@ try {
   assert.match(curatorPrompt, /Inspect existing memory before writing\./);
   assert.match(curatorPrompt, /Latest user message only: `true`/);
   assert.match(curatorPrompt, new RegExp(escapeRegExp(secondUserMessage)));
+  assert.match(curatorPrompt, /Target Memory curation Libraries from the main agent state:/);
+  assert.ok(curatorPrompt.includes('[\n  "library://stocks"\n]'));
   assert.equal(curatorPrompt.includes("Recent chat transcript:"), false);
 } finally {
   await curatorPostgresStorage?.close();

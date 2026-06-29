@@ -16,7 +16,10 @@ export function createConversationStateOpenAITools(
       description: [
         "Callback for compact next-turn conversation state.",
         "Call when this turn creates, reads, updates, tags, queries, or otherwise mentions a Goal or Library that should remain available next turn.",
-        "Only report references: mentionedGoals and mentionedLibraries entries contain uri only.",
+        "Use memoryCurationLibraries as a simple list of Library URIs that may need Memory Curator review for the latest user message; use [] or omit it when nothing should be curated.",
+        "This routing does not replace direct Librarian memory writes when the user explicitly asks you to remember something.",
+        "Only report references: mentionedGoals, mentionedLibraries, and memoryCurationLibraries entries contain uri only.",
+        "Do not include Memory curation candidates, confidence, provenance, reasons, memory entries, or other curation payloads.",
         "Do not include Goal state, Library contents, focus, facts, mode, summaries, or invented fields.",
       ].join(" "),
       parameters: {
@@ -34,6 +37,17 @@ export function createConversationStateOpenAITools(
             },
           },
           mentionedLibraries: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                uri: { type: "string", pattern: "^library://" },
+              },
+              required: ["uri"],
+              additionalProperties: false,
+            },
+          },
+          memoryCurationLibraries: {
             type: "array",
             items: {
               type: "object",

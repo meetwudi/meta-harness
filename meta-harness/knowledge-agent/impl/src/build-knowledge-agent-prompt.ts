@@ -26,6 +26,7 @@ export type KnowledgeAgentPromptOptions = Pick<
     latestUserMessageOnly: boolean;
     latestUserMessage: string;
     recentContext: string;
+    memoryCurationLibraryUris: string[];
   };
   routine?: RoutineDefinition;
   goalAudit?: {
@@ -59,7 +60,16 @@ export function buildKnowledgeAgentPrompt(
         actorUris: options.librarianContext.actorUris.join(", "),
       }
       : false,
-    memoryCuratorMode: options.memoryCuratorMode ?? false,
+    memoryCuratorMode: options.memoryCuratorMode
+      ? {
+        ...options.memoryCuratorMode,
+        memoryCurationLibraryUrisJson: JSON.stringify(
+          options.memoryCuratorMode.memoryCurationLibraryUris,
+          null,
+          2,
+        ),
+      }
+      : false,
     routine: options.routine
       ? {
         name: options.routine.name,

@@ -1,4 +1,8 @@
 id = "knowledge-agent.prompt-conversation-state-callback"
 title = "Knowledge Agent prompt carries updated conversation state"
-source = "Human-listed requirement on 2026-06-26: use the conversation state update callback to carry forward updated conversation state without restating the state schema in the shared starter prompt."
+source = "Human-listed requirement on 2026-06-26: use the conversation state update callback to carry forward updated conversation state without restating the state schema in the shared starter prompt. Human direction on 2026-06-29: use the state callback to return a simple Memory curation Library list, with empty meaning no curator."
 text = "The shared Knowledge Agent starter prompt tells agents to use conversation_state_update to carry forward updated conversation state, while relying on the injected state block and tool schema for state shape."
+clarifications = [
+  "The callback schema includes `memoryCurationLibraries` as a simple Library URI list for post-turn Memory Curator routing.",
+  "The main agent should use an empty `memoryCurationLibraries` list when there is nothing for the Memory Curator to consider.",
+]

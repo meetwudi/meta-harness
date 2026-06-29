@@ -1,6 +1,6 @@
 id = "knowledge-agent.conversation-state"
 title = "Knowledge Agent carries compact conversation state"
-source = "Human-listed requirement on 2026-06-23: each Knowledge Agent turn should carry forward a small spec-backed conversation state block created by code, using TOML, mentioning Goals and Libraries without redundant Goal state, focus, facts, or invented mode fields."
+source = "Human-listed requirement on 2026-06-23: each Knowledge Agent turn should carry forward a small spec-backed conversation state block created by code, using TOML, mentioning Goals and Libraries without redundant Goal state, focus, facts, or invented mode fields. Human direction on 2026-06-29: the state callback should also return a simple Memory curation Library list so the runtime can skip the Memory Curator when the list is empty."
 text = "Knowledge Agent generates, validates, injects, and persists compact TOML conversation state for each turn."
 clarifications = [
   "Conversation state is runtime metadata, not durable knowledge.",
@@ -12,6 +12,8 @@ clarifications = [
   "Do not add `mode`, focus, fact, summary, or similar fields without a human-approved Spec change.",
   "Do not change the conversation state structure without human approval and an updated Spec requirement.",
   "Agents update next-turn conversation state through an explicit validated callback/tool rather than host-side text scraping.",
+  "The validated callback may return a transient `memoryCurationLibraries` Library URI list for post-turn Memory Curator routing.",
+  "`memoryCurationLibraries` is runtime routing metadata, not durable knowledge, and an omitted or empty list means no Memory Curator run for that turn.",
   "Previous generated Knowledge Agent prompt and conversation state blocks should not accumulate as model-visible history; model input may keep prior user requests while replacing generated state with the current turn's state.",
   "Conversation roots store a `conversation-state-history.toml` bookkeeping index for audit.",
   "The state history index references per-turn before and after state files with checksums; it does not duplicate conversation state content.",

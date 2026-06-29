@@ -19,6 +19,7 @@ import type { ProviderRunOptions } from "./types.js";
 
 export type MemoryCuratorResult = {
   actorUri: string;
+  targetLibraryUris: string[];
   trace: unknown;
   toolCallEvents: unknown[];
   summary: Record<string, unknown>;
@@ -31,6 +32,10 @@ export async function runMemoryCurator(
   options: ProviderRunOptions,
 ): Promise<MemoryCuratorResult | undefined> {
   if (!options.memoryCurator.enabled) {
+    return undefined;
+  }
+  const targetLibraryUris = options.conversationState.memoryCurationLibraryUris();
+  if (targetLibraryUris.length === 0) {
     return undefined;
   }
   const actorUri = options.memoryCurator.actorUri as string;
@@ -49,6 +54,7 @@ export async function runMemoryCurator(
     recentMessageLimit,
     latestUserMessage: options.latestUserMessage,
     recentContext,
+    memoryCurationLibraryUris: targetLibraryUris,
   });
   const agent = new SandboxAgent({
     name: "Meta Harness Memory Curator",
@@ -60,7 +66,7 @@ export async function runMemoryCurator(
       RECOMMENDED_PROMPT_PREFIX,
       "You are the Meta Harness Library-scoped Memory Curator.",
       "Follow the shared Knowledge Agent starter prompt in Memory Curator Mode.",
-      "Before writing memory, inspect writable Libraries, LIBRARY.toml, MEMORY.toml, and existing memory.",
+      "Before writing memory, inspect routed writable Libraries, LIBRARY.toml, MEMORY.toml, and existing memory.",
     ].join(" "),
     tools: createLibrarianOpenAITools(curatorContext),
     defaultManifest: buildManifest(options),
@@ -114,6 +120,7 @@ export async function runMemoryCurator(
   await getGlobalTraceProvider().forceFlush();
   return {
     actorUri,
+    targetLibraryUris,
     trace: tracedResult.trace,
     toolCallEvents: curatorContext.toolCallEvents,
     summary: resultSummary(tracedResult.result),
@@ -129,6 +136,7 @@ export function buildMemoryCuratorPrompt(input: {
   recentMessageLimit: number;
   latestUserMessage: string;
   recentContext: string;
+  memoryCurationLibraryUris: string[];
 }): string {
   return buildKnowledgeAgentPrompt({
     repoRoot: input.repoRoot,
@@ -139,6 +147,7 @@ export function buildMemoryCuratorPrompt(input: {
       latestUserMessageOnly: true,
       latestUserMessage: input.latestUserMessage,
       recentContext: input.recentContext,
+      memoryCurationLibraryUris: input.memoryCurationLibraryUris,
     },
   });
 }

@@ -24,10 +24,12 @@ procedure = [
   "Materialize storage locations from the project config again.",
   "Create a Library without naming a storage location, then write and read it through the configured Postgres-backed storage location.",
   "Create a stocks Library from ordinary user-language inputs without naming or exposing the storage location.",
-  "Write `library://stocks/MEMORY.toml` through Librarian with automatic curation, one folder per stock symbol, and sequential dated entry guidance derived from the user-language request.",
+  "Write `library://stocks/MEMORY.toml` through Librarian with automatic curation, one folder per user-supplied stock symbol token, and sequential dated entry guidance derived from the user-language request.",
   "Write an example FB entry under the per-stock folder using a dated sequential file.",
   "Materialize storage locations for the configured Quartz Memory Curator actor and verify it can inspect the stocks Library and Memory config.",
+  "Exercise the conversation state callback with an empty Memory curation Library list and with `library://stocks` as the routed Library.",
   "Render Memory Curator mode with a contextualized main-agent goal and a separate raw latest user message.",
+  "Render Memory Curator mode with the routed `library://stocks` target Library list.",
 ]
 expected = [
   "Project filesystem locations remain available when the Postgres environment variable is absent.",
@@ -39,7 +41,10 @@ expected = [
   "Project storage grants are evaluated against the project-configured Quartz actor.",
   "New Quartz-created Libraries grant read and update governance to the Quartz Memory Curator actor.",
   "`MEMORY.toml` curation config can mark the stock Memory collection as automatically curated.",
-  "`MEMORY.toml` specifies the stock memory layout as `symbols/{symbol}/` folders with `YYYY-MM-DD.md` sequential entries and learned-at/learned-from provenance.",
+  "`MEMORY.toml` specifies the stock memory layout as `symbols/{symbol}/` folders with user-supplied symbol tokens, duplicate checks scoped to the required symbol folder, `YYYY-MM-DD.md` sequential entries, and learned-at/learned-from provenance.",
   "The Memory Curator actor sees the stocks Library as writable and can read its `LIBRARY.toml` and `MEMORY.toml` before writing.",
+  "An empty Memory curation Library list skips the Memory Curator for that turn.",
+  "A routed Memory curation Library list is a simple Library URI list and does not include candidates, confidence, provenance, reasons, or memory entries.",
   "Memory Curator mode uses a separate latest-user-message boundary from the contextualized main-agent goal.",
+  "Memory Curator mode receives the routed target Library URI list when the curator runs.",
 ]
