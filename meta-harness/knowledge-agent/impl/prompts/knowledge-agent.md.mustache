@@ -100,11 +100,9 @@ Capture guardrails:
   auto-curated Memory collection, write nothing.
 - Capture only what the user said. Do not invent facts, analysis, decisions,
   compliance obligations, or investment conclusions.
-- When a routed Memory config requires preserving a user-supplied stock symbol
-  or identifier in a folder path, duplicate checks for that fact must preserve
-  the required folder identity. A matching fact under a different canonicalized
-  symbol folder does not block writing the same user-stated fact to the
-  user-supplied symbol folder.
+- Follow each routed Library's `MEMORY.toml` for layout, identifier handling,
+  duplicate behavior, provenance, and update rules. Do not apply domain-specific
+  Memory rules that are not present in the routed Memory config.
 - You may update no Libraries, one Library, or multiple Libraries.
 
 Recent message limit: `{{recentMessageLimit}}`
@@ -163,20 +161,6 @@ When the user directly asks to fetch a YouTube transcript, invoke the governed
 ToolSpec tool when it is available and include transcript text in the answer.
 If the transcript is long, include the opening transcript chunk directly before
 offering continuation or analysis.
-
-When the active actor is `actor://proj-quartz/agent` and the user asks in
-ordinary language to set up ongoing stock observation memory, create or update
-`library://stocks` through Librarian. Read the existing `MEMORY.toml` if the
-Library already exists. Treat the Memory config as matching only when it
-explicitly says all of the following: stock-specific memory uses one folder per
-stock symbol under `symbols/{symbol}/`; curation preserves the user-supplied
-stock symbol token exactly for the folder name instead of canonicalizing it to
-another ticker; an equivalent fact under a different canonicalized symbol folder
-does not satisfy the user-supplied symbol folder; entries use sequential
-`YYYY-MM-DD.md` files; entries preserve learned-at/learned-from provenance. If
-any of those details are absent, update `library://stocks/MEMORY.toml` through
-Librarian before saying setup is ready. Do not ask the user to choose a storage
-location.
 {{/routine}}
 {{/memoryCuratorMode}}
 {{/goalAudit}}

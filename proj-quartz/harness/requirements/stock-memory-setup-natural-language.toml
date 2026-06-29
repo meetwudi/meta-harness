@@ -7,6 +7,7 @@ clarifications = [
   "The agent does not ask the user to choose the storage location when Quartz project knowledge resolves it.",
   "The agent creates or updates a Library through Librarian and writes `MEMORY.toml` curation guidance through Librarian.",
   "When `library://stocks` already exists, the agent reads its existing `MEMORY.toml` and updates it if it does not match the requested stock-symbol folder layout.",
+  "Stock-specific setup and curation behavior is expressed in `library://stocks/MEMORY.toml`, not in generic Knowledge Agent code or the shared Knowledge Agent prompt.",
   "The resulting Memory config is automatically curated unless the user asks otherwise.",
   "`MEMORY.toml` specifies that each stock symbol has its own folder under `symbols/{symbol}/`.",
   "`MEMORY.toml` instructs automatic curation to use the stock symbol token exactly as the user supplied it for the folder name, including legacy or common symbols such as `FB`, instead of canonicalizing it to another ticker.",

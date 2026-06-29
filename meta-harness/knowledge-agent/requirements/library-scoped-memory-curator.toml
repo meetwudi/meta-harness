@@ -1,6 +1,6 @@
 id = "knowledge-agent.library-scoped-memory-curator"
 title = "Library-scoped memory curator"
-source = "Human request on 2026-06-26: passive memory capture should be Library-scoped, happen after the main agent, use a separate agent/process, share the master Knowledge Agent prompt, and capture strictly what the user said. Human clarification on 2026-06-27: the Memory Curator should also stream as part of the back-to-back agent sequence. Human direction on 2026-06-29: the main Knowledge Agent should return a simple list of Libraries that may need Memory curation, an empty list should skip the curator, and the main agent should not produce candidate/confidence/provenance/reason payloads for curation."
+source = "Human request on 2026-06-26: passive memory capture should be Library-scoped, happen after the main agent, use a separate agent/process, share the master Knowledge Agent prompt, and capture strictly what the user said. Human clarification on 2026-06-27: the Memory Curator should also stream as part of the back-to-back agent sequence. Human direction on 2026-06-29: the main Knowledge Agent should return a simple list of Libraries that may need Memory curation, an empty list should skip the curator, and the main agent should not produce candidate/confidence/provenance/reason payloads for curation. Human direction on 2026-06-29: domain-specific Memory behavior belongs in each routed Library's MEMORY.toml rather than generic Knowledge Agent code or prompt logic."
 text = "Knowledge Agent memory capture is sequenced after the main agent as a separate Library-scoped curator mode using the shared Knowledge Agent prompt."
 clarifications = [
   "The curator runs with its own configured actor URI.",
@@ -19,4 +19,6 @@ clarifications = [
   "The main Knowledge Agent does not return Memory curation candidates, confidence, provenance, reasons, or memory entries.",
   "An omitted or empty Memory curation Library list means the Memory Curator is not run for that turn.",
   "When the Memory Curator runs, it receives the routed Library URIs and still validates writability, Memory config, existing memory, and latest-message relevance before writing.",
+  "Generic Knowledge Agent code and prompts must not hard-code domain-specific Memory layouts, identifiers, duplicate rules, or Library names.",
+  "Domain-specific Memory layout, identifier handling, duplicate behavior, and provenance requirements belong in the routed Library's `MEMORY.toml`.",
 ]

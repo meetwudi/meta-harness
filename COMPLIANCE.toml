@@ -5,3 +5,7 @@
 [[items]]
 id = "meta-harness-compliance"
 text = "Verify compliance from library://meta-harness."
+
+[[items]]
+id = "memory-primitive-source-of-truth"
+text = "Verify application- or domain-specific Memory behavior, including layout, retrieval semantics, write semantics, identifiers, duplicate rules, and Library names, is expressed in the applicable Memory primitive such as `MEMORY.toml` and not hard-coded in generic code or shared Knowledge Agent knowledge."

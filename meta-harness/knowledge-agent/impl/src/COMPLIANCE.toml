@@ -5,3 +5,7 @@
 [[items]]
 id = "knowledge-agent-toolspec-generic-resolution"
 text = "Verify that Knowledge Agent ToolSpec OpenAI adapter code remains generic: discovered ToolSpecs may be exposed after Library discovery and actor governance, but the adapter must not branch on specific tool names, implementation tokens, or implementation file names."
+
+[[items]]
+id = "knowledge-agent-code-no-domain-memory-logic"
+text = "Verify Knowledge Agent source code remains generic for Memory: it may route Library URIs and execute `MEMORY.toml`-governed operations, but must not branch on application domains, project domains, specific Library names, specific identifiers, or domain-specific retrieval/write layouts."

@@ -1,0 +1,7 @@
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+[[items]]
+id = "knowledge-agent-no-application-memory-logic"
+text = "Verify shared Knowledge Agent prompts, requirements, tests, and implementation remain domain-agnostic for Memory: they may route to Libraries and follow `MEMORY.toml`, but must not encode application-specific Memory layouts, retrieval behavior, write behavior, identifiers, duplicate rules, or Library names."
