@@ -32,7 +32,7 @@ library://repository/.meta-harness.json
 Project applications may pass their own marker path, such as:
 
 ```text
-library://proj-quartz/.meta-harness.json
+library://example-project/.meta-harness.json
 ```
 
 The marker's `storage.locations` array is the selected project's starting point
@@ -125,11 +125,11 @@ Example Postgres-backed Library location:
 
 ```json
 {
-  "name": "quartz-postgres",
-  "description": "PROJ-Quartz Postgres-backed Libraries.",
+  "name": "project-postgres",
+  "description": "Project Postgres-backed Libraries.",
   "driverName": "postgres",
-  "enabledWhenEnv": "QUARTZ_POSTGRES_URL",
-  "connectionStringEnv": "QUARTZ_POSTGRES_URL",
+  "enabledWhenEnv": "PROJECT_POSTGRES_URL",
+  "connectionStringEnv": "PROJECT_POSTGRES_URL",
   "schemaName": "meta_harness",
   "tableName": "resources",
   "libraryRootPath": "/libraries",
@@ -160,7 +160,7 @@ unsupported driver.
 
 Use `librarian_read` to inspect
 `library://repository/.meta-harness.json` or the selected project marker, such
-as `library://proj-quartz/.meta-harness.json`.
+as `library://example-project/.meta-harness.json`.
 Read each location's name, description, driver, capabilities, Library discovery
 fields, and Library placement fields from that knowledge.
 

@@ -25,13 +25,13 @@ const fakeConversationState = {
 
 const storage = createLocalFileSystemStorage();
 const storageRoot = await mkdtemp(join(tmpdir(), "knowledge-agent-toolspec-"));
-const toolsRoot = join(storageRoot, "youtube-transcript-tool");
+const toolsRoot = join(storageRoot, "fixture-tool-library");
 await storage.makeDirectory(toolsRoot);
 await storage.makeDirectory(join(toolsRoot, "tests"));
 await writeFile(
   join(toolsRoot, "LIBRARY.toml"),
   [
-    'name = "youtube-transcript-tool"',
+    'name = "fixture-tool-library"',
     'description = "Fixture ToolSpec Library."',
     "isSystemLibrary = false",
     'read_actors = ["actor://knowledge-agent"]',
@@ -45,36 +45,36 @@ await writeFile(
     "# This is a Harness primitive.",
     "# See also: library://meta-harness",
     "",
-    'name = "fetch_youtube_transcript"',
-    'description = "Fetch transcript text and timestamped segments for a YouTube video."',
-    'implementation = "builtin/fetch-youtube-transcript"',
+    'name = "fixture_text_transform"',
+    'description = "Transform text for a neutral ToolSpec fixture."',
+    'implementation = "impl/fixture-text-transform.js"',
     'allowed_actors = ["actor://knowledge-agent"]',
     "order = 10",
     "",
     "[input_schema]",
     'type = "object"',
-    'required = ["url"]',
+    'required = ["text"]',
     "additional_properties = false",
-    'properties_json = "{\\"url\\":{\\"type\\":\\"string\\"},\\"language\\":{\\"type\\":\\"string\\"}}"',
+    'properties_json = "{\\"text\\":{\\"type\\":\\"string\\"}}"',
     "",
     "[output_schema]",
     'type = "object"',
-    'description = "Transcript text, timestamped segments, language, source, and retrieval time."',
+    'description = "Transformed fixture text."',
     "",
     "[[test_cases]]",
-    'id = "fetch-transcript"',
-    'input_json = "{\\"url\\":\\"https://www.youtube.com/watch?v=J9AOaINKy0E\\"}"',
-    'expected = "Returns visible transcript text for the requested video."',
+    'id = "transform-text"',
+    'input_json = "{\\"text\\":\\"example\\"}"',
+    'expected = "Returns transformed fixture text."',
     "",
   ].join("\n"),
 );
 await writeFile(
   join(toolsRoot, "tests", "unit.test.toml"),
   [
-    'id = "fetch-youtube-transcript.unit.fixture"',
-    'tool = "fetch_youtube_transcript"',
-    'input_json = "{\\"url\\":\\"https://www.youtube.com/watch?v=J9AOaINKy0E\\"}"',
-    'expected = "The tool returns transcript text."',
+    'id = "fixture-text-transform.unit.fixture"',
+    'tool = "fixture_text_transform"',
+    'input_json = "{\\"text\\":\\"example\\"}"',
+    'expected = "The tool returns transformed text."',
     "",
   ].join("\n"),
 );
@@ -116,7 +116,7 @@ assert.ok(primaryToolNames.includes("web_search"));
 assert.ok(primaryToolNames.includes("librarian_intro"));
 assert.ok(primaryToolNames.includes("goal_create"));
 assert.ok(primaryToolNames.includes("conversation_state_update"));
-assert.ok(primaryToolNames.includes("fetch_youtube_transcript"));
+assert.ok(primaryToolNames.includes("fixture_text_transform"));
 
 const toolSpecToolsSource = readFileSync(
   resolve("src/create-toolspec-openai-tools.ts"),
@@ -126,15 +126,10 @@ const toolSpecImplementationResolverSource = readFileSync(
   resolve("src/resolve-toolspec-implementation.ts"),
   "utf8",
 );
-const fetchYouTubeTranscriptSource = readFileSync(
-  resolve("src/fetch-youtube-transcript.ts"),
-  "utf8",
-);
 assert.match(toolSpecToolsSource, /discoverLibraryToolSpecs/);
 assert.match(toolSpecToolsSource, /executeToolSpecImplementation/);
-assert.doesNotMatch(toolSpecToolsSource, /builtin\/fetch-youtube-transcript/);
-assert.doesNotMatch(toolSpecToolsSource, /fetchYouTubeTranscript/);
-assert.doesNotMatch(toolSpecToolsSource, /fetch-youtube-transcript/);
+assert.doesNotMatch(toolSpecToolsSource, /fixture_text_transform/);
+assert.doesNotMatch(toolSpecToolsSource, /fixture-text-transform/);
 assert.doesNotMatch(
   toolSpecToolsSource,
   /implementationPath\.endsWith/,
@@ -142,9 +137,8 @@ assert.doesNotMatch(
 assert.match(toolSpecImplementationResolverSource, /pathToFileURL/);
 assert.match(toolSpecImplementationResolverSource, /await import\(moduleUrl\.href\)/);
 assert.match(toolSpecImplementationResolverSource, /executeToolSpec/);
-assert.doesNotMatch(toolSpecImplementationResolverSource, /builtin\/fetch-youtube-transcript/);
-assert.doesNotMatch(toolSpecImplementationResolverSource, /fetch-youtube-transcript/);
-assert.match(fetchYouTubeTranscriptSource, /export async function executeToolSpec/);
+assert.doesNotMatch(toolSpecImplementationResolverSource, /fixture_text_transform/);
+assert.doesNotMatch(toolSpecImplementationResolverSource, /fixture-text-transform/);
 
 const routineSource = readFileSync(
   resolve("src/create-routine-handoff-agents.ts"),

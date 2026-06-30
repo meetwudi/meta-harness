@@ -1,6 +1,5 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.library-toolspec-openai-tools: exposes allowed Library ToolSpecs as OpenAI tools.
-// Supports knowledge-agent.youtube-transcript-toolspec-implementation: binds the YouTube transcript implementation token.
 // Compliance: keep this adapter generic; do not branch here on specific tool names, implementation tokens, or implementation file names.
 
 import { tool, type Tool } from "@openai/agents";

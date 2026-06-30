@@ -96,7 +96,7 @@ Each collection includes:
 - `instructions`
 
 `location` defines where entries for that collection live. It may name a folder
-pattern such as `{stock-symbol}/` or `{customer-name}/`, or a more specific
+pattern such as `{topic}/` or `{customer-name}/`, or a more specific
 entry pattern such as `{routine-name}/executions/`. Collection instructions
 define the entry format, sequencing rule, and provenance fields agents must
 preserve.

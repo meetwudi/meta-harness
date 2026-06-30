@@ -4,15 +4,15 @@
 // Supports storage.env-gated-storage-locations: verifies optional Postgres locations are gated by deployment env.
 // Supports storage.project-scoped-storage-locations: verifies selected project config locations do not inherit root machine-local locations.
 // Supports storage.postgres-deployment-configuration: verifies env-provided Postgres connection configuration.
-// Supports proj-quartz.postgres-backed-libraries: verifies configured Postgres-backed Libraries through Librarian.
-// Supports proj-quartz.quartz-agent-actor: verifies Quartz storage grants for the project actor.
+// Supports storage.default-library-creation-location: verifies configured default Library creation through Librarian.
+// Supports storage.created-library-governance-template: verifies created Libraries use configured actor governance templates.
+// Supports knowledge-agent.library-scoped-memory-curator: verifies generic Memory Curator routing and prompt boundaries.
 // Harness-Requirement: knowledge-agent.project-config-selection
 // Harness-Requirement: storage.project-scoped-storage-locations
 
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { once } from "node:events";
-import { readFileSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
@@ -36,13 +36,14 @@ import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
 
 const postgresCommand = requireCommand("postgres");
 const initdbCommand = requireCommand("initdb");
-const originalQuartzPostgresUrl = process.env.QUARTZ_POSTGRES_URL;
-const quartzAgentActor = "actor://proj-quartz/agent";
-const quartzMemoryCuratorActor = "actor://proj-quartz/memory-curator";
+const testPostgresEnvName = "META_HARNESS_TEST_POSTGRES_URL";
+const originalTestPostgresUrl = process.env[testPostgresEnvName];
+const fixtureAgentActor = "actor://fixture-project/agent";
+const fixtureMemoryCuratorActor = "actor://fixture-project/memory-curator";
 const workRoot = await mkdtemp(join(tmpdir(), "ka-pg-"));
 const sourceRepoRoot = resolve(process.cwd(), "../../..");
 const repoRoot = join(workRoot, "repo");
-const projectRoot = join(repoRoot, "proj-quartz");
+const projectRoot = join(repoRoot, "fixture-project");
 const localRoot = join(workRoot, "local");
 const dataRoot = join(workRoot, "data");
 const socketRoot = join(workRoot, "socket");
@@ -95,14 +96,14 @@ try {
       {
         schema: 1,
         project: {
-          name: "proj-quartz",
+          name: "fixture-project",
           localRoot,
-          actorUri: quartzAgentActor,
+          actorUri: fixtureAgentActor,
         },
         runtime: {
           memoryCurator: {
             enabled: true,
-            actorUri: quartzMemoryCuratorActor,
+            actorUri: fixtureMemoryCuratorActor,
             recentMessageLimit: 10,
             latestUserMessageOnly: true,
           },
@@ -115,7 +116,7 @@ try {
               driverName: "filesystem",
               grants: [
                 {
-                  actors: [quartzAgentActor, quartzMemoryCuratorActor],
+                  actors: [fixtureAgentActor, fixtureMemoryCuratorActor],
                   capabilities: ["read", "write", "delete", "query", "blob"],
                 },
               ],
@@ -130,7 +131,7 @@ try {
               driverName: "filesystem",
               grants: [
                 {
-                  actors: [quartzAgentActor, quartzMemoryCuratorActor],
+                  actors: [fixtureAgentActor, fixtureMemoryCuratorActor],
                   capabilities: ["read", "write", "delete", "query", "blob"],
                 },
               ],
@@ -140,16 +141,16 @@ try {
               discoverLibraries: true,
             },
             {
-              name: "quartz-postgres",
+              name: "fixture-postgres",
               description: "Postgres fixture storage.",
               driverName: "postgres",
-              enabledWhenEnv: "QUARTZ_POSTGRES_URL",
-              connectionStringEnv: "QUARTZ_POSTGRES_URL",
+              enabledWhenEnv: testPostgresEnvName,
+              connectionStringEnv: testPostgresEnvName,
               schemaName: "meta_harness",
               tableName: "resources",
               grants: [
                 {
-                  actors: [quartzAgentActor, quartzMemoryCuratorActor],
+                  actors: [fixtureAgentActor, fixtureMemoryCuratorActor],
                   capabilities: ["read", "write", "delete", "query"],
                 },
               ],
@@ -158,8 +159,8 @@ try {
               discoveryExcludes: [],
               discoverLibraries: true,
               defaultForLibraryCreation: true,
-              createdLibraryReadActors: [quartzAgentActor, quartzMemoryCuratorActor],
-              createdLibraryUpdateActors: [quartzAgentActor, quartzMemoryCuratorActor],
+              createdLibraryReadActors: [fixtureAgentActor, fixtureMemoryCuratorActor],
+              createdLibraryUpdateActors: [fixtureAgentActor, fixtureMemoryCuratorActor],
             },
           ],
         },
@@ -169,23 +170,23 @@ try {
     ),
   );
 
-  const quartzConfig = loadMetaHarnessConfig(repoRoot, "proj-quartz/.meta-harness.json");
-  assert.deepEqual(resolveMemoryCuratorConfig(quartzConfig), {
+  const fixtureConfig = loadMetaHarnessConfig(repoRoot, "fixture-project/.meta-harness.json");
+  assert.deepEqual(resolveMemoryCuratorConfig(fixtureConfig), {
     enabled: true,
-    actorUri: quartzMemoryCuratorActor,
+    actorUri: fixtureMemoryCuratorActor,
     recentMessageLimit: 10,
     latestUserMessageOnly: true,
   });
 
   const runtime = preparedRuntime(workRoot, localRoot);
   const filesystemStorage = createLocalFileSystemStorage();
-  delete process.env.QUARTZ_POSTGRES_URL;
+  delete process.env[testPostgresEnvName];
   const withoutPostgres = loadLocalStorageLocations({
     repoRootPath: repoRoot,
-    projectConfigPath: "proj-quartz/.meta-harness.json",
+    projectConfigPath: "fixture-project/.meta-harness.json",
     runtime,
     storage: filesystemStorage,
-    actorUris: [quartzAgentActor],
+    actorUris: [fixtureAgentActor],
   });
   assert.deepEqual(
     withoutPostgres.map((location) => location.name),
@@ -214,21 +215,21 @@ try {
   const stderr: string[] = [];
   postgres.stderr.setEncoding("utf8");
   postgres.stderr.on("data", (chunk) => stderr.push(chunk));
-  process.env.QUARTZ_POSTGRES_URL = connectionString;
+  process.env[testPostgresEnvName] = connectionString;
 
   const withPostgres = loadLocalStorageLocations({
     repoRootPath: repoRoot,
-    projectConfigPath: "proj-quartz/.meta-harness.json",
+    projectConfigPath: "fixture-project/.meta-harness.json",
     runtime,
     storage: filesystemStorage,
-    actorUris: [quartzAgentActor],
+    actorUris: [fixtureAgentActor],
   });
   assert.deepEqual(
     withPostgres.map((location) => location.name),
-    ["project", "tmp-local", "quartz-postgres"],
+    ["project", "tmp-local", "fixture-postgres"],
   );
 
-  postgresStorage = withPostgres.find((location) => location.name === "quartz-postgres")
+  postgresStorage = withPostgres.find((location) => location.name === "fixture-postgres")
     ?.storage as PostgresStorage | undefined;
   assert.ok(postgresStorage);
   await waitForPostgres(postgresStorage, () => stderr.join(""));
@@ -236,73 +237,64 @@ try {
   const context = createLibrarianContext({
     storage: filesystemStorage,
     storageLocations: withPostgres,
-    actorUri: quartzAgentActor,
+    actorUri: fixtureAgentActor,
     sessionId: "postgres-storage-config",
   });
   await executeLibrarianTool(context, "librarian_create_library", {
-    name: "quartz-config-smoke",
-    description: "Quartz config-backed Postgres smoke Library.",
+    name: "config-smoke",
+    description: "Config-backed Postgres smoke Library.",
   });
   await executeLibrarianTool(context, "librarian_update", {
-    uri: "library://quartz-config-smoke/notes/smoke.md",
-    content: "Quartz config Postgres smoke content",
+    uri: "library://config-smoke/notes/smoke.md",
+    content: "Config Postgres smoke content",
   });
   const read = await executeLibrarianTool(context, "librarian_read", {
-    uri: "library://quartz-config-smoke/notes/smoke.md",
+    uri: "library://config-smoke/notes/smoke.md",
   });
   assert.equal(
     readPath(read, ["content"]),
-    "Quartz config Postgres smoke content",
+    "Config Postgres smoke content",
   );
 
   const firstUserMessage =
-    "I want a stocks Library for notes about stocks I am watching.";
+    "I want an observations Library for notes I want to remember.";
   const secondUserMessage =
-    "I want the stocks we talk about to be actively observed and captured, organized by stock folder, like FB and QCOM.";
+    "Please organize observations by topic and keep dated entries.";
   assert.equal(firstUserMessage.includes("TOML"), false);
   assert.equal(secondUserMessage.includes("TOML"), false);
   assert.equal(secondUserMessage.includes("MEMORY.toml"), false);
-  const quartzLibraryCreationPolicy = readFileSync(
-    resolve(sourceRepoRoot, "proj-quartz", "harness", "LIBRARY-CREATION.toml"),
-    "utf8",
-  );
-  assert.match(quartzLibraryCreationPolicy, /ask_user_to_confirm_storage_location = false/);
-  assert.match(quartzLibraryCreationPolicy, /expose_storage_location_in_user_response = false/);
-  assert.match(quartzLibraryCreationPolicy, /require_description_before_create = true/);
 
-  const stocksCreated = await executeLibrarianTool(context, "librarian_create_library", {
-    name: "stocks",
-    description: "Stock observation memory for public companies the user is watching.",
+  const observationsCreated = await executeLibrarianTool(context, "librarian_create_library", {
+    name: "observations",
+    description: "Observation memory for notes the user wants remembered.",
   });
-  assert.equal(readPath(stocksCreated, ["storageLocation", "name"]), "quartz-postgres");
+  assert.equal(readPath(observationsCreated, ["storageLocation", "name"]), "fixture-postgres");
   await executeLibrarianTool(context, "librarian_update", {
-    uri: "library://stocks/MEMORY.toml",
+    uri: "library://observations/MEMORY.toml",
     content: [
       "# This is a Harness primitive.",
       "# See also: library://meta-harness",
       "",
       "instructions = [",
-      '  "Capture only user-stated stock observations and preferences from conversation.",',
-      '  "Use one folder per stock symbol under symbols/{symbol}/.",',
-      '  "Use the stock symbol token exactly as the user supplied it for the folder name, including legacy or common symbols such as FB.",',
-      '  "A matching fact under a different canonicalized symbol folder does not satisfy the user-supplied symbol folder.",',
-      '  "Within each stock folder, store sequential memory by day using YYYY-MM-DD.md files.",',
+      '  "Capture only user-stated observations from conversation.",',
+      '  "Use one folder per topic under topics/{topic}/.",',
+      '  "Use the topic token exactly as the user supplied it when choosing the folder name.",',
+      '  "Within each topic folder, store sequential memory by day using YYYY-MM-DD.md files.",',
       '  "Each entry must include learned_at, learned_from, and the exact user-stated fact or observation.",',
       '  "Inspect existing memory before writing and do not duplicate facts already captured.",',
-      '  "Do not invent investment analysis, recommendations, or conclusions.",',
+      '  "Do not invent analysis, recommendations, or conclusions.",',
       "]",
       "",
       "[curation]",
       "auto_curated = true",
       "",
       "[[collections]]",
-      'name = "symbols"',
-      'location = "symbols/{symbol}/"',
+      'name = "topics"',
+      'location = "topics/{topic}/"',
       "instructions = [",
-      '  "Treat this location as the folder for one stock symbol.",',
-      '  "Use the stock symbol token exactly as supplied by the user when choosing the symbol folder.",',
-      '  "If the same fact exists under a different canonicalized symbol folder, still write it here when this is the user-supplied symbol folder.",',
-      '  "Store sequential daily memory inside the stock folder using files named YYYY-MM-DD.md.",',
+      '  "Treat this location as the folder for one topic.",',
+      '  "Use the topic token exactly as supplied by the user when choosing the topic folder.",',
+      '  "Store sequential daily memory inside the topic folder using files named YYYY-MM-DD.md.",',
       '  "Append new entries in chronological order within the day file when multiple facts are learned on the same day.",',
       '  "Each entry must include learned_at, learned_from, and statement fields or equivalent labeled lines.",',
       "]",
@@ -310,74 +302,73 @@ try {
     ].join("\n"),
   });
   await executeLibrarianTool(context, "librarian_update", {
-    uri: "library://stocks/symbols/FB/2026-06-26.md",
+    uri: "library://observations/topics/example-topic/2026-06-26.md",
     content: [
-      "# FB - 2026-06-26",
+      "# example-topic - 2026-06-26",
       "",
       "## 2026-06-26",
       "",
       "- learned_at: 2026-06-26",
       "- learned_from: user",
-      "- statement: FB is one of the example stock symbols to organize.",
+      "- statement: example-topic is a fixture topic to organize.",
       "",
     ].join("\n"),
   });
 
-  const stocksManifest = await executeLibrarianTool(context, "librarian_read", {
-    uri: "library://stocks/LIBRARY.toml",
+  const observationsManifest = await executeLibrarianTool(context, "librarian_read", {
+    uri: "library://observations/LIBRARY.toml",
   });
-  const stocksManifestContent = String(readPath(stocksManifest, ["content"]));
+  const observationsManifestContent = String(readPath(observationsManifest, ["content"]));
   assert.match(
-    stocksManifestContent,
-    /read_actors = \["actor:\/\/proj-quartz\/agent","actor:\/\/proj-quartz\/memory-curator"\]/,
+    observationsManifestContent,
+    /read_actors = \["actor:\/\/fixture-project\/agent","actor:\/\/fixture-project\/memory-curator"\]/,
   );
   assert.match(
-    stocksManifestContent,
-    /update_actors = \["actor:\/\/proj-quartz\/agent","actor:\/\/proj-quartz\/memory-curator"\]/,
+    observationsManifestContent,
+    /update_actors = \["actor:\/\/fixture-project\/agent","actor:\/\/fixture-project\/memory-curator"\]/,
   );
 
   const curatorLocations = loadLocalStorageLocations({
     repoRootPath: repoRoot,
-    projectConfigPath: "proj-quartz/.meta-harness.json",
+    projectConfigPath: "fixture-project/.meta-harness.json",
     runtime,
     storage: filesystemStorage,
-    actorUris: [quartzMemoryCuratorActor],
+    actorUris: [fixtureMemoryCuratorActor],
   });
-  curatorPostgresStorage = curatorLocations.find((location) => location.name === "quartz-postgres")
+  curatorPostgresStorage = curatorLocations.find((location) => location.name === "fixture-postgres")
     ?.storage as PostgresStorage | undefined;
   assert.ok(curatorPostgresStorage);
   const curatorContext = createLibrarianContext({
     storage: filesystemStorage,
     storageLocations: curatorLocations,
-    actorUri: quartzMemoryCuratorActor,
+    actorUri: fixtureMemoryCuratorActor,
     sessionId: "postgres-memory-curator-config",
   });
   const curatorList = await executeLibrarianTool(curatorContext, "librarian_list_libraries", {});
   assert.ok(
     arrayAt(curatorList, ["libraries"]).some(
       (library) =>
-        readPath(library, ["uri"]) === "library://stocks" &&
+        readPath(library, ["uri"]) === "library://observations" &&
         readPath(library, ["writable"]) === true,
     ),
   );
-  const stocksMemory = await executeLibrarianTool(curatorContext, "librarian_read", {
-    uri: "library://stocks/MEMORY.toml",
+  const observationsMemory = await executeLibrarianTool(curatorContext, "librarian_read", {
+    uri: "library://observations/MEMORY.toml",
   });
-  assert.match(String(readPath(stocksMemory, ["content"])), /\[curation\]/);
-  assert.match(String(readPath(stocksMemory, ["content"])), /auto_curated = true/);
-  assert.match(String(readPath(stocksMemory, ["content"])), /location = "symbols\/\{symbol\}\/"/);
-  assert.match(String(readPath(stocksMemory, ["content"])), /symbol token exactly as the user supplied it/);
-  assert.match(String(readPath(stocksMemory, ["content"])), /different canonicalized symbol folder/);
-  assert.match(String(readPath(stocksMemory, ["content"])), /YYYY-MM-DD\.md/);
-  assert.match(String(readPath(stocksMemory, ["content"])), /learned_at/);
-  assert.match(String(readPath(stocksMemory, ["content"])), /learned_from/);
+  assert.match(String(readPath(observationsMemory, ["content"])), /\[curation\]/);
+  assert.match(String(readPath(observationsMemory, ["content"])), /auto_curated = true/);
+  assert.match(String(readPath(observationsMemory, ["content"])), /location = "topics\/\{topic\}\/"/);
+  assert.match(String(readPath(observationsMemory, ["content"])), /topic token exactly as the user supplied it/);
+  assert.match(String(readPath(observationsMemory, ["content"])), /YYYY-MM-DD\.md/);
+  assert.match(String(readPath(observationsMemory, ["content"])), /learned_at/);
+  assert.match(String(readPath(observationsMemory, ["content"])), /learned_from/);
   const curatorFiles = await executeLibrarianTool(curatorContext, "librarian_list_files", {
-    uri: "library://stocks",
+    uri: "library://observations",
     recursive: true,
   });
   assert.ok(
     arrayAt(curatorFiles, ["files"]).some(
-      (file) => readPath(file, ["uri"]) === "library://stocks/symbols/FB/2026-06-26.md",
+      (file) => readPath(file, ["uri"]) === "library://observations/topics/example-topic/2026-06-26.md",
     ),
   );
 
@@ -397,13 +388,13 @@ try {
   assert.equal(skippedCurator, undefined);
 
   const routedUpdate = await conversationState.update({
-    memoryCurationLibraries: [{ uri: "library://stocks" }],
+    memoryCurationLibraries: [{ uri: "library://observations" }],
   });
   assert.deepEqual(readPath(routedUpdate, ["memoryCurationLibraryUris"]), [
-    "library://stocks",
+    "library://observations",
   ]);
   assert.deepEqual(conversationState.memoryCurationLibraryUris(), [
-    "library://stocks",
+    "library://observations",
   ]);
   assert.equal(conversationState.currentToml().includes("memoryCurationLibraries"), false);
   assert.equal(conversationState.currentToml().includes("memory_curation"), false);
@@ -411,7 +402,7 @@ try {
   const contextualMainAgentGoal = [
     "Recent chat transcript:",
     `user: ${firstUserMessage}`,
-    "assistant: Created library://stocks.",
+    "assistant: Created library://observations.",
     "",
     "Current user request:",
     secondUserMessage,
@@ -433,7 +424,7 @@ try {
           type: "message",
           role: "assistant",
           status: "completed",
-          content: [{ type: "output_text", text: "Created library://stocks." }],
+          content: [{ type: "output_text", text: "Created library://observations." }],
         },
         {
           type: "message",
@@ -449,29 +440,29 @@ try {
   const recentContext = await memoryCuratorRecentContext(recentContextSession, 10);
   const curatorPrompt = buildMemoryCuratorPrompt({
     repoRoot: sourceRepoRoot,
-    actorUri: quartzMemoryCuratorActor,
+    actorUri: fixtureMemoryCuratorActor,
     recentMessageLimit: 10,
     latestUserMessage: secondUserMessage,
     recentContext,
     memoryCurationLibraryUris: conversationState.memoryCurationLibraryUris(),
   });
   assert.match(curatorPrompt, /## Memory Curator Mode/);
-  assert.match(curatorPrompt, /Active Memory Curator Actor: `actor:\/\/proj-quartz\/memory-curator`/);
+  assert.match(curatorPrompt, /Active Memory Curator Actor: `actor:\/\/fixture-project\/memory-curator`/);
   assert.match(curatorPrompt, /Learn only from the latest user message shown below\./);
   assert.match(curatorPrompt, /Use the recent conversation context only to understand references and avoid/);
   assert.match(curatorPrompt, /Inspect existing memory before writing\./);
   assert.match(curatorPrompt, /Latest user message only: `true`/);
   assert.match(curatorPrompt, new RegExp(escapeRegExp(secondUserMessage)));
   assert.match(curatorPrompt, /Target Memory curation Libraries from the main agent state:/);
-  assert.ok(curatorPrompt.includes('[\n  "library://stocks"\n]'));
+  assert.ok(curatorPrompt.includes('[\n  "library://observations"\n]'));
   assert.equal(curatorPrompt.includes("Recent chat transcript:"), false);
 } finally {
   await curatorPostgresStorage?.close();
   await postgresStorage?.close();
-  if (originalQuartzPostgresUrl === undefined) {
-    delete process.env.QUARTZ_POSTGRES_URL;
+  if (originalTestPostgresUrl === undefined) {
+    delete process.env[testPostgresEnvName];
   } else {
-    process.env.QUARTZ_POSTGRES_URL = originalQuartzPostgresUrl;
+    process.env[testPostgresEnvName] = originalTestPostgresUrl;
   }
   if (postgres && postgres.exitCode === null) {
     postgres.kill("SIGTERM");
@@ -487,7 +478,7 @@ function preparedRuntime(workRootPath: string, localRootPath: string): PreparedR
     memoryLibrary: join(localRootPath, "knowledge-agent", "memory"),
     memoryCurator: {
       enabled: true,
-      actorUri: quartzMemoryCuratorActor,
+      actorUri: fixtureMemoryCuratorActor,
       recentMessageLimit: 10,
       latestUserMessageOnly: true,
     },

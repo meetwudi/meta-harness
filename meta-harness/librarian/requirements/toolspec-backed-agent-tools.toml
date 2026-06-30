@@ -7,5 +7,5 @@ clarifications = [
   "`TOOLSPEC.toml` describes what the tool does, its agent-facing input schema, output contract, allowed actor URI glob patterns, implementation file, and test cases.",
   "The ToolSpec implementation reference points to the generated code file that implements the tool.",
   "Generated Librarian tool registry code reads ToolSpecs rather than hand-maintaining tool descriptions and input schemas in the registry.",
-  "The existing Librarian tools are migrated into ToolSpec folders before adding new tools such as a YouTube transcript fetcher.",
+  "The existing Librarian tools are migrated into ToolSpec folders before adding new runtime-provided tools.",
 ]

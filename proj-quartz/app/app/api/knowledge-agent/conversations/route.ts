@@ -57,7 +57,6 @@ type LibrarianStorage = {
 };
 
 type LibrarianStorageModule = {
-  createLocalFileSystemStorage(): LibrarianStorage;
   createPostgresStorageFromConnectionString(input: {
     connectionString: string;
     schemaName?: string;
@@ -287,26 +286,31 @@ function trimTitle(value: string): string {
     : normalized;
 }
 
-async function runtimeStorageFromConfig(
+export async function runtimeStorageFromConfig(
   config: MetaHarnessConfig,
 ): Promise<LibrarianStorage & { close?: () => Promise<void> }> {
-  const librarianStorage = await loadLibrarianStorageModule();
   const runtimeStorage = config.runtime?.conversationStorage;
-  if (runtimeStorage?.driverName === "postgres") {
-    const envName = runtimeStorage.connectionStringEnv ?? "META_HARNESS_POSTGRES_URL";
-    const connectionString = process.env[envName];
-    if (!connectionString) {
-      throw new Error(`Postgres runtime storage requires environment variable: ${envName}`);
-    }
-    return librarianStorage.createPostgresStorageFromConnectionString({
-      connectionString,
-      schemaName: runtimeStorage.schemaName,
-      tableName: runtimeStorage.tableName,
-      autoEnsureSchema: runtimeStorage.autoEnsureSchema,
-    });
+  if (!runtimeStorage) {
+    throw new Error(".meta-harness.json runtime.conversationStorage is required");
+  }
+  if (runtimeStorage.driverName !== "postgres") {
+    throw new Error(
+      `.meta-harness.json runtime.conversationStorage must use postgres, got ${runtimeStorage.driverName ?? "<missing>"}`,
+    );
   }
 
-  return librarianStorage.createLocalFileSystemStorage();
+  const envName = runtimeStorage.connectionStringEnv ?? "META_HARNESS_POSTGRES_URL";
+  const connectionString = process.env[envName];
+  if (!connectionString) {
+    throw new Error(`Postgres runtime storage requires environment variable: ${envName}`);
+  }
+  const librarianStorage = await loadLibrarianStorageModule();
+  return librarianStorage.createPostgresStorageFromConnectionString({
+    connectionString,
+    schemaName: runtimeStorage.schemaName,
+    tableName: runtimeStorage.tableName,
+    autoEnsureSchema: runtimeStorage.autoEnsureSchema,
+  });
 }
 
 async function loadConversationLibrary(): Promise<RuntimeConversationLibrary> {
@@ -324,11 +328,8 @@ async function loadConversationLibrary(): Promise<RuntimeConversationLibrary> {
     throw new Error(".meta-harness.json project.localRoot is required");
   }
 
-  const runtimeDriver = config.runtime?.conversationStorage?.driverName;
   const localRoot = resolveLocalRoot(repoRoot, configuredLocalRoot);
-  const tmpStorageLibrariesRoot = runtimeDriver === "postgres"
-    ? "/libraries"
-    : join(resolve(repoRoot, join(localRoot, "knowledge-agent", "tmp-local-storage")), "libraries");
+  const tmpStorageLibrariesRoot = "/libraries";
   const root = resolveRuntimeLibraryRootPath(runtimeLibrary.rootPath, {
     repoRootPath: repoRoot,
     projectRootPath: resolveProjectRootPath(repoRoot, configPath),

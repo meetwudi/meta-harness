@@ -5,3 +5,7 @@
 [[items]]
 id = "meta-harness-no-project-specific-logic"
 text = "Verify Meta Harness framework knowledge, shared prompts, and implementation stay project-agnostic. Application- or project-specific behavior belongs in the relevant project Library, such as `proj-*`, and its governed primitives, not in `meta-harness/**` except as generic framework support."
+
+[[items]]
+id = "meta-harness-examples-are-generic"
+text = "Verify shared Meta Harness primitive docs, examples, prompts, and tests use generic examples rather than concrete project, organization, domain-specific identifier, or product-specific scenarios unless the file is explicitly project-scoped."

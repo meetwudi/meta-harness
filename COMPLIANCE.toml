@@ -5,3 +5,7 @@
 [[items]]
 id = "knowledge-is-code-source-of-truth"
 text = "Verify repository changes preserve Knowledge is code: durable behavior, policy, project semantics, and source-of-truth rules belong in governed knowledge primitives; implementation code must be generic runtime plumbing or Spec-backed implementation rather than hard-coded unsourced knowledge."
+
+[[items]]
+id = "no-silent-fallbacks"
+text = "Verify implementation does not silently fall back when governed knowledge, configuration, storage, or tool access is missing. It must fail clearly or consult the human instead of substituting an ungoverned path."

@@ -8,6 +8,7 @@ criteria = [
   "OpenAI provider streaming relays public run activity such as active agent changes, tool calls, tool outputs, and final-answer text deltas when the main SDK run resolves.",
   "OpenAI provider streaming does not emit low-level model lifecycle markers such as response started or response completed as user-facing progress.",
   "OpenAI provider streaming maps raw tool/provider lifecycle events into source-aware, human-level activity descriptions or suppresses them when they are only plumbing.",
+  "OpenAI provider streaming does not branch on concrete project, domain, or ToolSpec tool names when deriving user-facing progress.",
   "OpenAI provider streaming does not emit raw provider output text deltas as assistant answer text, because those deltas may include intermediate model narration before tool calls.",
   "OpenAI provider streaming emits final-answer text deltas once from the canonical resolved main agent output, before sequenced Memory Curator streaming begins.",
   "OpenAI provider streaming requests safe reasoning summaries from reasoning models so reasoning summary text deltas can be provided by the SDK.",

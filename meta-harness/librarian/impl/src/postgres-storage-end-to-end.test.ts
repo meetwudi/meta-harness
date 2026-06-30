@@ -115,7 +115,7 @@ try {
     ),
   );
 
-  const content = "Postgres-backed Library resource for information trading search.\n";
+  const content = "Postgres-backed Library resource for generic search.\n";
   const updated = await executeLibrarianTool(context, "librarian_update", {
     uri: "library://pg-fixture/notes/information.md",
     content,
@@ -139,7 +139,7 @@ try {
 
   const searched = await executeLibrarianTool(context, "librarian_search", {
     libraryUriPatterns: ["library://pg-fixture"],
-    query: "information trading",
+    query: "generic search",
     limit: 10,
   });
   assert.ok(
@@ -174,11 +174,11 @@ try {
 
   await executeLibrarianTool(context, "librarian_add_tags", {
     scopeUri: "library://pg-fixture/notes",
-    tags: ["information-trading"],
+    tags: ["generic-search"],
   });
   const tagQuery = await executeLibrarianTool(context, "librarian_query_by_tags", {
     libraryUris: ["library://pg-fixture"],
-    tags: ["information-trading"],
+    tags: ["generic-search"],
   });
   assert.equal(
     readPath(tagQuery, ["results", 0, "matches", 0, "scopeUri"]),

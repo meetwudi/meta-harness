@@ -9,3 +9,7 @@ text = "Verify that Knowledge Agent ToolSpec OpenAI adapter code remains generic
 [[items]]
 id = "knowledge-agent-code-no-domain-memory-logic"
 text = "Verify Knowledge Agent source code remains generic for Memory: it may route Library URIs and execute `MEMORY.toml`-governed operations, but must not branch on applications, project domains, specific Library names, specific identifiers, or domain-specific retrieval/write layouts."
+
+[[items]]
+id = "knowledge-agent-code-no-concrete-tool-branches"
+text = "Verify shared Knowledge Agent tool assembly, prompt, progress, and resolver code do not special-case concrete ToolSpec tool names, implementation tokens, implementation file names, or project-specific tool behavior. Tool-specific implementation modules may exist only behind governed ToolSpec references and generic implementation resolution."

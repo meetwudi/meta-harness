@@ -5,3 +5,7 @@
 [[items]]
 id = "knowledge-agent-no-application-memory-logic"
 text = "Verify shared Knowledge Agent prompts, requirements, tests, and implementation remain application-agnostic for Memory: they may route to Libraries and follow `MEMORY.toml`, but must not encode application-specific Memory layouts, retrieval behavior, write behavior, identifiers, duplicate rules, or Library names."
+
+[[items]]
+id = "knowledge-agent-shared-prompt-no-hardcoding"
+text = "Verify the shared Knowledge Agent prompt remains slim and generic: no concrete project names, domains, domain-specific identifiers, organizations, tool names, implementation tokens, Memory layouts, duplicate rules, or domain conclusions may be embedded in the shared prompt."

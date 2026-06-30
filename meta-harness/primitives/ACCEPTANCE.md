@@ -53,22 +53,22 @@ Optional test fields:
 Example:
 
 ```toml
-name = "proj-quartz-acceptance"
+name = "example-app-acceptance"
 version = "v0.0.0"
 source = "Human request captured on 2026-06-28."
 scope = [
-  "proj-quartz/**",
+  "example-app/**",
 ]
 trigger = "Run these acceptance tests when files in scope change or when a human asks to run acceptance for this suite."
 
 [[tests]]
-id = "proj-quartz.acceptance.example"
+id = "example-app.acceptance.example"
 title = "Example acceptance scenario"
 requirements = [
-  "proj-quartz.example-requirement",
+  "example-app.example-requirement",
 ]
 circumstances = [
-  "Quartz dev server is running.",
+  "The example app service is running.",
 ]
 execution = "ai-browser"
 procedure = [

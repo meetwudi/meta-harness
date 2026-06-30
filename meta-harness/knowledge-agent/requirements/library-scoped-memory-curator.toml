@@ -1,12 +1,12 @@
 id = "knowledge-agent.library-scoped-memory-curator"
 title = "Library-scoped memory curator"
-source = "Human request on 2026-06-26: passive memory capture should be Library-scoped, happen after the main agent, use a separate agent/process, share the master Knowledge Agent prompt, and capture strictly what the user said. Human clarification on 2026-06-27: the Memory Curator should also stream as part of the back-to-back agent sequence. Human direction on 2026-06-29: the main Knowledge Agent should return a simple list of Libraries that may need Memory curation, an empty list should skip the curator, and the main agent should not produce candidate/confidence/provenance/reason payloads for curation. Human direction on 2026-06-29: domain-specific Memory behavior belongs in each routed Library's MEMORY.toml rather than generic Knowledge Agent code or prompt logic."
+source = "Human request on 2026-06-26: passive memory capture should be Library-scoped, happen after the main agent, use a separate agent/process, share the master Knowledge Agent prompt, and capture strictly what the user said. Human clarification on 2026-06-27: the Memory Curator should also stream as part of the back-to-back agent sequence. Human direction on 2026-06-29: the main Knowledge Agent should return a simple list of Libraries that may need Memory curation, an empty list should skip the curator, and the main agent should not produce candidate/confidence/provenance/reason payloads for curation. Human direction on 2026-06-29 and reinforced on 2026-06-30: domain-specific Memory behavior belongs in each routed Library's MEMORY.toml rather than generic Knowledge Agent code or prompt logic."
 text = "Knowledge Agent memory capture is sequenced after the main agent as a separate Library-scoped curator mode using the shared Knowledge Agent prompt."
 clarifications = [
   "The curator runs with its own configured actor URI.",
   "The curator runs after the main agent turn, not before or interleaved with it.",
   "The curator sends its own OpenAI trace so its decisions can be debugged separately from the main agent trace.",
-  "The curator receives a configured bounded recent conversation context; the Quartz default is the last 10 messages.",
+  "The curator receives a configured bounded recent conversation context; each selected project config supplies the message limit.",
   "The curator learns only from the latest user message and uses recent context only for reference resolution and duplicate avoidance.",
   "The curator discovers writable Libraries and reads their Library descriptions and `MEMORY.toml` instructions before deciding where to write.",
   "The curator may update no Libraries, one Library, or multiple Libraries.",

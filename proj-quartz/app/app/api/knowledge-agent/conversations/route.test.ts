@@ -6,6 +6,7 @@ import {
   listConversations,
   readConversation,
   reasoningContentFromRecords,
+  runtimeStorageFromConfig,
   writeTurnReasoning,
   type ReasoningDeltaRecord,
 } from "./route";
@@ -299,5 +300,43 @@ assert.match(createdToml, /^conversation_id = "quartz-[^"]+"$/m);
 assert.match(createdToml, /^created_at = "[^"]+"$/m);
 assert.match(createdToml, /^updated_at = "[^"]+"$/m);
 assert.match(createdToml, /^session_file = "session\.jsonl"$/m);
+
+await assert.rejects(
+  () => runtimeStorageFromConfig({}),
+  /\.meta-harness\.json runtime\.conversationStorage is required/,
+);
+await assert.rejects(
+  () =>
+    runtimeStorageFromConfig({
+      runtime: {
+        conversationStorage: {
+          driverName: "filesystem",
+        },
+      },
+    }),
+  /\.meta-harness\.json runtime\.conversationStorage must use postgres, got filesystem/,
+);
+
+const originalPostgresUrl = process.env.META_HARNESS_POSTGRES_URL;
+try {
+  delete process.env.META_HARNESS_POSTGRES_URL;
+  await assert.rejects(
+    () =>
+      runtimeStorageFromConfig({
+        runtime: {
+          conversationStorage: {
+            driverName: "postgres",
+          },
+        },
+      }),
+    /Postgres runtime storage requires environment variable: META_HARNESS_POSTGRES_URL/,
+  );
+} finally {
+  if (originalPostgresUrl === undefined) {
+    delete process.env.META_HARNESS_POSTGRES_URL;
+  } else {
+    process.env.META_HARNESS_POSTGRES_URL = originalPostgresUrl;
+  }
+}
 
 console.log(JSON.stringify({ ok: true, conversations: list.length }, null, 2));

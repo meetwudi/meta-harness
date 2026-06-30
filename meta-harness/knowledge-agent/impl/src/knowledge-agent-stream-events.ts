@@ -1,5 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.provider-stream-events: converts provider stream events into public progress, reasoning, and text deltas.
+// Compliance: keep progress mapping generic; do not branch on concrete project, domain, or ToolSpec tool names.
 
 import type { RunStreamEvent } from "@openai/agents";
 import type { KnowledgeAgentStreamEvent } from "./types.js";
@@ -76,10 +77,6 @@ function progressFromToolCall(tool: string): KnowledgeAgentStreamEvent[] {
   if (tool.includes("web_search") || tool.includes("search")) {
     return progress("Searching public sources.");
   }
-  if (tool === "fetch_youtube_transcript") {
-    return progress("Fetching a YouTube transcript.");
-  }
-
   return progress(`Using ${humanizeIdentifier(tool)}.`);
 }
 

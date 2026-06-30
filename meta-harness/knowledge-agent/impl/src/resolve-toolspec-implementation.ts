@@ -1,6 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.library-toolspec-openai-tools: resolves discovered ToolSpec implementations without per-tool OpenAI adapter branches.
-// Supports knowledge-agent.youtube-transcript-toolspec-implementation: keeps the YouTube transcript adapter behind generic ToolSpec implementation resolution.
+// Compliance: keep implementation resolution generic; do not branch on concrete tool names, implementation tokens, or implementation file names.
 
 import { pathToFileURL } from "node:url";
 import type { ToolSpecDefinition } from "../../../librarian/impl/dist/index.js";

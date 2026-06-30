@@ -89,7 +89,7 @@ Write `MEMORY.toml` with:
 - `[curation] auto_curated = true` unless the human asks not to curate
   automatically
 - `[[collections]]` entries when the human describes natural buckets such as
-  customer names, stock symbols, companies, projects, or topics
+  customer names, organization names, domain identifiers, projects, or topics
 
 Each `MEMORY.toml` must follow the Memory primitive shape. Include a top-level
 `instructions` array. For each `[[collections]]` entry, include `name`,

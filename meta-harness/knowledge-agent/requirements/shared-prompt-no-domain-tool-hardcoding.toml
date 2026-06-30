@@ -1,0 +1,11 @@
+id = "knowledge-agent.shared-prompt-no-domain-tool-hardcoding"
+title = "Shared prompt avoids domain and tool hard-coding"
+source = "Human request on 2026-06-30: keep the main Knowledge Agent prompt slim and prevent project-specific, domain-specific, concrete-tool-specific, identifier-specific, and implementation-token hard-coding in the shared prompt; project-specific prompt guidance belongs in governed project Library knowledge."
+text = "The shared Knowledge Agent prompt stays project-, domain-, and concrete-tool agnostic."
+clarifications = [
+  "The shared prompt may describe generic primitive use, actor identity, Library grounding, ToolSpec authoring, Memory curation routing, Goal mode, and Routine mode.",
+  "The shared prompt must not name concrete projects, domains, domain-specific identifiers, organizations, tool names, implementation tokens, domain conclusions, Memory layouts, or duplicate rules.",
+  "Concrete project guidance belongs in the relevant project Library and its governed primitives.",
+  "Concrete ToolSpec recipes belong in ToolSpec knowledge, project knowledge, or runtime-supported implementation knowledge, not in the shared prompt.",
+  "Concrete Memory layout, identifier handling, and curation behavior belong in the routed Library's `MEMORY.toml`, not in the shared prompt.",
+]

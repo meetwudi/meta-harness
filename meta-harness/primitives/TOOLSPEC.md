@@ -54,25 +54,25 @@ Example:
 # This is a Harness primitive.
 # See also: library://meta-harness
 
-name = "fetch_youtube_transcript"
-description = "Fetch transcript segments for a YouTube video when captions are available."
-implementation = "impl/fetch-youtube-transcript.ts"
-allowed_actors = ["actor://proj-quartz/agent"]
+name = "normalize_text"
+description = "Normalize text for downstream processing."
+implementation = "impl/normalize-text.ts"
+allowed_actors = ["actor://example/agent"]
 
 [input_schema]
 type = "object"
-required = ["url"]
+required = ["text"]
 additional_properties = false
-properties_json = "{\"url\":{\"type\":\"string\"}}"
+properties_json = "{\"text\":{\"type\":\"string\"}}"
 
 [output_schema]
 type = "object"
-description = "Transcript segments and provenance for the requested YouTube video."
+description = "Normalized text and processing metadata."
 
 [[test_cases]]
-id = "available-transcript"
-input_json = "{\"url\":\"https://www.youtube.com/watch?v=example\"}"
-expected = "Returns transcript segments with timestamps and provenance."
+id = "normalizes-text"
+input_json = "{\"text\":\" Example  text \"}"
+expected = "Returns normalized text with provenance."
 ```
 
 ## Fields
@@ -102,23 +102,11 @@ tests; generated test code may use them directly or cite them.
 
 ## Runtime-Supported Implementations
 
-The current Knowledge Agent runtime supports this implementation token for
-Library-created ToolSpecs:
-
-```toml
-implementation = "builtin/fetch-youtube-transcript"
-```
-
-Use it for a YouTube transcript tool with this agent-facing name:
-
-```toml
-name = "fetch_youtube_transcript"
-```
-
-The input schema should accept `url` as a required string and may accept
-`language` as an optional string. The output returns transcript text,
-timestamped segments, selected caption language, source URL, retrieval time,
-and failure details when captions are unavailable.
+Runtimes may document supported implementation references as governed
+knowledge. Shared ToolSpec guidance should describe the resolution contract,
+not embed concrete tool recipes. Concrete tool names, schemas, implementation
+tokens, and usage instructions belong in ToolSpec knowledge, project knowledge,
+or runtime capability knowledge inspected through Libraries.
 
 ## Governance
 
