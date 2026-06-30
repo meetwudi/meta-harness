@@ -8,4 +8,4 @@ text = "Verify that Knowledge Agent ToolSpec OpenAI adapter code remains generic
 
 [[items]]
 id = "knowledge-agent-code-no-domain-memory-logic"
-text = "Verify Knowledge Agent source code remains generic for Memory: it may route Library URIs and execute `MEMORY.toml`-governed operations, but must not branch on application domains, project domains, specific Library names, specific identifiers, or domain-specific retrieval/write layouts."
+text = "Verify Knowledge Agent source code remains generic for Memory: it may route Library URIs and execute `MEMORY.toml`-governed operations, but must not branch on applications, project domains, specific Library names, specific identifiers, or domain-specific retrieval/write layouts."

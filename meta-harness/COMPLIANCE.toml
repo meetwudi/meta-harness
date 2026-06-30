@@ -1,0 +1,7 @@
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+[[items]]
+id = "meta-harness-no-project-specific-logic"
+text = "Verify Meta Harness framework knowledge, shared prompts, and implementation stay project-agnostic. Application- or project-specific behavior belongs in the relevant project Library, such as `proj-*`, and its governed primitives, not in `meta-harness/**` except as generic framework support."
