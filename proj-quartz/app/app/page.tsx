@@ -2409,7 +2409,6 @@ export default function Page() {
       <div className="quartz-main">
         <header className="quartz-topbar">
           <div>
-            <p className="quartz-kicker">Information Trading</p>
             <h1>Quartz</h1>
           </div>
           <div className="quartz-status" aria-label="Agent status">
@@ -2449,7 +2448,7 @@ export default function Page() {
                       }}
                       labels={{
                         modalHeaderTitle: "Quartz Knowledge Agent",
-                        welcomeMessageText: "Start with an information asymmetry question.",
+                        welcomeMessageText: "Start with a question.",
                       }}
                     />
                   </QuartzComposerDisabledContext.Provider>

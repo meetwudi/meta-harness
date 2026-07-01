@@ -2,7 +2,7 @@
 # See also: library://meta-harness
 
 name = "proj-quartz"
-description = "Information Trading project knowledge and application for using Meta Harness Knowledge Agent to reason about public information asymmetry."
+description = "Quartz project knowledge and application for using Meta Harness Knowledge Agent with governed Libraries."
 isSystemLibrary = true
 read_actors = ["actor://proj-quartz/agent"]
 update_actors = []

@@ -5,7 +5,7 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Quartz",
-  description: "Information Trading workspace for Meta Harness Knowledge Agent.",
+  description: "Quartz workspace for Meta Harness Knowledge Agent.",
 };
 
 export default function RootLayout({

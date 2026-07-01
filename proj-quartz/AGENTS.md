@@ -2,9 +2,8 @@
 
 This folder is the PROJ-Quartz project Library.
 
-PROJ-Quartz is an Information Trading project and application that uses Meta
-Harness knowledge as code to reason about public information asymmetry for
-investment decisions. It is not a stock-picking or price-trading project.
+PROJ-Quartz is a project Library and application that uses Meta Harness
+knowledge as code through the Knowledge Agent.
 
 Project intro: [PROJECT-INTRO.md](PROJECT-INTRO.md)
 
