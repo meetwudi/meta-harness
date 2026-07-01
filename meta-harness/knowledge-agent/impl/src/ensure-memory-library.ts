@@ -12,7 +12,8 @@ export async function ensureMemoryLibrary(
   storage: LibrarianStorage,
   root: string,
   name: string,
-  actorUri: string,
+  readActors: string[],
+  updateActors: string[],
 ): Promise<void> {
   await storage.makeDirectory(root);
   const libraryToml = join(root, "LIBRARY.toml");
@@ -26,8 +27,8 @@ export async function ensureMemoryLibrary(
         `name = ${JSON.stringify(name)}`,
         'description = "Durable Memory Library shared across Knowledge Agent conversations for retrievable values, notes, and summaries."',
         "isSystemLibrary = true",
-        `read_actors = [${JSON.stringify(actorUri)}]`,
-        `update_actors = [${JSON.stringify(actorUri)}]`,
+        `read_actors = ${tomlStringArray(readActors)}`,
+        `update_actors = ${tomlStringArray(updateActors)}`,
         "",
       ].join("\n"),
     );
@@ -49,4 +50,8 @@ export async function ensureMemoryLibrary(
       ].join("\n"),
     );
   }
+}
+
+function tomlStringArray(values: string[]): string {
+  return `[${values.map((value) => JSON.stringify(value)).join(", ")}]`;
 }

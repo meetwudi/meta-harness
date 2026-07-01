@@ -1,0 +1,4 @@
+id = "proj-quartz.auth-storage"
+title = "Quartz auth and organization storage"
+source = "Human request on 2026-07-01: login, profiles, organizations, invites, and sessions should be backed by storage and migrations."
+text = "Quartz persists users, external sign-in identities, sessions, organizations, organization profiles, and organization invites through generated migration-backed application storage."

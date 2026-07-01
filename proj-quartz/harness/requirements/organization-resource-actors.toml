@@ -1,0 +1,4 @@
+id = "proj-quartz.organization-resource-actors"
+title = "Organization resource actors"
+source = "Human request on 2026-07-01: each resource should include actor lists allowed to read and update it, with organization actors and actor globs supported by row-level security."
+text = "Quartz organization contexts map to organization actor URIs, and organization-owned resources include read and update actors so storage row-level security enforces organization boundaries."

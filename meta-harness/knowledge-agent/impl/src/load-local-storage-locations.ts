@@ -8,6 +8,7 @@
 // Harness-Requirement: storage.driver-capabilities
 // Harness-Requirement: storage.postgres-deployment-configuration
 // Harness-Requirement: storage.project-scoped-storage-locations
+// Harness-Requirement: storage.multiple-configured-storage-locations
 // Harness-Requirement: knowledge-agent.project-config-selection
 
 import {
@@ -36,6 +37,8 @@ export function loadLocalStorageLocations(input: {
   runtime: PreparedRuntime;
   storage: LibrarianStorage;
   actorUris: string[];
+  defaultReadActors?: string[];
+  defaultUpdateActors?: string[];
 }): StorageLocation[] {
   const configPath = input.projectConfigPath;
   const data = loadMetaHarnessConfig(input.repoRootPath, configPath);
@@ -54,7 +57,14 @@ export function loadLocalStorageLocations(input: {
     if (enabledWhenEnv !== undefined && !process.env[enabledWhenEnv]) {
       return [];
     }
-    return [materializeStorageLocation(definition, values, input.storage, input.actorUris)];
+    return [materializeStorageLocation(
+      definition,
+      values,
+      input.storage,
+      input.actorUris,
+      input.defaultReadActors,
+      input.defaultUpdateActors,
+    )];
   });
 }
 
@@ -63,9 +73,18 @@ function materializeStorageLocation(
   values: Record<string, string>,
   filesystemStorage: LibrarianStorage,
   actorUris: string[],
+  defaultReadActors: string[] | undefined,
+  defaultUpdateActors: string[] | undefined,
 ): StorageLocation {
   const driverName = requiredString(definition, "driverName");
-  const storage = materializeStorageDriver(definition, driverName, filesystemStorage);
+    const storage = materializeStorageDriver(
+      definition,
+      driverName,
+      filesystemStorage,
+      actorUris,
+      defaultReadActors,
+      defaultUpdateActors,
+    );
   return {
     name: requiredString(definition, "name"),
     description: requiredString(definition, "description"),
@@ -88,6 +107,9 @@ function materializeStorageDriver(
   definition: StorageLocationDefinition,
   driverName: string,
   filesystemStorage: LibrarianStorage,
+  actorUris: string[],
+  defaultReadActors: string[] | undefined,
+  defaultUpdateActors: string[] | undefined,
 ): LibrarianStorage {
   if (driverName === "filesystem") {
     return filesystemStorage;
@@ -104,6 +126,9 @@ function materializeStorageDriver(
       schemaName: optionalString(definition, "schemaName"),
       tableName: optionalString(definition, "tableName"),
       autoEnsureSchema: optionalBoolean(definition, "autoEnsureSchema"),
+      actorUris,
+      defaultReadActors: defaultReadActors ?? actorsForCapability(definition, "read"),
+      defaultUpdateActors: defaultUpdateActors ?? actorsForCapability(definition, "write"),
     });
   }
   throw new Error(`unsupported local storage driver: ${driverName}`);
@@ -203,6 +228,16 @@ function requiredGrants(definition: StorageLocationDefinition): MetaHarnessStora
     throw new Error("storage location definition is missing grants array");
   }
   return grants;
+}
+
+function actorsForCapability(
+  definition: StorageLocationDefinition,
+  capability: MetaHarnessStorageCapability,
+): string[] {
+  return requiredGrants(definition)
+    .filter((grant) => requiredGrantCapabilities(grant).includes(capability))
+    .flatMap((grant) => requiredGrantStringArray(grant, "actors"))
+    .filter((actor, index, actors) => actors.indexOf(actor) === index);
 }
 
 function computeGrantedCapabilities(

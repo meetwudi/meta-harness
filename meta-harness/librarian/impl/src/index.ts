@@ -6,12 +6,14 @@
 // Supports librarian.postgres-backed-library-interface: exports Postgres-backed storage creation.
 // Supports librarian.tool-librarian-delete: exports the file/folder delete implementation.
 // Supports librarian.toolspec-backed-agent-tools: exports ToolSpec runtime helpers.
+// Supports librarian.spec-governed-storage-bootstrap: exports generated storage bootstrap artifacts.
 
 export { addTags } from "./add-tags.js";
 export { createLibraryInStorageLocation } from "./create-library-in-storage-location.js";
 export { createLibrarianContext } from "./create-librarian-context.js";
 export { createLocalFileSystemStorage } from "./create-local-file-system-storage.js";
 export {
+  createPostgresQueryClientFromConnectionString,
   createPostgresStorage,
   createPostgresStorageFromConnectionString,
 } from "./create-postgres-storage.js";
@@ -30,6 +32,11 @@ export {
   toolSpecAllowsActor,
 } from "./librarian-toolspecs.js";
 export { parseToml } from "./parse-toml.js";
+export { postgresResourceBootstrapPlan } from "../../../storage/impl/dist/postgres-resource-bootstrap-plan.js";
+export {
+  postgresStorageMigrations,
+  runPostgresStorageMigrations,
+} from "../../../storage/impl/dist/postgres-storage-migrations.js";
 export { queryByTags } from "./query-by-tags.js";
 export { readLibraryFile } from "./read-library-file.js";
 export { removeTags } from "./remove-tags.js";
@@ -53,8 +60,19 @@ export type {
   ToolSpecTestCase,
 } from "./types.js";
 export type {
+  PostgresResourceBootstrapIndex,
+  PostgresResourceBootstrapPlan,
+} from "../../../storage/impl/dist/postgres-resource-bootstrap-plan.js";
+export type {
+  PostgresQueryClient as StoragePostgresQueryClient,
+  PostgresQueryResult as StoragePostgresQueryResult,
+  PostgresStorageMigration,
+  PostgresStorageMigrationInput,
+} from "../../../storage/impl/dist/postgres-storage-migrations.js";
+export type {
   CreatePostgresStorageFromConnectionStringInput,
   CreatePostgresStorageInput,
+  CreatePostgresQueryClientFromConnectionStringInput,
   PostgresQueryClient,
   PostgresQueryResult,
   PostgresStorage,

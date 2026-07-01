@@ -44,7 +44,9 @@
           "meta-harness/knowledge-agent/impl/dist",
           "meta-harness/knowledge-agent/impl/dist/**",
           "meta-harness/librarian/impl/dist",
-          "meta-harness/librarian/impl/dist/**"
+          "meta-harness/librarian/impl/dist/**",
+          "meta-harness/storage/impl/dist",
+          "meta-harness/storage/impl/dist/**"
         ],
         "discoverLibraries": true,
         "sourceUri": "library://repository/.meta-harness.json",

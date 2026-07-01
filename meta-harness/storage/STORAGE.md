@@ -19,6 +19,56 @@ Storage capabilities describe what the location's driver can do. Library
 governance still determines whether a particular actor or Routine may read or
 update a particular Library.
 
+## Database Relationships
+
+Storage knowledge and generated database artifacts must not use
+database-enforced foreign keys. Do not create `FOREIGN KEY` constraints or
+column-level `REFERENCES` clauses in storage models, generated migrations, or
+handwritten migrations.
+
+Represent relationships as ordinary identifiers, canonical resource paths,
+metadata, or application-owned references. Enforce cross-record behavior through
+explicit application logic, storage routines, migration verification, repair
+routines, and acceptance checks. Lifecycle behavior such as cleanup, orphan
+repair, and cross-table validation belongs in governed migration or Routine
+knowledge rather than database cascade rules.
+
+## Storage Model Knowledge
+
+Storage Specs may declare backend-neutral storage model and migration intent
+collections. These records are human-authored natural-language knowledge that
+describe persistence meaning, invariants, preservation expectations, and
+verification criteria.
+
+Generated implementation artifacts derive backend-specific schema definitions,
+migration scripts, bootstrap plans, data migration scripts, and tests from that
+Spec knowledge. Storage drivers execute the generated artifacts that match their
+capabilities and deployment target.
+
+The shared Harness resource model lives in:
+
+```text
+library://meta-harness/storage/storage-models/resources.toml
+```
+
+The shared storage configuration model lives in:
+
+```text
+library://meta-harness/storage/storage-models/storage-configurations.toml
+```
+
+The initial resource storage bootstrap migration intent lives in:
+
+```text
+library://meta-harness/storage/migration-intents/resource-storage-bootstrap.toml
+```
+
+Resource actor governance migration intent lives in:
+
+```text
+library://meta-harness/storage/migration-intents/resource-actor-governance.toml
+```
+
 ## Project Storage Locations
 
 The local Knowledge Agent runtime materializes storage locations from the
@@ -130,7 +180,7 @@ Example Postgres-backed Library location:
   "driverName": "postgres",
   "enabledWhenEnv": "PROJECT_POSTGRES_URL",
   "connectionStringEnv": "PROJECT_POSTGRES_URL",
-  "schemaName": "meta_harness",
+  "schemaName": "example_core",
   "tableName": "resources",
   "libraryRootPath": "/libraries",
   "discoveryMode": "resource-root-and-direct-children",

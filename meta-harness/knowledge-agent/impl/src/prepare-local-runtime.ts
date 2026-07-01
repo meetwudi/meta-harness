@@ -56,7 +56,8 @@ export async function prepareLocalRuntime(
     runtimeStorage,
     conversationsLibrary,
     input.conversationLibrary.name,
-    input.actorUri,
+    input.defaultReadActors ?? [input.actorUri],
+    input.defaultUpdateActors ?? [],
   );
   if (input.sharedMemory.enabled) {
     if (!input.sharedMemory.library) {
@@ -66,7 +67,8 @@ export async function prepareLocalRuntime(
       runtimeStorage,
       memoryLibrary,
       input.sharedMemory.library.name,
-      input.actorUri,
+      input.defaultReadActors ?? [input.actorUri],
+      input.defaultUpdateActors ?? [input.actorUri],
     );
   }
   await mkdir(conversationRoot, { recursive: true });

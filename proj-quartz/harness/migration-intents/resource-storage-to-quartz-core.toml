@@ -1,0 +1,17 @@
+id = "proj-quartz.migration-intent.resource-storage-to-quartz-core"
+title = "Resource storage to Quartz core schema"
+source = "Human request on 2026-07-01 to avoid a shared MetaHarness database schema for project-owned Quartz resources."
+requirements = [
+  "proj-quartz.project-scoped-resource-storage",
+  "proj-quartz.postgres-backed-libraries",
+  "storage.spec-governed-migration-intents",
+  "storage.no-database-foreign-keys",
+]
+text = "Move Quartz resource storage from the legacy shared resource schema into `quartz_core.resources` while preserving resource paths, content, metadata, timestamps, and actor allow-lists."
+statements = [
+  "The generated migration artifacts ensure the target `quartz_core.resources` storage table and resource migration ledger exist through the Storage Spec generated Postgres migration runner.",
+  "The data migration copies missing rows from `meta_harness.resources` into `quartz_core.resources` and fails on target rows whose resource payload conflicts.",
+  "Existing target rows with matching resource payload are retained with their current timestamps and actor allow-lists.",
+  "The migration keeps the legacy source table in place until a human explicitly approves removal.",
+  "The migrated target storage does not create database-enforced foreign keys.",
+]

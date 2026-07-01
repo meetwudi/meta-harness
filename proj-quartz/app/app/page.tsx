@@ -10,14 +10,20 @@ import {
 } from "@copilotkit/react-core/v2";
 import type { Message } from "@ag-ui/core";
 import {
+  Building2,
   Check,
   ChevronDown,
   ChevronRight,
+  LogOut,
+  Mail,
   MessageSquare,
   PanelLeftClose,
   PanelLeftOpen,
   PenLine,
+  Plus,
   Search,
+  Settings,
+  UserRound,
 } from "lucide-react";
 import {
   useCallback,
@@ -38,6 +44,8 @@ import {
   useReasoningEffort,
   type ReasoningEffort,
 } from "./providers";
+import { Dialog } from "./components/ui/dialog";
+import { TabPanel, Tabs, type TabItem } from "./components/ui/tabs";
 
 type QuartzChatInputProps = Parameters<
   NonNullable<CopilotChatInputProps["children"]>
@@ -52,6 +60,26 @@ type QuartzConversationThread = {
   updatedAt: string;
   messages: Message[];
   messagesLoaded: boolean;
+};
+
+type QuartzUser = {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl: string;
+};
+
+type QuartzOrganization = {
+  id: string;
+  name: string;
+  actorUri: string;
+  role: string;
+};
+
+type QuartzAuthSession = {
+  user: QuartzUser;
+  organizations: QuartzOrganization[];
+  activeOrganization: QuartzOrganization | null;
 };
 
 type QuartzThreadChatContextValue = {
@@ -495,6 +523,78 @@ async function fetchConversation(threadId: string): Promise<QuartzConversationTh
     json.conversation,
     true,
     "Conversation response",
+  );
+}
+
+function authSessionFromApi(value: unknown): QuartzAuthSession | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  const record = value as Record<string, unknown>;
+  const session = record.session;
+  if (!session || typeof session !== "object" || Array.isArray(session)) {
+    return null;
+  }
+  const candidate = session as Record<string, unknown>;
+  const user = candidate.user;
+  const organizations = candidate.organizations;
+  if (!user || typeof user !== "object" || Array.isArray(user) || !Array.isArray(organizations)) {
+    return null;
+  }
+  const userRecord = user as Record<string, unknown>;
+  if (
+    typeof userRecord.id !== "string" ||
+    typeof userRecord.email !== "string" ||
+    typeof userRecord.displayName !== "string" ||
+    typeof userRecord.avatarUrl !== "string"
+  ) {
+    return null;
+  }
+  const parsedOrganizations = organizations.flatMap((organization) => {
+    if (!organization || typeof organization !== "object" || Array.isArray(organization)) {
+      return [];
+    }
+    const organizationRecord = organization as Record<string, unknown>;
+    if (
+      typeof organizationRecord.id !== "string" ||
+      typeof organizationRecord.name !== "string" ||
+      typeof organizationRecord.actorUri !== "string" ||
+      typeof organizationRecord.role !== "string"
+    ) {
+      return [];
+    }
+    return [{
+      id: organizationRecord.id,
+      name: organizationRecord.name,
+      actorUri: organizationRecord.actorUri,
+      role: organizationRecord.role,
+    }];
+  });
+  const activeOrganization = candidate.activeOrganization &&
+    typeof candidate.activeOrganization === "object" &&
+    !Array.isArray(candidate.activeOrganization)
+      ? parsedOrganizations.find((organization) =>
+          organization.id ===
+            (candidate.activeOrganization as Record<string, unknown>).id
+        ) ?? null
+      : null;
+  return {
+    user: {
+      id: userRecord.id,
+      email: userRecord.email,
+      displayName: userRecord.displayName,
+      avatarUrl: userRecord.avatarUrl,
+    },
+    organizations: parsedOrganizations,
+    activeOrganization,
+  };
+}
+
+async function fetchAuthSession(): Promise<QuartzAuthSession | null> {
+  return authSessionFromApi(
+    await parseJsonResponse(
+      await fetch("/api/auth/session", conversationFetchOptions),
+    ),
   );
 }
 
@@ -1216,26 +1316,433 @@ const QuartzThreadChatView = Object.assign(
   CopilotChatView,
 );
 
+function accountInitial(session: QuartzAuthSession | null) {
+  const source = session?.user.displayName || session?.user.email || "Q";
+  return source.trim().charAt(0).toUpperCase() || "Q";
+}
+
+type OrganizationSettingsTab = "manage" | "create";
+
+const organizationSettingsTabs: TabItem<OrganizationSettingsTab>[] = [
+  { id: "manage", label: "Manage" },
+  { id: "create", label: "Create" },
+];
+
+// Harness-Requirement: proj-quartz.organization-settings-dialog
+// Harness-Requirement: proj-quartz.organization-invite-flow
+function QuartzOrganizationSettingsDialog({
+  open,
+  session,
+  status,
+  error,
+  busy,
+  onOpenChange,
+  onCreateOrganization,
+  onSwitchOrganization,
+  onInvite,
+  runAction,
+}: {
+  open: boolean;
+  session: QuartzAuthSession;
+  status: string;
+  error: string;
+  busy: string;
+  onOpenChange: (open: boolean) => void;
+  onCreateOrganization: (name: string) => Promise<void>;
+  onSwitchOrganization: (organizationId: string) => Promise<void>;
+  onInvite: (organizationId: string, email: string) => Promise<void>;
+  runAction: (label: string, action: () => Promise<void>) => Promise<void>;
+}) {
+  const activeOrganization = session.activeOrganization;
+  const [tab, setTab] = useState<OrganizationSettingsTab>(
+    activeOrganization ? "manage" : "create",
+  );
+  const [organizationName, setOrganizationName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const canInvite = activeOrganization?.role === "admin";
+
+  useEffect(() => {
+    if (open && !activeOrganization) {
+      setTab("create");
+    }
+  }, [activeOrganization, open]);
+
+  return (
+    <Dialog
+      open={open}
+      title="Settings"
+      description="Manage organization context for this Quartz account."
+      onOpenChange={onOpenChange}
+    >
+      <div className="quartz-settings-layout">
+        <nav className="quartz-settings-nav" aria-label="Settings sections">
+          <button type="button" className="is-active">
+            <Building2 aria-hidden="true" size={16} strokeWidth={1.9} />
+            <span>Organizations</span>
+          </button>
+        </nav>
+
+        <section className="quartz-settings-content">
+          <div className="quartz-settings-title-row">
+            <div>
+              <h3>Organizations</h3>
+              <p>{session.user.email}</p>
+            </div>
+          </div>
+
+          <Tabs
+            items={organizationSettingsTabs}
+            value={tab}
+            ariaLabel="Organization settings"
+            onValueChange={setTab}
+          />
+
+          <TabPanel value="manage" activeValue={tab}>
+            <section className="quartz-settings-section">
+              <div className="quartz-settings-section-heading">
+                <h4>Current organization</h4>
+              </div>
+              {activeOrganization ? (
+                <div className="quartz-current-organization">
+                  <Building2 aria-hidden="true" size={17} strokeWidth={1.9} />
+                  <div>
+                    <strong>{activeOrganization.name}</strong>
+                    <span>{activeOrganization.role}</span>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="quartz-settings-text-button"
+                  onClick={() => setTab("create")}
+                >
+                  Create organization
+                </button>
+              )}
+            </section>
+
+            <section className="quartz-settings-section">
+              <div className="quartz-settings-section-heading">
+                <h4>Memberships</h4>
+              </div>
+              <div className="quartz-organization-list">
+                {session.organizations.map((organization) => {
+                  const active = organization.id === activeOrganization?.id;
+                  return (
+                    <button
+                      key={organization.id}
+                      type="button"
+                      className={
+                        active
+                          ? "quartz-organization-list-row is-active"
+                          : "quartz-organization-list-row"
+                      }
+                      onClick={() => runAction(
+                        "switch",
+                        () => onSwitchOrganization(organization.id),
+                      )}
+                      disabled={Boolean(busy) || active}
+                    >
+                      <Building2 aria-hidden="true" size={16} strokeWidth={1.9} />
+                      <span>{organization.name}</span>
+                      {active ? <Check aria-hidden="true" size={15} strokeWidth={1.9} /> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {canInvite && activeOrganization ? (
+              <section className="quartz-settings-section">
+                <div className="quartz-settings-section-heading">
+                  <h4>Invite by email</h4>
+                </div>
+                <form
+                  className="quartz-settings-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void runAction("invite", async () => {
+                      await onInvite(activeOrganization.id, inviteEmail);
+                      setInviteEmail("");
+                    });
+                  }}
+                >
+                  <input
+                    value={inviteEmail}
+                    onChange={(event) => setInviteEmail(event.target.value)}
+                    placeholder="name@example.com"
+                    aria-label="Invite email"
+                  />
+                  <button type="submit" disabled={Boolean(busy) || !inviteEmail.trim()}>
+                    <Mail aria-hidden="true" size={15} strokeWidth={1.9} />
+                    <span>Invite</span>
+                  </button>
+                </form>
+              </section>
+            ) : null}
+          </TabPanel>
+
+          <TabPanel value="create" activeValue={tab}>
+            <section className="quartz-settings-section">
+              <div className="quartz-settings-section-heading">
+                <h4>Create organization</h4>
+              </div>
+              <form
+                className="quartz-settings-form"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void runAction("create", async () => {
+                    await onCreateOrganization(organizationName);
+                    setOrganizationName("");
+                    setTab("manage");
+                  });
+                }}
+              >
+                <input
+                  value={organizationName}
+                  onChange={(event) => setOrganizationName(event.target.value)}
+                  placeholder="Organization name"
+                  aria-label="Organization name"
+                />
+                <button type="submit" disabled={Boolean(busy) || !organizationName.trim()}>
+                  <Plus aria-hidden="true" size={15} strokeWidth={1.9} />
+                  <span>Create</span>
+                </button>
+              </form>
+            </section>
+          </TabPanel>
+
+          {status || error ? (
+            <div className="quartz-settings-status" role="status">
+              {error || status}
+            </div>
+          ) : null}
+        </section>
+      </div>
+    </Dialog>
+  );
+}
+
+function QuartzAccountMenu({
+  session,
+  loading,
+  status,
+  onSignIn,
+  onLogout,
+  onCreateOrganization,
+  onSwitchOrganization,
+  onInvite,
+}: {
+  session: QuartzAuthSession | null;
+  loading: boolean;
+  status: string;
+  onSignIn: () => void;
+  onLogout: () => Promise<void>;
+  onCreateOrganization: (name: string) => Promise<void>;
+  onSwitchOrganization: (organizationId: string) => Promise<void>;
+  onInvite: (organizationId: string, email: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [busy, setBusy] = useState("");
+  const [menuError, setMenuError] = useState("");
+  const activeOrganization = session?.activeOrganization ?? null;
+
+  const runAction = useCallback(async (
+    label: string,
+    action: () => Promise<void>,
+  ) => {
+    setBusy(label);
+    setMenuError("");
+    try {
+      await action();
+    } catch (error) {
+      setMenuError(error instanceof Error ? error.message : "Account action failed.");
+    } finally {
+      setBusy("");
+    }
+  }, []);
+
+  if (!session) {
+    return (
+      <div className="quartz-sidebar-footer">
+        <button
+          type="button"
+          className="quartz-account-trigger"
+          onClick={onSignIn}
+          disabled={loading}
+        >
+          <div className="quartz-sidebar-avatar" aria-hidden="true">
+            <UserRound aria-hidden="true" size={15} strokeWidth={1.9} />
+          </div>
+          <div className="quartz-account-label">
+            <strong>{loading ? "Loading" : "Sign in"}</strong>
+            <span>Continue with Google</span>
+          </div>
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="quartz-sidebar-footer">
+      {open ? (
+        <div className="quartz-account-menu" role="menu">
+          <div className="quartz-account-menu-header">
+            <div className="quartz-sidebar-avatar" aria-hidden="true">
+              {accountInitial(session)}
+            </div>
+            <div>
+              <strong>{session.user.displayName || session.user.email}</strong>
+              <span>{session.user.email}</span>
+            </div>
+          </div>
+
+          <div className="quartz-account-menu-section">
+            <div className="quartz-account-menu-heading">Organizations</div>
+            {session.organizations.length ? (
+              session.organizations.map((organization) => {
+                const active = organization.id === activeOrganization?.id;
+                return (
+                  <button
+                    key={organization.id}
+                    type="button"
+                    className={
+                      active
+                        ? "quartz-account-menu-row is-active"
+                        : "quartz-account-menu-row"
+                    }
+                    onClick={() => runAction(
+                      "switch",
+                      () => onSwitchOrganization(organization.id),
+                    )}
+                    disabled={Boolean(busy) || active}
+                  >
+                    <Building2 aria-hidden="true" size={16} strokeWidth={1.9} />
+                    <span>{organization.name}</span>
+                    {active ? <Check aria-hidden="true" size={15} strokeWidth={1.9} /> : null}
+                  </button>
+                );
+              })
+            ) : (
+              <button
+                type="button"
+                className="quartz-account-menu-row"
+                onClick={() => {
+                  setOpen(false);
+                  setSettingsOpen(true);
+                }}
+              >
+                <Building2 aria-hidden="true" size={16} strokeWidth={1.9} />
+                <span>Organizations</span>
+                <ChevronRight aria-hidden="true" size={15} strokeWidth={1.9} />
+              </button>
+            )}
+          </div>
+
+          <div className="quartz-account-menu-section">
+            <button
+              type="button"
+              className="quartz-account-menu-row"
+              onClick={() => {
+                setOpen(false);
+                setSettingsOpen(true);
+              }}
+            >
+              <Settings aria-hidden="true" size={16} strokeWidth={1.9} />
+              <span>Settings</span>
+              <ChevronRight aria-hidden="true" size={15} strokeWidth={1.9} />
+            </button>
+          </div>
+
+          {status || menuError ? (
+            <div className="quartz-account-menu-status" role="status">
+              {menuError || status}
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            className="quartz-account-menu-row"
+            onClick={() => runAction("logout", onLogout)}
+            disabled={Boolean(busy)}
+          >
+            <LogOut aria-hidden="true" size={16} strokeWidth={1.9} />
+            <span>Log out</span>
+          </button>
+        </div>
+      ) : null}
+
+      <button
+        type="button"
+        className="quartz-account-trigger"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <div className="quartz-sidebar-avatar" aria-hidden="true">
+          {accountInitial(session)}
+        </div>
+        <div className="quartz-account-label">
+          <strong>{activeOrganization?.name ?? (session.user.displayName || session.user.email)}</strong>
+          <span>{activeOrganization ? session.user.email : "Create or join organization"}</span>
+        </div>
+        <ChevronDown aria-hidden="true" size={16} strokeWidth={1.9} />
+      </button>
+
+      <QuartzOrganizationSettingsDialog
+        open={settingsOpen}
+        session={session}
+        status={status}
+        error={menuError}
+        busy={busy}
+        onOpenChange={setSettingsOpen}
+        onCreateOrganization={onCreateOrganization}
+        onSwitchOrganization={onSwitchOrganization}
+        onInvite={onInvite}
+        runAction={runAction}
+      />
+    </div>
+  );
+}
+
 function QuartzConversationSidebar({
   activeThreadId,
   threads,
   search,
   collapsed,
   status,
+  canUseChat,
+  authSession,
+  authLoading,
+  authStatus,
   onSearchChange,
   onToggleCollapsed,
   onNewThread,
   onSelectThread,
+  onSignIn,
+  onLogout,
+  onCreateOrganization,
+  onSwitchOrganization,
+  onInvite,
 }: {
   activeThreadId: string;
   threads: QuartzConversationThread[];
   search: string;
   collapsed: boolean;
   status: string;
+  canUseChat: boolean;
+  authSession: QuartzAuthSession | null;
+  authLoading: boolean;
+  authStatus: string;
   onSearchChange: (value: string) => void;
   onToggleCollapsed: () => void;
   onNewThread: () => void;
   onSelectThread: (threadId: string) => void;
+  onSignIn: () => void;
+  onLogout: () => Promise<void>;
+  onCreateOrganization: (name: string) => Promise<void>;
+  onSwitchOrganization: (organizationId: string) => Promise<void>;
+  onInvite: (organizationId: string, email: string) => Promise<void>;
 }) {
   const normalizedSearch = search.trim().toLowerCase();
   const visibleThreads = threads
@@ -1262,6 +1769,7 @@ function QuartzConversationSidebar({
             aria-label="New chat"
             title="New chat"
             onClick={onNewThread}
+            disabled={!canUseChat}
           >
             <PenLine aria-hidden="true" size={18} strokeWidth={1.9} />
           </button>
@@ -1289,6 +1797,7 @@ function QuartzConversationSidebar({
             aria-label="New chat"
             title="New chat"
             onClick={onNewThread}
+            disabled={!canUseChat}
           >
             <PenLine aria-hidden="true" size={18} strokeWidth={1.9} />
           </button>
@@ -1301,6 +1810,7 @@ function QuartzConversationSidebar({
             type="button"
             className="quartz-sidebar-row"
             onClick={onNewThread}
+            disabled={!canUseChat}
           >
             <PenLine aria-hidden="true" size={17} strokeWidth={1.9} />
             <span>New chat</span>
@@ -1354,15 +1864,16 @@ function QuartzConversationSidebar({
         ) : null}
       </nav>
 
-      <div className="quartz-sidebar-footer">
-        <div className="quartz-sidebar-avatar" aria-hidden="true">
-          Q
-        </div>
-        <div>
-          <strong>Quartz</strong>
-          <span>Knowledge Agent</span>
-        </div>
-      </div>
+      <QuartzAccountMenu
+        session={authSession}
+        loading={authLoading}
+        status={authStatus}
+        onSignIn={onSignIn}
+        onLogout={onLogout}
+        onCreateOrganization={onCreateOrganization}
+        onSwitchOrganization={onSwitchOrganization}
+        onInvite={onInvite}
+      />
     </aside>
   );
 }
@@ -1389,6 +1900,9 @@ export default function Page() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [hydratedThreadId, setHydratedThreadId] = useState("");
+  const [authSession, setAuthSession] = useState<QuartzAuthSession | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authStatus, setAuthStatus] = useState("");
   const threadsRef = useRef<QuartzConversationThread[]>([]);
   const conversationRefreshRequestRef = useRef("");
 
@@ -1396,10 +1910,69 @@ export default function Page() {
     threadsRef.current = threads;
   }, [threads]);
 
+  const resetConversationState = useCallback(() => {
+    pageAgent.setMessages([]);
+    setThreads([]);
+    setActiveThreadId("");
+    setActiveThreadIsHomeDraft(true);
+    setHydratedThreadId("");
+    setHistoryError("");
+    setThreadStoreReady(false);
+    updateChatUrl(null, "replace");
+  }, [pageAgent]);
+
+  const refreshAuthSession = useCallback(async () => {
+    setAuthLoading(true);
+    try {
+      const nextSession = await fetchAuthSession();
+      setAuthSession(nextSession);
+      return nextSession;
+    } finally {
+      setAuthLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSession() {
+      setAuthLoading(true);
+      try {
+        const nextSession = await fetchAuthSession();
+        if (!cancelled) {
+          setAuthSession(nextSession);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setAuthStatus(error instanceof Error ? error.message : "Sign-in check failed.");
+          setAuthSession(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthLoading(false);
+        }
+      }
+    }
+
+    void loadSession();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
 
     async function loadThreads() {
+      if (authLoading) {
+        return;
+      }
+      if (!authSession?.activeOrganization) {
+        resetConversationState();
+        setThreadStoreReady(true);
+        return;
+      }
+      setThreadStoreReady(false);
       try {
         const loadedThreads = await fetchConversationList();
         if (cancelled) {
@@ -1429,7 +2002,7 @@ export default function Page() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authLoading, authSession?.activeOrganization?.id, resetConversationState]);
 
   useEffect(() => {
     function handlePopState() {
@@ -1733,6 +2306,72 @@ export default function Page() {
     handleThreadMessagesChange,
     handleMissingAssistant,
   ]);
+  const canUseChat = Boolean(authSession?.activeOrganization);
+
+  const handleSignIn = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const nextPath = `${window.location.pathname}${window.location.search}`;
+    window.location.href = `/api/auth/google/start?next=${encodeURIComponent(nextPath)}`;
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    await parseJsonResponse(await fetch("/api/auth/logout", { method: "POST" }));
+    setAuthSession(null);
+    setAuthStatus("");
+    resetConversationState();
+  }, [resetConversationState]);
+
+  const handleCreateOrganization = useCallback(async (name: string) => {
+    await parseJsonResponse(
+      await fetch("/api/organizations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      }),
+    );
+    setAuthStatus("Organization created.");
+    await refreshAuthSession();
+  }, [refreshAuthSession]);
+
+  const handleSwitchOrganization = useCallback(async (organizationId: string) => {
+    await parseJsonResponse(
+      await fetch(`/api/organizations/${encodeURIComponent(organizationId)}/switch`, {
+        method: "POST",
+      }),
+    );
+    resetConversationState();
+    setAuthStatus("Organization switched.");
+    await refreshAuthSession();
+  }, [refreshAuthSession, resetConversationState]);
+
+  const handleInvite = useCallback(async (organizationId: string, email: string) => {
+    const json = await parseJsonResponse(
+      await fetch(`/api/organizations/${encodeURIComponent(organizationId)}/invites`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      }),
+    );
+    const delivery = json &&
+      typeof json === "object" &&
+      "delivery" in json &&
+      json.delivery &&
+      typeof json.delivery === "object" &&
+      !Array.isArray(json.delivery)
+        ? json.delivery as Record<string, unknown>
+        : {};
+    const inviteUrl = typeof delivery.inviteUrl === "string" ? delivery.inviteUrl : "";
+    const status = typeof delivery.status === "string" ? delivery.status : "";
+    setAuthStatus(
+      status === "sent"
+        ? "Invite email sent."
+        : inviteUrl
+          ? `Invite link: ${inviteUrl}`
+          : "Invite created.",
+    );
+  }, []);
 
   return (
     <main className="quartz-shell">
@@ -1742,10 +2381,19 @@ export default function Page() {
         search={threadSearch}
         collapsed={sidebarCollapsed}
         status={historyError}
+        canUseChat={canUseChat}
+        authSession={authSession}
+        authLoading={authLoading}
+        authStatus={authStatus}
         onSearchChange={setThreadSearch}
         onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
         onNewThread={handleNewThread}
         onSelectThread={handleSelectThread}
+        onSignIn={handleSignIn}
+        onLogout={handleLogout}
+        onCreateOrganization={handleCreateOrganization}
+        onSwitchOrganization={handleSwitchOrganization}
+        onInvite={handleInvite}
       />
 
       <div className="quartz-main">
@@ -1762,7 +2410,22 @@ export default function Page() {
         <section className="quartz-chat-panel" aria-label="Knowledge Agent chat">
           <div className="quartz-chat-frame">
             <div className={chatBodyClassName}>
-              {activeThreadReady ? (
+              {!authLoading && !authSession ? (
+                <div className="quartz-access-state">
+                  <UserRound aria-hidden="true" size={22} strokeWidth={1.9} />
+                  <h2>Sign in to Quartz</h2>
+                  <p>Use your Google account to open your organizations and libraries.</p>
+                  <button type="button" onClick={handleSignIn}>
+                    Continue with Google
+                  </button>
+                </div>
+              ) : !authLoading && authSession && !authSession.activeOrganization ? (
+                <div className="quartz-access-state">
+                  <Building2 aria-hidden="true" size={22} strokeWidth={1.9} />
+                  <h2>Create or join an organization</h2>
+                  <p>Open Settings from the sidebar account menu to create an organization, or accept an invite link.</p>
+                </div>
+              ) : activeThreadReady && canUseChat ? (
                 <QuartzThreadChatContext.Provider value={chatContextValue}>
                   <QuartzComposerDisabledContext.Provider value={!activeThreadHydrated}>
                     <CopilotChat

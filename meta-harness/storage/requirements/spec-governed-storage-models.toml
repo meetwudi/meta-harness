@@ -1,0 +1,4 @@
+id = "storage.spec-governed-storage-models"
+title = "Spec-governed storage models"
+source = "Human request on 2026-07-01: database schema should be knowledge, but Specs should stay natural language and storage-agnostic while generated artifacts create concrete schema definitions."
+text = "Storage Specs may declare human-authored storage model intent as natural-language, backend-neutral knowledge from which generated artifacts derive logical data models, concrete schema definitions, and verification tests."

@@ -1,0 +1,23 @@
+id = "storage.model.resources"
+title = "Harness resource storage model"
+source = "Human request on 2026-07-01: resource storage schema should be governed as Spec knowledge while remaining natural-language and storage-agnostic."
+requirements = [
+  "storage.shared-driver-interface",
+  "storage.driver-unit-operations",
+  "storage.storage-library-discovery",
+  "storage.resource-actor-governance",
+  "storage.spec-governed-storage-models",
+  "storage.no-database-foreign-keys",
+]
+text = "Harness storage persists Library-addressable resources through a backend-neutral resource model that supports canonical addressing, text resources, containers, metadata, update tracking, listing, lookup, write, and delete behavior through the shared storage driver interface."
+statements = [
+  "A resource has a canonical address within a storage location so Library resource URIs can resolve through the same interface across storage backends.",
+  "A resource can represent text content or a container used for Library and folder discovery.",
+  "A resource carries read and update actor allow-lists so storage backends can enforce actor-scoped access at the row or record boundary.",
+  "Actor allow-list entries use actor URI patterns, including glob-style entries, so organization actors can grant access to organization-scoped resources.",
+  "Resource storage keeps the shared driver boundary stable while preserving metadata for future structured queries.",
+  "Resource storage supports direct child listing and descendant traversal through backend-appropriate query behavior.",
+  "Resource storage records update ordering information so later tools can reason about recently changed resources.",
+  "Library governance remains attached to Library knowledge while storage locations provide backend capabilities and placement.",
+  "Resource storage represents relationships and containment through canonical addresses, metadata, and ordinary identifiers rather than database-enforced foreign keys.",
+]

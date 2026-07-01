@@ -1,0 +1,4 @@
+id = "proj-quartz.legacy-conversation-owner-migration"
+title = "Legacy conversation owner migration"
+source = "Human request on 2026-07-01: migrate existing conversations that were userless to meetwudi@gmail.com."
+text = "Existing Quartz conversations created before user ownership are migrated to the meetwudi@gmail.com account."

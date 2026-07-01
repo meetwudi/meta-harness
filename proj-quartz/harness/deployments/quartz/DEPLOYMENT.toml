@@ -1,0 +1,48 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "proj-quartz-deployment"
+version = "v0.0.0"
+source = "Human request on 2026-07-01 for deployment as a Quartz primitive covering local and production environments, deployment runbooks, deployment checklists, deployment evidence, resource snapshots, and one-by-one human approval for cloud resource changes."
+service = "Quartz"
+requirements = [
+  "proj-quartz.deployment-primitive",
+  "proj-quartz.cloud-resource-human-approval",
+]
+referenced_specs = [
+  "library://proj-quartz/harness/SPEC.toml",
+]
+
+[[environment_collections]]
+name = "environments"
+location = "environments"
+
+[[runbook_collections]]
+name = "runbooks"
+location = "runbooks"
+
+[[checklist_collections]]
+name = "checklists"
+location = "checklists"
+
+[[resource_snapshot_collections]]
+name = "resource-snapshots"
+location = "resource-snapshots"
+
+[[cloud_resource_approval_collections]]
+name = "cloud-resource-approvals"
+location = "cloud-resource-approvals"
+
+[[run_record_collections]]
+name = "runs"
+location = "runs"
+
+[governance]
+executor = "ai-or-human"
+completion_requires_checklist_attestation = true
+completion_requires_run_record = true
+completion_requires_resource_snapshot_for_production = true
+completion_requires_cloud_resource_approvals_for_production = true
+unknown_provider_detail_policy = "consult-human"
+run_record_storage_policy = "human-decision-required"
+cloud_resource_change_policy = "one-human-approval-record-per-resource-change"

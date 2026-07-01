@@ -16,6 +16,14 @@ import {
   writeThreadTurnReasoning,
   type ReasoningDeltaRecord,
 } from "./conversations/route";
+import {
+  quartzResourceActorContext,
+  quartzResourceActorEnv,
+  sessionFromToken,
+  withQuartzAuthDb,
+  type QuartzResourceActorContext,
+} from "../../lib/quartz-auth-db";
+import { readQuartzSessionCookie } from "../../lib/quartz-auth-cookie";
 
 const { loadEnvConfig } = nextEnv;
 
@@ -405,6 +413,7 @@ async function runKnowledgeAgent(input: {
   runId: string;
   model: string;
   reasoningEffort: ReasoningEffort;
+  actorContext: QuartzResourceActorContext;
   onProgress?: (message: string, source: KnowledgeAgentStreamSource) => void;
   onReasoningDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
   onTextDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
@@ -451,7 +460,10 @@ async function runKnowledgeAgent(input: {
       ],
       {
         cwd: repoRoot,
-        env: process.env,
+        env: {
+          ...process.env,
+          ...quartzResourceActorEnv(input.actorContext),
+        },
         stdio: ["ignore", "pipe", "pipe"],
       },
     );
@@ -549,6 +561,7 @@ async function runKnowledgeAgent(input: {
             threadId: input.threadId,
             turnId,
             records: reasoningRecords,
+            actorContext: input.actorContext,
           });
           resolve(resolveKnowledgeAgentOutput({
             finalOutput,
@@ -587,6 +600,18 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const input = (await request.json()) as RunAgentInput;
+  const sessionToken = await readQuartzSessionCookie();
+  const session = await withQuartzAuthDb((client) => sessionFromToken(client, sessionToken));
+  if (!session) {
+    return Response.json({ error: "Sign-in is required." }, { status: 401 });
+  }
+  if (!session.activeOrganization) {
+    return Response.json(
+      { error: "Create or join an organization to use Quartz." },
+      { status: 409 },
+    );
+  }
+  const actorContext = quartzResourceActorContext(session);
   const threadId = safeId(input.threadId ?? crypto.randomUUID(), "threadId");
   const runId = safeId(input.runId ?? crypto.randomUUID(), "runId");
 
@@ -599,7 +624,10 @@ export async function POST(request: NextRequest) {
     contextualUserGoal,
     reasoningEffortFromInput,
     modelFromInput,
-    runKnowledgeAgent,
+    runKnowledgeAgent: (runnerInput) => runKnowledgeAgent({
+      ...runnerInput,
+      actorContext,
+    }),
   });
 
   return new Response(stream, {

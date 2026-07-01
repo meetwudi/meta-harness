@@ -1,0 +1,4 @@
+id = "librarian.spec-governed-storage-bootstrap"
+title = "Spec-governed storage bootstrap"
+source = "Human request on 2026-07-01: storage schema and migration intent should be Spec knowledge with generated artifacts that create concrete schema and migration behavior."
+text = "Librarian storage backends use generated artifacts derived from Storage Spec knowledge when a concrete backend requires schema bootstrap or migration behavior."

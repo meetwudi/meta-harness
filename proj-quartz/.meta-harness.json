@@ -9,7 +9,7 @@
     "conversationStorage": {
       "driverName": "postgres",
       "connectionStringEnv": "QUARTZ_POSTGRES_URL",
-      "schemaName": "meta_harness",
+      "schemaName": "quartz_core",
       "tableName": "resources"
     },
     "conversationLibrary": {
@@ -46,7 +46,7 @@
     "locations": [
       {
         "name": "meta-harness-framework",
-        "description": "Checked-in Meta Harness framework knowledge needed by PROJ-Quartz agents.",
+        "description": "Checked-in Meta Harness framework knowledge needed by Quartz agents.",
         "driverName": "filesystem",
         "grants": [
           {
@@ -75,7 +75,7 @@
       },
       {
         "name": "project",
-        "description": "PROJ-Quartz project knowledge and application files.",
+        "description": "Quartz project knowledge and application files.",
         "driverName": "filesystem",
         "grants": [
           {
@@ -102,11 +102,11 @@
       },
       {
         "name": "quartz-postgres",
-        "description": "PROJ-Quartz Postgres-backed storage location for database-backed Libraries.",
+        "description": "Quartz Postgres-backed storage location for database-backed Libraries.",
         "driverName": "postgres",
         "enabledWhenEnv": "QUARTZ_POSTGRES_URL",
         "connectionStringEnv": "QUARTZ_POSTGRES_URL",
-        "schemaName": "meta_harness",
+        "schemaName": "quartz_core",
         "tableName": "resources",
         "grants": [
           {

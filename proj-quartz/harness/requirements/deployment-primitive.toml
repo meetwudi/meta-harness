@@ -1,0 +1,14 @@
+id = "proj-quartz.deployment-primitive"
+title = "Deployment primitive"
+source = "Human request on 2026-07-01: Quartz needs deployment as a spec-driven primitive that can refer to Specs; separates local and production environments; includes deployment instructions, a runbook, checklists, per-run artifacts, logs, history, and checklist attestation; captures local snapshots of cloud resources used by the service; uses Google Cloud for Quartz production while leaving room for other providers later; and may assume AI deploys by following the deployment knowledge."
+text = "Quartz has a Deployment primitive that refers to relevant Specs and governs how Quartz is deployed across local and production environments, including the deploy process, environment separation, runbook, checklist completion, run evidence, and cloud resource snapshots."
+
+criteria = [
+  "The Deployment primitive is its own governed knowledge surface and may refer to Spec requirements and build or compile expectations.",
+  "The first Quartz deployment environment set is local and production.",
+  "Quartz production deployment knowledge currently targets Google Cloud.",
+  "Deployment instructions are spec-driven; implementation artifacts are derived from deployment knowledge when code is needed.",
+  "A deployment run is not finished until the checklist is completed and attested.",
+  "Each deployment run produces detailed artifacts, logs, history, and checklist attestation records.",
+  "Deployment knowledge captures a local snapshot record of the cloud resources the Quartz service uses.",
+]

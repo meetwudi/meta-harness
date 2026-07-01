@@ -1,0 +1,28 @@
+id = "storage.integration.storage-spec-manifest"
+title = "Storage Spec generated bootstrap manifest"
+requirements = [
+  "storage.spec-governed-storage-models",
+  "storage.spec-governed-migration-intents",
+  "storage.multiple-configured-storage-locations",
+  "storage.resource-actor-governance",
+  "storage.postgres-schema-bootstrap",
+  "librarian.spec-governed-storage-bootstrap",
+]
+procedure = [
+  "Read the Storage Spec collections for storage models and migration intents.",
+  "Read the Harness resource storage model intent.",
+  "Read the Harness storage configuration model intent.",
+  "Read the initial resource storage bootstrap migration intent.",
+  "Read the resource actor governance migration intent.",
+  "Inspect the generated Postgres resource bootstrap plan used by the Librarian Postgres storage driver.",
+  "Verify the generated plan cites the storage model and migration intent IDs.",
+]
+expected = [
+  "The Storage Spec declares storage-model and migration-intent collections.",
+  "The resource storage model remains backend-neutral natural-language knowledge.",
+  "The storage configuration model describes multiple enabled storage locations for one selected project.",
+  "The resource storage bootstrap migration remains backend-neutral natural-language knowledge.",
+  "The resource actor governance migration intent covers actor allow-lists, organization actors, actor globs, and Postgres row-level security.",
+  "The generated Postgres bootstrap plan cites the storage model and migration intent.",
+  "The generated Postgres bootstrap plan supplies the concrete backend artifact used by the Postgres storage driver.",
+]

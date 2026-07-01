@@ -1,0 +1,4 @@
+id = "proj-quartz.organization-invite-flow"
+title = "Organization invite flow"
+source = "Human request on 2026-07-01: a signed-in user creates an organization, sends an invite, the invitee receives email, signs in, clicks the accept link, and sees the logged-in account; follow-up on 2026-07-01 clarified that invite controls belong in organization settings and are available to organization admins; follow-up on 2026-07-01 approved using Resend for invite email delivery."
+text = "Quartz lets an organization admin invite another email address into the organization with an invite email and invite acceptance link; configured invite email delivery can use Resend, and the invitee signs in and accepts the link into the organization."

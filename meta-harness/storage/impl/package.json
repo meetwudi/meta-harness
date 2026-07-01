@@ -1,0 +1,21 @@
+{
+  "name": "@meta-harness/storage",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "../../knowledge-agent/impl/node_modules/.bin/tsc -p tsconfig.json",
+    "preintegration:storage-spec-manifest": "npm run build",
+    "integration:storage-spec-manifest": "node dist/storage-spec-manifest.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  }
+}

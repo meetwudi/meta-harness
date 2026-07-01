@@ -1,0 +1,20 @@
+id = "storage.model.storage-configurations"
+title = "Harness storage configuration model"
+source = "Human request on 2026-07-01: storage Spec should allow multiple storages to be configured."
+requirements = [
+  "storage.storage-location",
+  "storage.storage-location-knowledge",
+  "storage.project-scoped-storage-locations",
+  "storage.all-known-storage-locations",
+  "storage.multiple-configured-storage-locations",
+  "storage.default-library-creation-location",
+  "storage.spec-governed-storage-models",
+]
+text = "Harness storage configuration is project-scoped knowledge that may declare multiple named storage locations, each with its own driver, placement, discovery, capabilities, actor grants, and creation policy."
+statements = [
+  "A selected project configuration is the starting point for materializing storage locations.",
+  "Each storage location has a stable name, driver, Library root, discovery mode, capability grants, and optional deployment gate.",
+  "Multiple enabled storage locations may be materialized for one runtime so agents can discover Libraries across repository, machine-local, deployment-backed, and temporary places.",
+  "Library creation targets the configured default writable location when exactly one materialized location is designated for ordinary creation.",
+  "Storage model knowledge defines configuration meaning while runtime code resolves environment variables, active actor grants, and concrete driver instances.",
+]

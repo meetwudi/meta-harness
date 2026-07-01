@@ -1,0 +1,4 @@
+id = "storage.resource-actor-governance"
+title = "Resource actor governance"
+source = "Human request on 2026-07-01: resources need actor lists allowed to read and update resources, row-level security around those actors, organization actors, and glob support."
+text = "Stored resources carry actor URI allow-lists for read and update access, and storage backends with row-level access controls enforce those allow-lists using exact and glob-style actor URI matching."

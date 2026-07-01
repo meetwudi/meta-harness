@@ -1,0 +1,42 @@
+id = "proj-quartz.deployment.environment.production"
+title = "Production Quartz deployment environment"
+kind = "production"
+provider = "google-cloud"
+status = "draft"
+source = "Human request on 2026-07-01 that Quartz uses Google Cloud for deployment and separates production from local deployment."
+requirements = [
+  "proj-quartz.deployment-primitive",
+  "proj-quartz.cloud-resource-human-approval",
+  "proj-quartz.project-owned-config",
+  "proj-quartz.postgres-backed-libraries",
+]
+config_files = [
+  "proj-quartz/.meta-harness.json",
+]
+required_resource_classes = [
+  "Google Cloud project and region for Quartz production.",
+  "Quartz application hosting target.",
+  "Postgres-compatible production database backing `QUARTZ_POSTGRES_URL`.",
+  "Secret storage for Quartz runtime environment values.",
+  "Google OAuth client configured for the production Quartz origin.",
+  "Invite email delivery configuration for production.",
+]
+environment_values = [
+  "`QUARTZ_PROJECT_CONFIG` points at the Quartz project marker.",
+  "`QUARTZ_POSTGRES_URL` is supplied by the production database deployment.",
+  "`QUARTZ_PUBLIC_BASE_URL` identifies the production Quartz origin.",
+  "`QUARTZ_GOOGLE_CLIENT_ID` and `QUARTZ_GOOGLE_CLIENT_SECRET` are supplied by production secret management.",
+  "`QUARTZ_RESEND_API_KEY` and `QUARTZ_RESEND_FROM` or an approved invite email webhook are supplied by production secret management.",
+  "`OPENAI_API_KEY` is available to the production Knowledge Agent runtime.",
+]
+open_decisions = [
+  "The exact Google Cloud application hosting surface is not recorded yet.",
+  "The production Quartz base URL is not recorded yet.",
+  "The production database product, instance, region, and backup policy are not recorded yet.",
+  "The source and storage policy for raw deployment logs and artifacts is not decided yet.",
+]
+blockers = [
+  "Do not call a production deployment finished until the concrete Google Cloud resource snapshot has been captured.",
+  "Do not create, change, scale, delete, or continue using a production cloud resource until the one-resource human approval record for that action is captured.",
+  "Do not execute production deployment commands until the exact Google Cloud target and credential path are human-approved.",
+]

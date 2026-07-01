@@ -27,6 +27,10 @@ requirements = [
   "storage.all-known-storage-locations",
   "storage.library-creation-target-location",
   "storage.location-library-placement",
+  "storage.spec-governed-storage-models",
+  "storage.spec-governed-migration-intents",
+  "storage.multiple-configured-storage-locations",
+  "storage.resource-actor-governance",
 ]
 circumstances = []
 procedure = [
@@ -40,7 +44,11 @@ procedure = [
   "Check that storage locations define Library discovery within a query scope.",
   "Check that storage knowledge includes agent-readable guidance.",
   "Check that storage locations include known places where Libraries live.",
+  "Check that one selected project configuration may materialize multiple enabled storage locations.",
   "Check that Library creation targets a storage location.",
+  "Check that storage model and migration intent knowledge are human-authored, natural-language, backend-neutral Spec records.",
+  "Check that generated implementation artifacts realize storage model and migration intent knowledge for concrete storage backends.",
+  "Check that resource storage knowledge covers read and update actor allow-lists, organization actors, actor globs, and row-level enforcement for capable backends.",
 ]
 expected = [
   "The spec distinguishes storage drivers from storage locations.",
@@ -51,5 +59,8 @@ expected = [
   "The spec covers storage support for structured query by tags.",
   "The spec covers storage guidance as Library knowledge agents can read.",
   "The spec covers Library places with read and write grants as storage locations.",
+  "The spec covers multiple configured storage locations for one selected project.",
   "The spec covers how Library creation selects a storage location.",
+  "The spec covers storage model and migration intent knowledge as sources for generated schema and migration artifacts.",
+  "The spec covers actor-governed resource rows for capable storage backends.",
 ]

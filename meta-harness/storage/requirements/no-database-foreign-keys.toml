@@ -1,0 +1,10 @@
+id = "storage.no-database-foreign-keys"
+title = "Database schemas avoid foreign keys"
+source = "Human request on 2026-07-01: do not use database foreign keys; relationships should not be enforced with `FOREIGN KEY` or `REFERENCES` constraints."
+text = "Storage models, generated database artifacts, and handwritten database migrations represent record relationships without database-enforced foreign keys."
+
+criteria = [
+  "Generated and handwritten database DDL does not create `FOREIGN KEY` constraints or column-level `REFERENCES` clauses.",
+  "Record relationships are stored as identifiers and governed through explicit application, storage, migration, validation, repair, and acceptance logic.",
+  "Cross-record lifecycle behavior is specified as migration or routine knowledge rather than delegated to database cascade behavior.",
+]

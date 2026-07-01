@@ -1,0 +1,4 @@
+id = "proj-quartz.organization-context-switcher"
+title = "Organization context switcher"
+source = "Human request on 2026-07-01: users can see which organization they are part of and switch organizations from the bottom-left ChatGPT-style context menu; follow-up on 2026-07-01 clarified that organization creation and invite forms belong in a settings dialog, while the lower-left menu stays focused on organization switching."
+text = "Quartz shows the signed-in user's organizations and active organization in the lower-left account menu, and the user can switch the active organization from that menu; organization management forms are opened from settings instead of embedded in the lower-left menu."

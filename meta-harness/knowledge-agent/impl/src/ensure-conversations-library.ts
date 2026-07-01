@@ -12,7 +12,8 @@ export async function ensureConversationsLibrary(
   storage: LibrarianStorage,
   root: string,
   name: string,
-  actorUri: string,
+  readActors: string[],
+  updateActors: string[],
 ): Promise<void> {
   await storage.makeDirectory(root);
   const libraryToml = join(root, "LIBRARY.toml");
@@ -26,8 +27,8 @@ export async function ensureConversationsLibrary(
         `name = ${JSON.stringify(name)}`,
         'description = "Conversation history Library for Knowledge Agent sessions, including prompts, summaries, trace references, and conversation records."',
         "isSystemLibrary = true",
-        `read_actors = [${JSON.stringify(actorUri)}]`,
-        "update_actors = []",
+        `read_actors = ${tomlStringArray(readActors)}`,
+        `update_actors = ${tomlStringArray(updateActors)}`,
         "",
       ].join("\n"),
     );
@@ -49,4 +50,8 @@ export async function ensureConversationsLibrary(
       ].join("\n"),
     );
   }
+}
+
+function tomlStringArray(values: string[]): string {
+  return `[${values.map((value) => JSON.stringify(value)).join(", ")}]`;
 }

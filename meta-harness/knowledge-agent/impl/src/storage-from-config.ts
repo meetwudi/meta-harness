@@ -4,7 +4,11 @@
 
 import { localFileSystemStorage } from "./local-file-system-storage.js";
 import { postgresKnowledgeAgentStorage } from "./postgres-knowledge-agent-storage.js";
-import type { MetaHarnessConfig } from "./load-meta-harness-config.js";
+import {
+  resolveProjectActorUri,
+  type MetaHarnessConfig,
+} from "./load-meta-harness-config.js";
+import { resolveRuntimeActorContext } from "./runtime-actor-context.js";
 import type { KnowledgeAgentStorage } from "./types.js";
 
 /**
@@ -13,6 +17,7 @@ import type { KnowledgeAgentStorage } from "./types.js";
 export function storageFromConfig(config?: MetaHarnessConfig): KnowledgeAgentStorage {
   const runtimeStorage = config?.runtime?.conversationStorage;
   if (runtimeStorage?.driverName === "postgres") {
+    const actorContext = resolveRuntimeActorContext(resolveProjectActorUri(config));
     const envName = runtimeStorage.connectionStringEnv ?? "META_HARNESS_POSTGRES_URL";
     const connectionString = process.env[envName];
     if (!connectionString) {
@@ -23,6 +28,9 @@ export function storageFromConfig(config?: MetaHarnessConfig): KnowledgeAgentSto
       schemaName: runtimeStorage.schemaName,
       tableName: runtimeStorage.tableName,
       autoEnsureSchema: runtimeStorage.autoEnsureSchema,
+      actorUris: actorContext.actorUris,
+      defaultReadActors: actorContext.defaultReadActors,
+      defaultUpdateActors: actorContext.defaultUpdateActors,
     });
   }
   return localFileSystemStorage();

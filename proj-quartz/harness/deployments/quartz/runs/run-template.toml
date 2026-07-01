@@ -1,0 +1,37 @@
+id = "proj-quartz.deployment.run.template"
+title = "Quartz deployment run template"
+environment = ""
+started_at = ""
+finished_at = ""
+actor = ""
+source = "Template created on 2026-07-01 from the human request for deployment run artifacts, logs, history, and checklist attestation."
+requirements = [
+  "proj-quartz.deployment-primitive",
+]
+deployment_revision = ""
+resource_snapshot = ""
+cloud_resource_approvals = []
+
+[[commands]]
+command = ""
+status = ""
+log = ""
+
+[[artifacts]]
+path = ""
+description = ""
+
+[[checklist]]
+item = ""
+status = ""
+evidence = ""
+
+[attestation]
+status = ""
+text = ""
+attested_by = ""
+attested_at = ""
+
+[[blockers]]
+id = ""
+text = ""

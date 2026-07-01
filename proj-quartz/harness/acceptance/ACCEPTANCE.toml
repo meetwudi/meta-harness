@@ -3,7 +3,7 @@
 
 name = "proj-quartz-acceptance"
 version = "v0.0.0"
-source = "Migrated on 2026-06-28 from Spec-owned Quartz acceptance-test files after human direction to make Acceptance a separate primitive; Google sign-in/sign-out acceptance scenario captured from human request on 2026-06-30 and wording clarification on 2026-06-30."
+source = "Migrated on 2026-06-28 from Spec-owned Quartz acceptance-test files after human direction to make Acceptance a separate primitive; Google sign-in/sign-out acceptance scenario captured from human request on 2026-06-30 and wording clarification on 2026-06-30; organization creation, invite email, invite acceptance, organization switching, and organization actor resource boundaries captured from human request on 2026-07-01; organization settings dialog clarification captured from human request on 2026-07-01; role-based two-Chrome-profile replay clarification for organization invite acceptance captured from human request on 2026-07-01."
 scope = [
   "proj-quartz/**",
 ]
@@ -34,6 +34,56 @@ expected = [
   "A successful Google sign-in creates or resumes the Quartz user account.",
   "The signed-in app shows the user's account/profile affordance in the lower-left sidebar pattern.",
   "Sign-out returns the user to a signed-out state that requires sign-in before using authenticated Quartz data.",
+]
+
+[[tests]]
+id = "proj-quartz.acceptance.organization-invite-and-switching"
+title = "Organization invite and switching"
+requirements = [
+  "proj-quartz.google-sign-in",
+  "proj-quartz.user-account-organizations",
+  "proj-quartz.organization-profiles",
+  "proj-quartz.organization-invite-flow",
+  "proj-quartz.organization-context-switcher",
+  "proj-quartz.organization-settings-dialog",
+  "proj-quartz.organization-resource-actors",
+  "storage.resource-actor-governance",
+]
+circumstances = [
+  "Quartz is running at the tested origin.",
+  "A Google OAuth client exists for the tested Quartz origin.",
+  "The acceptance runner has asked the human for two Chrome profiles and their Google account emails: `{admin_email}` for the organization admin and `{invitee_email}` for the invite recipient.",
+  "The `{admin_email}` Chrome profile can complete Google sign-in for Quartz.",
+  "The `{invitee_email}` Chrome profile can complete Google sign-in for Quartz and receive the invite email.",
+  "Quartz invite email delivery is configured for the tested environment.",
+  "A local replay may use explicit link-testing mode when email delivery is outside the replay surface.",
+]
+execution = "ai-browser"
+procedure = [
+  "Ask the human to identify the admin Chrome profile, invitee Chrome profile, `{admin_email}`, and `{invitee_email}` for this replay.",
+  "Open Quartz in the admin Chrome profile while signed out.",
+  "Sign in as `{admin_email}` through Google.",
+  "Open the lower-left account menu.",
+  "Verify the lower-left account menu presents organization switching and opens organization settings.",
+  "Create a new organization from Settings > Organizations.",
+  "Invite `{invitee_email}` from Settings > Organizations while signed in as an organization admin.",
+  "Sign out from the lower-left account menu.",
+  "Open the invite email in the invitee Chrome profile.",
+  "Sign in as `{invitee_email}` through Google.",
+  "Accept the invite link.",
+  "Verify Quartz shows `{invitee_email}` as signed in and the invited organization as available.",
+  "Create another organization as `{invitee_email}` from Settings > Organizations.",
+  "Switch between the invited organization and the newly created organization from the lower-left account menu.",
+  "Inspect backend resource storage evidence for organization actor read and update allow-lists on organization-scoped resources.",
+]
+expected = [
+  "`{admin_email}` can sign in, create an organization, invite `{invitee_email}`, and sign out.",
+  "`{invitee_email}` can open the invite link, sign in, accept the invite, and see the logged-in account.",
+  "The lower-left account menu shows the active organization and all organizations for the signed-in user without embedding organization management forms.",
+  "Organization settings opens a dialog with the current organization, admin invite controls, and a separate organization creation step or tab.",
+  "`{invitee_email}` can create a second organization and switch active organization context from the lower-left account menu.",
+  "Organization-owned resources include organization actor URIs in read and update allow-lists.",
+  "Postgres-backed resource storage enforces actor allow-lists with row-level security for resource reads and updates.",
 ]
 
 [[tests]]

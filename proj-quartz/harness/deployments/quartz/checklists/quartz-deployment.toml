@@ -1,0 +1,70 @@
+id = "proj-quartz.deployment.checklist"
+title = "Quartz deployment checklist"
+source = "Human request on 2026-07-01 for deployment checklists and checklist attestation before a deployment is called finished."
+requirements = [
+  "proj-quartz.deployment-primitive",
+  "proj-quartz.cloud-resource-human-approval",
+]
+applies_to = [
+  "proj-quartz.deployment.environment.local",
+  "proj-quartz.deployment.environment.production",
+]
+
+[[items]]
+id = "environment-selected"
+text = "The run identifies exactly one deployment environment: local or production."
+evidence = "Run record names the selected environment and links to its environment file."
+
+[[items]]
+id = "specs-read"
+text = "The run reads the Quartz Spec and cited requirement files before executing deployment steps."
+evidence = "Run record lists the Spec and requirement files read."
+
+[[items]]
+id = "configuration-present"
+text = "The selected environment has the required runtime configuration values available through its approved configuration path."
+evidence = "Run record lists configuration keys checked without recording secret values."
+
+[[items]]
+id = "build-and-tests"
+text = "The run completes the build and applicable tests named by the runbook for the selected environment."
+evidence = "Run record links or embeds command names, exit statuses, and log artifact locations."
+
+[[items]]
+id = "resource-snapshot"
+text = "The run captures the resource snapshot required for the selected environment."
+evidence = "Run record links to the resource snapshot record, or marks the item not applicable for local-only replay."
+
+[[items]]
+id = "cloud-resource-approvals"
+text = "Every cloud resource created, changed, scaled, deleted, or used by the run has a one-resource human approval record with provider pointers."
+evidence = "Run record links to cloud resource approval records for each changed or used cloud resource."
+
+[[items]]
+id = "deployment-executed"
+text = "The run executes only deployment commands approved by the selected environment and runbook."
+evidence = "Run record lists commands or provider actions executed and their outputs."
+
+[[items]]
+id = "post-deploy-verification"
+text = "The deployed Quartz service is verified at the selected environment origin."
+evidence = "Run record captures URL checks, API checks, browser checks, or other verification artifacts."
+
+[[items]]
+id = "history-and-artifacts"
+text = "The run records detailed artifacts, logs, history, and remaining blockers."
+evidence = "Run record points to artifact files or explains why an artifact is not available."
+
+[[items]]
+id = "attestation"
+text = "The run includes checklist attestation before it is called finished."
+evidence = "Run record includes a checklist attestation section with item statuses."
+
+[attestation]
+required = true
+allowed_statuses = [
+  "pass",
+  "blocked",
+  "na",
+]
+text = "A Quartz deployment run is complete only when every checklist item has an allowed status and the run record contains the attestation."

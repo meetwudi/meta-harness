@@ -10,8 +10,21 @@ import {
   writeTurnReasoning,
   type ReasoningDeltaRecord,
 } from "./route";
+import type { QuartzResourceActorContext } from "../../../lib/quartz-auth-db";
 
 type DirectoryEntry = { name: string; isDirectory: boolean };
+
+const actorContext: QuartzResourceActorContext = {
+  actorUri: "actor://proj-quartz/user/test-user",
+  actorUris: [
+    "actor://proj-quartz/user/test-user",
+    "actor://proj-quartz/organization/test-org",
+    "actor://proj-quartz/agent",
+  ],
+  defaultReadActors: ["actor://proj-quartz/organization/test-org"],
+  defaultUpdateActors: ["actor://proj-quartz/organization/test-org"],
+  conversationLibraryRootPath: "/libraries/organizations/test-org/knowledge-agent-conversations",
+};
 
 class MemoryStorage {
   private readonly files = new Map<string, string>();
@@ -420,7 +433,7 @@ assert.match(createdToml, /^updated_at = "[^"]+"$/m);
 assert.match(createdToml, /^session_file = "session\.jsonl"$/m);
 
 await assert.rejects(
-  () => runtimeStorageFromConfig({}),
+  () => runtimeStorageFromConfig({}, actorContext),
   /\.meta-harness\.json runtime\.conversationStorage is required/,
 );
 await assert.rejects(
@@ -431,7 +444,7 @@ await assert.rejects(
           driverName: "filesystem",
         },
       },
-    }),
+    }, actorContext),
   /\.meta-harness\.json runtime\.conversationStorage must use postgres, got filesystem/,
 );
 
@@ -446,7 +459,7 @@ try {
             driverName: "postgres",
           },
         },
-      }),
+      }, actorContext),
     /Postgres runtime storage requires environment variable: META_HARNESS_POSTGRES_URL/,
   );
 } finally {

@@ -1,0 +1,18 @@
+id = "proj-quartz.migration-intent.identity-organizations-v1"
+title = "Initial Quartz identity and organization storage"
+source = "Human request on 2026-07-01 for login, organization creation, invite sending, invite acceptance, logout, organization switching, and organization actor resource boundaries."
+requirements = [
+  "proj-quartz.google-sign-in",
+  "proj-quartz.organization-invite-flow",
+  "proj-quartz.organization-context-switcher",
+  "proj-quartz.auth-storage",
+  "proj-quartz.organization-resource-actors",
+  "storage.no-database-foreign-keys",
+]
+text = "Introduce generated application storage migrations for Quartz users, external sign-in identities, browser sessions, organizations, organization profiles, organization invites, active organization context, and organization actor identifiers."
+statements = [
+  "The generated migration artifacts create the durable app tables needed for sign-in, logout, organization creation, invite sending, invite acceptance, and active organization switching.",
+  "The generated migration artifacts preserve provider token handling as an exchange-only sign-in concern while storing Quartz session token hashes.",
+  "The generated migration artifacts store organization actor URIs so organization-owned resources can include those actors in read and update allow-lists.",
+  "The generated migration artifacts create ordinary identifier columns for cross-record relationships and do not create database-enforced foreign keys.",
+]

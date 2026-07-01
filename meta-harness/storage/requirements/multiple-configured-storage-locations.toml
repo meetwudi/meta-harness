@@ -1,0 +1,4 @@
+id = "storage.multiple-configured-storage-locations"
+title = "Multiple configured storage locations"
+source = "Human request on 2026-07-01: make sure the storage Spec can allow multiple storages to be configured."
+text = "A selected project storage configuration may declare multiple named storage locations, and the runtime materializes each enabled location for the active project and actor."

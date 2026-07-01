@@ -27,6 +27,7 @@ import { parseArgs } from "./parse-args.js";
 import { providerFromName } from "./provider-from-name.js";
 import { createInterface } from "node:readline/promises";
 import { resultSummary } from "./result-summary.js";
+import { resolveRuntimeActorContext } from "./runtime-actor-context.js";
 import { storageFromConfig } from "./storage-from-config.js";
 import { usage } from "./usage.js";
 import type {
@@ -60,19 +61,34 @@ export async function main(): Promise<number> {
   if (!configuredLocalRoot) {
     throw new Error(".meta-harness.json project.localRoot is required");
   }
+  const projectActorUri = resolveProjectActorUri(config);
+  const actorContext = resolveRuntimeActorContext(projectActorUri);
+  const conversationLibrary = resolveRuntimeLibraryConfig(
+    config.runtime?.conversationLibrary,
+    "runtime.conversationLibrary",
+  );
+  const sharedMemory = resolveSharedMemoryRuntimeConfig(config);
+  const sharedMemoryLibrary = actorContext.memoryLibraryRootPath && sharedMemory.library
+    ? { ...sharedMemory.library, rootPath: actorContext.memoryLibraryRootPath }
+    : sharedMemory.library;
   const runtime = await storage.prepareRuntime({
     repoRootPath,
     projectRootPath: resolveProjectRootPath(repoRootPath, parsed.projectConfig),
     configuredLocalRoot,
     sandboxWorkspaceInput: parsed.sandboxWorkspace,
     conversationId: parsed.conversationId,
-    actorUri: resolveProjectActorUri(config),
-    conversationLibrary: resolveRuntimeLibraryConfig(
-      config.runtime?.conversationLibrary,
-      "runtime.conversationLibrary",
-    ),
+    actorUri: actorContext.actorUri,
+    actorUris: actorContext.actorUris,
+    defaultReadActors: actorContext.defaultReadActors,
+    defaultUpdateActors: actorContext.defaultUpdateActors,
+    conversationLibrary: actorContext.conversationLibraryRootPath
+      ? { ...conversationLibrary, rootPath: actorContext.conversationLibraryRootPath }
+      : conversationLibrary,
     memoryCurator: resolveMemoryCuratorConfig(config),
-    sharedMemory: resolveSharedMemoryRuntimeConfig(config),
+    sharedMemory: {
+      ...sharedMemory,
+      library: sharedMemoryLibrary,
+    },
   });
   const session = storage.createSession(runtime, parsed.conversationId);
 

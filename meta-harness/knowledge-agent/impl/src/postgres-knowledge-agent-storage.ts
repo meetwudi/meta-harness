@@ -23,6 +23,9 @@ export type PostgresKnowledgeAgentStorageOptions = {
   schemaName?: string;
   tableName?: string;
   autoEnsureSchema?: boolean;
+  actorUris?: string[];
+  defaultReadActors?: string[];
+  defaultUpdateActors?: string[];
 };
 
 /**
@@ -31,7 +34,15 @@ export type PostgresKnowledgeAgentStorageOptions = {
 export function postgresKnowledgeAgentStorage(
   options: PostgresKnowledgeAgentStorageOptions,
 ): KnowledgeAgentStorage {
-  const runtimeStorage = createPostgresStorageFromConnectionString(options);
+  const runtimeStorage = createPostgresStorageFromConnectionString({
+    connectionString: options.connectionString,
+    schemaName: options.schemaName,
+    tableName: options.tableName,
+    autoEnsureSchema: options.autoEnsureSchema,
+    actorUris: options.actorUris,
+    defaultReadActors: options.defaultReadActors,
+    defaultUpdateActors: options.defaultUpdateActors,
+  });
   return {
     prepareRuntime: (input) => preparePostgresRuntime(input, runtimeStorage),
     createLibrarianContext: createLocalLibrarianContext,
@@ -77,7 +88,8 @@ async function preparePostgresRuntime(
     runtimeStorage,
     conversationsLibrary,
     input.conversationLibrary.name,
-    input.actorUri,
+    input.defaultReadActors ?? [input.actorUri],
+    input.defaultUpdateActors ?? [],
   );
   if (input.sharedMemory.enabled) {
     if (!input.sharedMemory.library) {
@@ -87,7 +99,8 @@ async function preparePostgresRuntime(
       runtimeStorage,
       memoryLibrary,
       input.sharedMemory.library.name,
-      input.actorUri,
+      input.defaultReadActors ?? [input.actorUri],
+      input.defaultUpdateActors ?? [input.actorUri],
     );
   }
   await runtimeStorage.makeDirectory(conversationRoot);

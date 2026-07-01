@@ -1,0 +1,11 @@
+id = "proj-quartz.cloud-resource-human-approval"
+title = "Cloud resource human approval"
+source = "Human request on 2026-07-01: cloud resources used by Quartz must be approved one by one by a human; each approval and change must trace back to a specific approval time; and each record must save enough provider pointers, such as Google Cloud pointers for a virtual machine or Kubernetes application, so the resource can later be changed, deleted, or scaled."
+text = "Quartz deployment knowledge records one human approval per cloud resource and per cloud resource change, with approval time and provider pointers sufficient to later change, delete, or scale the resource."
+
+criteria = [
+  "Each cloud resource used by Quartz has its own human approval record.",
+  "Each creation, change, scaling action, deletion, or continued-use decision for a cloud resource traces to a specific human approval time.",
+  "Cloud resource records include provider pointers sufficient to find and manage the resource later.",
+  "Google Cloud resource records include Google Cloud pointers when Quartz production uses Google Cloud.",
+]

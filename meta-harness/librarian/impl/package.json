@@ -10,13 +10,16 @@
     }
   },
   "scripts": {
+    "prebuild": "npm --prefix ../../storage/impl run build",
     "build": "../../knowledge-agent/impl/node_modules/.bin/tsc -p tsconfig.json",
     "pretest": "npm run build",
     "test": "node dist/filesystem-storage-end-to-end.test.js",
     "preintegration:filesystem-storage-end-to-end": "npm run build",
     "integration:filesystem-storage-end-to-end": "node dist/filesystem-storage-end-to-end.test.js",
     "preintegration:postgres-storage": "npm run build",
-    "integration:postgres-storage": "node dist/postgres-storage-end-to-end.test.js"
+    "integration:postgres-storage": "node dist/postgres-storage-end-to-end.test.js",
+    "preintegration:storage-spec-manifest": "npm --prefix ../../storage/impl run integration:storage-spec-manifest && npm run build",
+    "integration:storage-spec-manifest": "node dist/storage-spec-manifest.test.js"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

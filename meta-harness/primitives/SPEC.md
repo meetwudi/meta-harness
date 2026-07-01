@@ -61,6 +61,8 @@ Generated file. Do not edit directly; update the Spec first.
 
 - `[[test_guideline_collections]]`
 - `[[integration_test_collections]]`
+- `[[storage_model_collections]]`
+- `[[migration_intent_collections]]`
 
 Example:
 
@@ -136,6 +138,54 @@ Each integration-test file includes:
 - `expected`
 
 The `requirements` field contains requirement IDs.
+
+## Storage Models
+
+Specs may include storage-model collections for human-authored persistence
+intent. Storage-model records describe backend-neutral entities, relationships,
+invariants, ownership, durability, sensitivity, and retrieval behavior in
+natural language.
+
+Storage-model records are source knowledge for generated logical data-model
+definitions, backend-specific schema definitions, migration artifacts, and
+verification tests. Executable schema and migration artifacts belong in
+generated implementation files that cite the relevant requirement and
+storage-model IDs.
+
+Each storage-model file includes:
+
+- `id`
+- `title`
+- `source`
+- `requirements`
+- `text`
+
+Storage-model files may include:
+
+- `statements`
+
+## Migration Intents
+
+Specs may include migration-intent collections for human-authored migration
+intent. Migration-intent records describe the semantic source state, target
+state, preservation expectations, generated artifact expectations, and
+verification criteria for schema and data changes.
+
+Migration-intent records are source knowledge for generated migration plans,
+backend-specific executable scripts, data migration scripts, and migration
+verification tests.
+
+Each migration-intent file includes:
+
+- `id`
+- `title`
+- `source`
+- `requirements`
+- `text`
+
+Migration-intent files may include:
+
+- `statements`
 
 ## Implementation Citations
 

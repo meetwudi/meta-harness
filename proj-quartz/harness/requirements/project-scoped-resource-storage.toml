@@ -1,0 +1,4 @@
+id = "proj-quartz.project-scoped-resource-storage"
+title = "Project-scoped resource storage"
+source = "Human request on 2026-07-01: Quartz resource tables should be project scoped with a common Quartz prefix; use `quartz_core.resources` for resource storage and `quartz_app` for application tables."
+text = "Quartz stores Harness resource rows in a Quartz-scoped core schema and stores application identity and organization tables in a separate Quartz application schema."

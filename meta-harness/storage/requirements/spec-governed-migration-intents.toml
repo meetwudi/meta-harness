@@ -1,0 +1,4 @@
+id = "storage.spec-governed-migration-intents"
+title = "Spec-governed migration intents"
+source = "Human request on 2026-07-01: migrations should also be Spec knowledge, and generated scripts should migrate data and schema while remaining agnostic of the underlying storage."
+text = "Storage Specs may declare human-authored migration intent as natural-language, backend-neutral knowledge from which generated artifacts derive storage-specific schema migrations, data migrations, and verification tests."

@@ -1,0 +1,4 @@
+id = "proj-quartz.organization-settings-dialog"
+title = "Organization settings dialog"
+source = "Human request on 2026-07-01: organization management forms should not live in the lower-left context menu; settings should open a dialog with organization management, including current organization, admin invites, and organization creation in a separate step or tab."
+text = "Quartz opens organization management from a reusable settings dialog; the dialog has an Organizations area that shows the current organization, admin invite controls, and a separate organization creation step or tab."

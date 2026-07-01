@@ -99,6 +99,9 @@ export type StoragePrepareInput = {
   sandboxWorkspaceInput: string;
   conversationId: string;
   actorUri: string;
+  actorUris: string[];
+  defaultReadActors?: string[];
+  defaultUpdateActors?: string[];
   conversationLibrary: ResolvedRuntimeLibraryConfig;
   memoryCurator: ResolvedMemoryCuratorConfig;
   sharedMemory: {

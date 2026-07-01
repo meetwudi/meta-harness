@@ -15,6 +15,7 @@ import {
   loadMetaHarnessConfig,
   resolveProjectActorUri,
 } from "./load-meta-harness-config.js";
+import { resolveRuntimeActorContext } from "./runtime-actor-context.js";
 import type { PreparedRuntime } from "./types.js";
 
 /**
@@ -25,9 +26,10 @@ export function createLocalLibrarianContext(
   runtime: PreparedRuntime,
 ) {
   const storage = createLocalFileSystemStorage();
-  const actorUri = resolveProjectActorUri(
+  const projectActorUri = resolveProjectActorUri(
     loadMetaHarnessConfig(input.repoRootPath, input.projectConfigPath),
   );
+  const actorContext = resolveRuntimeActorContext(projectActorUri);
   return createLibrarianContext({
     storage,
     storageLocations: loadLocalStorageLocations({
@@ -35,9 +37,12 @@ export function createLocalLibrarianContext(
       projectConfigPath: input.projectConfigPath,
       runtime,
       storage,
-      actorUris: [actorUri],
+      actorUris: actorContext.actorUris,
+      defaultReadActors: actorContext.defaultReadActors,
+      defaultUpdateActors: actorContext.defaultUpdateActors,
     }),
-    actorUri,
+    actorUri: actorContext.actorUri,
+    actorUris: actorContext.actorUris,
     sessionId: input.conversationId,
   });
 }

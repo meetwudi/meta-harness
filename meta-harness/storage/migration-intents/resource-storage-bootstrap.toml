@@ -1,0 +1,17 @@
+id = "storage.migration-intent.resource-storage-bootstrap"
+title = "Initial resource storage bootstrap"
+source = "Human request on 2026-07-01: migration intent should be Spec knowledge that generates backend-specific scripts for schema and data migration."
+requirements = [
+  "storage.postgres-schema-bootstrap",
+  "storage.spec-governed-storage-models",
+  "storage.spec-governed-migration-intents",
+  "storage.no-database-foreign-keys",
+]
+text = "Introduce persistent backend artifacts that realize the Harness resource storage model for a selected storage driver while preserving the shared storage interface and existing Library semantics."
+statements = [
+  "The generated migration artifacts create the backend structures needed for resource lookup, writing, listing, deleting, metadata storage, and update ordering.",
+  "The generated artifacts target the selected backend capabilities while keeping the source migration intent backend-neutral.",
+  "Generated database artifacts avoid `FOREIGN KEY` constraints and column-level `REFERENCES` clauses; cross-record relationships remain explicit identifiers governed by application, storage, migration, validation, repair, and acceptance logic.",
+  "For Postgres-backed storage, the generated bootstrap plan is realized by the driver-owned raw SQL bootstrap path.",
+  "Verification checks that the generated backend artifact cites this migration intent and the resource storage model.",
+]

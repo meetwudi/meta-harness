@@ -2,8 +2,11 @@
 // Supports storage.postgres-driver: verifies Postgres can back Librarian storage.
 // Supports storage.postgres-schema-bootstrap: verifies schema bootstrap against Postgres.
 // Supports storage.postgres-deployment-configuration: verifies explicit table configuration against a local Postgres deployment.
+// Supports librarian.spec-governed-storage-bootstrap: verifies generated migration ledger recording.
 // Supports librarian.postgres-backed-library-interface: verifies Library tools over Postgres.
 // Supports librarian.tool-librarian-delete: verifies file and folder resource deletion over Postgres.
+// Supports storage.resource-actor-governance: verifies row-level resource access with exact actors and actor globs.
+// Harness-Requirement: storage.resource-actor-governance
 
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
@@ -12,9 +15,11 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Pool } from "pg";
 import { createLibrarianContext } from "./create-librarian-context.js";
 import { createPostgresStorageFromConnectionString, type PostgresStorage } from "./create-postgres-storage.js";
 import { executeLibrarianTool } from "./execute-librarian-tool.js";
+import { postgresResourceBootstrapPlan } from "../../../storage/impl/dist/postgres-resource-bootstrap-plan.js";
 
 const postgresCommand = requireCommand("postgres");
 const initdbCommand = requireCommand("initdb");
@@ -51,6 +56,7 @@ try {
   postgres.stderr.on("data", (chunk) => stderr.push(chunk));
 
   storage = await waitForPostgres(connectionString, () => stderr.join(""));
+  await assertStorageMigrationLedger(connectionString);
   const context = createLibrarianContext({
     storage,
     storageLocations: [
@@ -92,6 +98,7 @@ try {
       "",
     ].join("\n"),
   );
+  await assertActorScopedResourceAccess(connectionString);
 
   const created = await executeLibrarianTool(context, "librarian_create_library", {
     storageLocationName: "postgres-test",
@@ -215,6 +222,169 @@ try {
     await once(postgres, "close");
   }
   await rm(workRoot, { recursive: true, force: true });
+}
+
+async function assertStorageMigrationLedger(connectionString: string): Promise<void> {
+  const pool = new Pool({
+    connectionString,
+    allowExitOnIdle: true,
+  });
+  try {
+    const result = await pool.query<{
+      id: string;
+      storage_model_ids: string[];
+      migration_intent_id: string;
+    }>(
+      `SELECT id, storage_model_ids, migration_intent_id
+       FROM "meta_harness_test_resources_schema_migrations"`,
+    );
+    assert.deepEqual(result.rows, [
+      {
+        id: "202607010001_resource_storage_bootstrap",
+        storage_model_ids: [postgresResourceBootstrapPlan.storageModelId],
+        migration_intent_id: postgresResourceBootstrapPlan.migrationIntentId,
+      },
+      {
+        id: "202607010002_resource_actor_governance",
+        storage_model_ids: [postgresResourceBootstrapPlan.storageModelId],
+        migration_intent_id: "storage.migration-intent.resource-actor-governance",
+      },
+    ]);
+  } finally {
+    await pool.end();
+  }
+}
+
+async function assertActorScopedResourceAccess(connectionString: string): Promise<void> {
+  const globFixturePath = "/actor-fixtures/glob-readable.txt";
+  const globFixtureContent = [
+    "# This is a Harness primitive.",
+    "# See also: library://meta-harness",
+    "",
+    'name = "glob-readable"',
+    'description = "Actor glob fixture Library stored in Postgres."',
+    "isSystemLibrary = true",
+    'read_actors = ["actor://proj-quartz/organization/*", "actor://proj-quartz/resource-admin/*"]',
+    'update_actors = ["actor://proj-quartz/resource-admin/*"]',
+    "",
+  ].join("\n");
+  const adminPool = new Pool({
+    connectionString,
+    allowExitOnIdle: true,
+  });
+  try {
+    await adminPool.query("CREATE ROLE quartz_rls_other_actor LOGIN");
+    await adminPool.query(
+      `GRANT SELECT, INSERT, UPDATE, DELETE
+       ON "meta_harness_test_resources"
+       TO quartz_rls_other_actor`,
+    );
+    await adminPool.query(
+      `INSERT INTO "meta_harness_test_resources"
+       (path, is_container, content, read_actors, update_actors, updated_at)
+       VALUES ($1, false, $2, $3, $4, now())
+       ON CONFLICT (path) DO UPDATE SET
+         is_container = false,
+         content = EXCLUDED.content,
+         read_actors = EXCLUDED.read_actors,
+         update_actors = EXCLUDED.update_actors,
+         updated_at = now()`,
+      [
+        globFixturePath,
+        globFixtureContent,
+        [
+          "actor://proj-quartz/organization/*",
+          "actor://proj-quartz/resource-admin/*",
+        ],
+        ["actor://proj-quartz/resource-admin/*"],
+      ],
+    );
+  } finally {
+    await adminPool.end();
+  }
+
+  const otherActorStorage = createPostgresStorageFromConnectionString({
+    connectionString: connectionString.replace(
+      "postgres@",
+      "quartz_rls_other_actor@",
+    ),
+    tableName: "meta_harness_test_resources",
+    autoEnsureSchema: false,
+    actorUris: ["actor://other-agent"],
+    defaultReadActors: ["actor://other-agent"],
+    defaultUpdateActors: ["actor://other-agent"],
+  });
+  try {
+    assert.equal(
+      await otherActorStorage.exists("/libraries/pg-read-only/LIBRARY.toml"),
+      false,
+    );
+  } finally {
+    await otherActorStorage.close();
+  }
+
+  const organizationActorStorage = createPostgresStorageFromConnectionString({
+    connectionString: connectionString.replace(
+      "postgres@",
+      "quartz_rls_other_actor@",
+    ),
+    tableName: "meta_harness_test_resources",
+    autoEnsureSchema: false,
+    actorUris: ["actor://proj-quartz/organization/acme"],
+    defaultReadActors: ["actor://proj-quartz/organization/acme"],
+    defaultUpdateActors: ["actor://proj-quartz/organization/acme"],
+  });
+  try {
+    assert.equal(
+      await organizationActorStorage.readText(globFixturePath),
+      globFixtureContent,
+    );
+    await assert.rejects(
+      organizationActorStorage.writeText(globFixturePath, "unauthorized update\n"),
+    );
+  } finally {
+    await organizationActorStorage.close();
+  }
+
+  const resourceAdminStorage = createPostgresStorageFromConnectionString({
+    connectionString: connectionString.replace(
+      "postgres@",
+      "quartz_rls_other_actor@",
+    ),
+    tableName: "meta_harness_test_resources",
+    autoEnsureSchema: false,
+    actorUris: ["actor://proj-quartz/resource-admin/acme"],
+    defaultReadActors: [
+      "actor://proj-quartz/organization/*",
+      "actor://proj-quartz/resource-admin/*",
+    ],
+    defaultUpdateActors: ["actor://proj-quartz/resource-admin/*"],
+  });
+  try {
+    await resourceAdminStorage.writeText(globFixturePath, "authorized update\n");
+  } finally {
+    await resourceAdminStorage.close();
+  }
+
+  const organizationActorReadbackStorage = createPostgresStorageFromConnectionString({
+    connectionString: connectionString.replace(
+      "postgres@",
+      "quartz_rls_other_actor@",
+    ),
+    tableName: "meta_harness_test_resources",
+    autoEnsureSchema: false,
+    actorUris: ["actor://proj-quartz/organization/acme"],
+    defaultReadActors: ["actor://proj-quartz/organization/acme"],
+    defaultUpdateActors: ["actor://proj-quartz/organization/acme"],
+  });
+  try {
+    assert.equal(
+      await organizationActorReadbackStorage.readText(globFixturePath),
+      "authorized update\n",
+    );
+  } finally {
+    await organizationActorReadbackStorage.close();
+  }
 }
 
 function requireCommand(name: string): string {

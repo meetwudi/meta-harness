@@ -1,0 +1,137 @@
+// Generated file. Do not edit directly; update the Spec first.
+// Supports storage.spec-governed-storage-models: verifies storage model knowledge is present.
+// Supports storage.spec-governed-migration-intents: verifies migration intent knowledge is present.
+// Supports storage.postgres-schema-bootstrap: verifies the generated Postgres bootstrap plan carries concrete backend artifacts.
+// Supports librarian.spec-governed-storage-bootstrap: verifies Librarian storage bootstrap traces to Storage Spec knowledge.
+
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parseToml } from "./parse-toml.js";
+import { postgresResourceBootstrapPlan } from "../../../storage/impl/dist/postgres-resource-bootstrap-plan.js";
+import { postgresStorageMigrations } from "../../../storage/impl/dist/postgres-storage-migrations.js";
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
+const storageRoot = resolve(currentDir, "../../../storage");
+
+const spec = await readToml("SPEC.toml");
+const model = await readToml("storage-models/resources.toml");
+const configurationModel = await readToml("storage-models/storage-configurations.toml");
+const migrationIntent = await readToml("migration-intents/resource-storage-bootstrap.toml");
+const actorGovernanceIntent = await readToml("migration-intents/resource-actor-governance.toml");
+
+assertCollection(spec, "storage_model_collections", "storage-models", "storage-models");
+assertCollection(spec, "migration_intent_collections", "migration-intents", "migration-intents");
+
+assert.equal(model.id, postgresResourceBootstrapPlan.storageModelId);
+assert.equal(migrationIntent.id, postgresResourceBootstrapPlan.migrationIntentId);
+assert.equal(configurationModel.id, "storage.model.storage-configurations");
+
+assertRequirements(model, [
+  "storage.shared-driver-interface",
+  "storage.spec-governed-storage-models",
+]);
+assertRequirements(configurationModel, [
+  "storage.multiple-configured-storage-locations",
+  "storage.spec-governed-storage-models",
+]);
+assertRequirements(migrationIntent, [
+  "storage.postgres-schema-bootstrap",
+  "storage.spec-governed-migration-intents",
+]);
+assertRequirements(actorGovernanceIntent, [
+  "storage.resource-actor-governance",
+  "storage.spec-governed-migration-intents",
+]);
+
+assert.ok(
+  String(model.text).includes("backend-neutral resource model"),
+  "resource model should remain semantic Storage Spec knowledge",
+);
+assert.ok(
+  String(configurationModel.text).includes("multiple named storage locations"),
+  "storage configuration model should cover multiple storage locations",
+);
+assert.ok(
+  String(migrationIntent.text).includes("backend artifacts"),
+  "migration intent should describe generated backend artifacts",
+);
+assert.ok(
+  String(actorGovernanceIntent.text).includes("row-level security"),
+  "actor governance intent should describe row-level security",
+);
+
+assert.deepEqual(postgresStorageMigrations.map((migration) => ({
+  id: migration.id,
+  storageModelIds: migration.storageModelIds,
+  migrationIntentId: migration.migrationIntentId,
+})), [
+  {
+    id: "202607010001_resource_storage_bootstrap",
+    storageModelIds: [postgresResourceBootstrapPlan.storageModelId],
+    migrationIntentId: postgresResourceBootstrapPlan.migrationIntentId,
+  },
+  {
+    id: "202607010002_resource_actor_governance",
+    storageModelIds: [postgresResourceBootstrapPlan.storageModelId],
+    migrationIntentId: "storage.migration-intent.resource-actor-governance",
+  },
+]);
+
+assert.deepEqual(postgresResourceBootstrapPlan.tableEntries, [
+  "path text PRIMARY KEY",
+  "content text",
+  "metadata jsonb NOT NULL DEFAULT '{}'::jsonb",
+  "is_container boolean NOT NULL DEFAULT false",
+  "created_at timestamptz NOT NULL DEFAULT now()",
+  "updated_at timestamptz NOT NULL DEFAULT now()",
+  "CHECK (is_container OR content IS NOT NULL)",
+]);
+assert.deepEqual(postgresResourceBootstrapPlan.indexes, [
+  {
+    suffix: "path_prefix_idx",
+    expression: "(path text_pattern_ops)",
+  },
+  {
+    suffix: "updated_at_idx",
+    expression: "(updated_at)",
+  },
+]);
+
+async function readToml(path: string): Promise<Record<string, unknown>> {
+  return parseToml(await readFile(resolve(storageRoot, path), "utf8"));
+}
+
+function assertCollection(
+  spec: Record<string, unknown>,
+  key: string,
+  name: string,
+  location: string,
+): void {
+  const collections = spec[key];
+  assert.ok(Array.isArray(collections), `${key} should be a collection list`);
+  assert.ok(
+    collections.some((collection) =>
+      isRecord(collection) &&
+      collection.name === name &&
+      collection.location === location
+    ),
+    `${key} should include ${name}`,
+  );
+}
+
+function assertRequirements(record: Record<string, unknown>, expected: string[]): void {
+  const requirements = record.requirements;
+  assert.ok(Array.isArray(requirements), `${String(record.id)} should list requirements`);
+  for (const requirement of expected) {
+    assert.ok(
+      requirements.includes(requirement),
+      `${String(record.id)} should include ${requirement}`,
+    );
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}

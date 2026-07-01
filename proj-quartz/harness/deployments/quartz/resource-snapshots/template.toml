@@ -1,0 +1,31 @@
+id = "proj-quartz.deployment.resource-snapshot.template"
+title = "Quartz deployment resource snapshot template"
+environment = ""
+provider = ""
+captured_at = ""
+captured_by = ""
+source = "Template created on 2026-07-01 from the human request for deployment resource snapshots."
+requirements = [
+  "proj-quartz.deployment-primitive",
+]
+capture_method = ""
+
+[[resources]]
+id = ""
+type = ""
+name = ""
+approval_record = ""
+provider_uri = ""
+provider_console_url = ""
+region = ""
+purpose = ""
+configuration_summary = ""
+change_pointer = ""
+scale_pointer = ""
+delete_pointer = ""
+dependencies = []
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[open_items]]
+id = ""
+text = ""

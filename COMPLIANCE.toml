@@ -17,3 +17,11 @@ examples = [
   "Provider scope: write `Quartz supports Google sign-in for the current account flow` rather than preserving a temporary exclusion such as `Google-only` or `does not support email/password`.",
   "Feature replacement: when a human replaces an AI-built feature direction, update the source of truth to describe the replacement as current behavior rather than leaving a durable warning about the removed approach.",
 ]
+
+[[items]]
+id = "no-database-foreign-keys"
+text = "Verify database schema changes do not create or preserve database-enforced foreign keys. Relationships between records are represented with identifiers and governed by application, storage, migration, validation, or repair logic rather than `FOREIGN KEY` constraints or column-level `REFERENCES` clauses."
+examples = [
+  "DDL review: reject `FOREIGN KEY (...) REFERENCES ...` and `user_id uuid REFERENCES users(id)` in generated or handwritten database migrations.",
+  "Relationship modeling: store related record identifiers as ordinary columns, then enforce lifecycle and cleanup behavior through explicit code, acceptance checks, repair routines, or migration verification.",
+]

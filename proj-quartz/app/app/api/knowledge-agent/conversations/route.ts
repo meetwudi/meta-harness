@@ -4,6 +4,14 @@ import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import nextEnv from "@next/env";
+import {
+  quartzResourceActorContext,
+  sessionFromToken,
+  withQuartzAuthDb,
+  type QuartzAuthSession,
+  type QuartzResourceActorContext,
+} from "../../../lib/quartz-auth-db";
+import { readQuartzSessionCookie } from "../../../lib/quartz-auth-cookie";
 
 const { loadEnvConfig } = nextEnv;
 
@@ -69,6 +77,9 @@ type LibrarianStorageModule = {
     schemaName?: string;
     tableName?: string;
     autoEnsureSchema?: boolean;
+    actorUris?: string[];
+    defaultReadActors?: string[];
+    defaultUpdateActors?: string[];
   }): LibrarianStorage & { close?: () => Promise<void> };
 };
 
@@ -224,7 +235,8 @@ async function ensureConversationsLibrary(
   storage: LibrarianStorage,
   root: string,
   name: string,
-  actorUri: string,
+  readActors: string[],
+  updateActors: string[],
 ): Promise<void> {
   await storage.makeDirectory(root);
   const libraryToml = join(root, "LIBRARY.toml");
@@ -238,8 +250,8 @@ async function ensureConversationsLibrary(
         `name = ${tomlString(name)}`,
         'description = "Conversation history Library for Knowledge Agent sessions, including prompts, summaries, model reasoning records, trace references, and conversation records."',
         "isSystemLibrary = true",
-        `read_actors = [${tomlString(actorUri)}]`,
-        "update_actors = []",
+        `read_actors = ${tomlStringArray(readActors)}`,
+        `update_actors = ${tomlStringArray(updateActors)}`,
         "",
       ].join("\n"),
     );
@@ -255,7 +267,7 @@ async function ensureConversationsLibrary(
         "instructions = [",
         '  "Store each Knowledge Agent conversation under a timestamped conversation id folder.",',
         '  "Keep prompts, summaries, model reasoning records, trace references, and conversation records together.",',
-        '  "Do not store provider credentials.",',
+        '  "Store provider-neutral conversation metadata and trace references.",',
         "]",
         "",
       ].join("\n"),
@@ -285,6 +297,10 @@ function tomlString(value: string): string {
   return JSON.stringify(value);
 }
 
+function tomlStringArray(values: string[]): string {
+  return `[${values.map(tomlString).join(", ")}]`;
+}
+
 function trimTitle(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!normalized) {
@@ -298,6 +314,7 @@ function trimTitle(value: string): string {
 
 export async function runtimeStorageFromConfig(
   config: MetaHarnessConfig,
+  actorContext: QuartzResourceActorContext,
 ): Promise<LibrarianStorage & { close?: () => Promise<void> }> {
   const runtimeStorage = config.runtime?.conversationStorage;
   if (!runtimeStorage) {
@@ -320,10 +337,15 @@ export async function runtimeStorageFromConfig(
     schemaName: runtimeStorage.schemaName,
     tableName: runtimeStorage.tableName,
     autoEnsureSchema: runtimeStorage.autoEnsureSchema,
+    actorUris: actorContext.actorUris,
+    defaultReadActors: actorContext.defaultReadActors,
+    defaultUpdateActors: actorContext.defaultUpdateActors,
   });
 }
 
-async function loadConversationLibrary(): Promise<RuntimeConversationLibrary> {
+async function loadConversationLibraryForActorContext(
+  actorContext: QuartzResourceActorContext,
+): Promise<RuntimeConversationLibrary> {
   loadQuartzProjectEnv();
   const repoRoot = repoRootPath();
   const configPath = projectConfigPath();
@@ -332,29 +354,29 @@ async function loadConversationLibrary(): Promise<RuntimeConversationLibrary> {
     config.runtime?.conversationLibrary,
     "runtime.conversationLibrary",
   );
-  const storage = await runtimeStorageFromConfig(config);
-  const configuredLocalRoot = config.project?.localRoot;
-  if (!configuredLocalRoot) {
-    throw new Error(".meta-harness.json project.localRoot is required");
-  }
-
-  const localRoot = resolveLocalRoot(repoRoot, configuredLocalRoot);
-  const tmpStorageLibrariesRoot = "/libraries";
-  const root = resolveRuntimeLibraryRootPath(runtimeLibrary.rootPath, {
-    repoRootPath: repoRoot,
-    projectRootPath: resolveProjectRootPath(repoRoot, configPath),
-    localRoot,
-    tmpStorageLibrariesRoot,
-  });
+  const storage = await runtimeStorageFromConfig(config, actorContext);
+  const root = actorContext.conversationLibraryRootPath;
 
   await ensureConversationsLibrary(
     storage,
     root,
     runtimeLibrary.name,
-    resolveProjectActorUri(config),
+    actorContext.defaultReadActors,
+    actorContext.defaultUpdateActors,
   );
 
   return { storage, root };
+}
+
+async function loadConversationLibrary(
+  session: QuartzAuthSession,
+): Promise<RuntimeConversationLibrary> {
+  return loadConversationLibraryForActorContext(quartzResourceActorContext(session));
+}
+
+async function requestSession(): Promise<QuartzAuthSession | null> {
+  const token = await readQuartzSessionCookie();
+  return withQuartzAuthDb((client) => sessionFromToken(client, token));
 }
 
 function parseTomlStringField(toml: string, fieldName: string): string {
@@ -743,6 +765,7 @@ export async function writeThreadTurnReasoning(input: {
   threadId: string;
   turnId: string;
   records: ReasoningDeltaRecord[];
+  actorContext: QuartzResourceActorContext;
 }): Promise<void> {
   if (input.records.length === 0) {
     return;
@@ -750,7 +773,7 @@ export async function writeThreadTurnReasoning(input: {
 
   let library: RuntimeConversationLibrary | undefined;
   try {
-    library = await loadConversationLibrary();
+    library = await loadConversationLibraryForActorContext(input.actorContext);
     await writeTurnReasoning({
       storage: library.storage,
       libraryRoot: library.root,
@@ -801,7 +824,14 @@ export async function deleteConversations(input: {
 export async function GET(request: Request) {
   let library: RuntimeConversationLibrary | undefined;
   try {
-    library = await loadConversationLibrary();
+    const session = await requestSession();
+    if (!session) {
+      return jsonResponse({ error: "Sign-in is required." }, { status: 401 });
+    }
+    if (!session.activeOrganization) {
+      return jsonResponse({ error: "Create or join an organization to use Quartz." }, { status: 409 });
+    }
+    library = await loadConversationLibrary(session);
     const url = new URL(request.url);
     const threadId = url.searchParams.get("threadId");
     if (threadId) {
@@ -845,7 +875,14 @@ export async function GET(request: Request) {
 export async function DELETE() {
   let library: RuntimeConversationLibrary | undefined;
   try {
-    library = await loadConversationLibrary();
+    const session = await requestSession();
+    if (!session) {
+      return jsonResponse({ error: "Sign-in is required." }, { status: 401 });
+    }
+    if (!session.activeOrganization) {
+      return jsonResponse({ error: "Create or join an organization to use Quartz." }, { status: 409 });
+    }
+    library = await loadConversationLibrary(session);
     return jsonResponse({
       deleted: await deleteConversations({
         storage: library.storage,
@@ -869,7 +906,14 @@ export async function DELETE() {
 export async function POST() {
   let library: RuntimeConversationLibrary | undefined;
   try {
-    library = await loadConversationLibrary();
+    const session = await requestSession();
+    if (!session) {
+      return jsonResponse({ error: "Sign-in is required." }, { status: 401 });
+    }
+    if (!session.activeOrganization) {
+      return jsonResponse({ error: "Create or join an organization to use Quartz." }, { status: 409 });
+    }
+    library = await loadConversationLibrary(session);
     return jsonResponse({
       conversation: await createConversation({
         storage: library.storage,

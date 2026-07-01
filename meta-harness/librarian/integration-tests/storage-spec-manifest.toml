@@ -1,0 +1,25 @@
+id = "librarian.integration.storage-spec-manifest"
+title = "Storage Spec generated bootstrap manifest"
+requirements = [
+  "storage.spec-governed-storage-models",
+  "storage.spec-governed-migration-intents",
+  "storage.multiple-configured-storage-locations",
+  "storage.resource-actor-governance",
+  "storage.postgres-schema-bootstrap",
+  "librarian.spec-governed-storage-bootstrap",
+]
+procedure = [
+  "Read the Storage Spec collections for storage model and migration intent knowledge.",
+  "Read the storage configuration model knowledge.",
+  "Read the resource actor governance migration intent.",
+  "Read the generated Postgres resource bootstrap plan used by Librarian storage.",
+  "Verify the generated plan cites the resource storage model and initial bootstrap migration intent.",
+  "Verify the Postgres storage driver consumes the generated plan for table and index bootstrap.",
+]
+expected = [
+  "The generated plan is traceable to Storage Spec knowledge.",
+  "The storage configuration model covers multiple enabled storage locations.",
+  "The generated Postgres migrations include resource actor governance and row-level security.",
+  "The generated plan supplies concrete table entries and indexes for the Postgres driver bootstrap.",
+  "The Postgres storage driver consumes the generated plan as the source for the concrete table shape.",
+]
