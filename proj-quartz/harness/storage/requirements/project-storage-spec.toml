@@ -1,0 +1,4 @@
+id = "proj-quartz.storage.project-storage-spec"
+title = "Quartz project storage Spec"
+source = "Human request on 2026-07-01: storage should be one project storage spec, currently just the database, with future storage decomposition possible."
+text = "Quartz project storage has a dedicated storage Spec that governs project-wide storage model and migration-intent knowledge."

@@ -1,0 +1,4 @@
+id = "proj-quartz.storage.api-key-project-storage"
+title = "API keys use Quartz project storage"
+source = "Human clarification on 2026-07-01: API should link to project storage because storage is project-wide, not API-owned."
+text = "Quartz API-key persistence belongs to Quartz project storage rather than to API-owned storage."

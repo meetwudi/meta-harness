@@ -1,0 +1,4 @@
+id = "proj-quartz.api.key-authentication"
+title = "API key authentication"
+source = "Human request on 2026-07-01: people can create API keys in a settings dialog and then use the API key to talk to Quartz."
+text = "Quartz API clients authenticate with API keys created from the Quartz settings dialog."

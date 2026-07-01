@@ -1,0 +1,4 @@
+id = "proj-quartz.api.layer-spec"
+title = "Quartz API layer Spec"
+source = "Human request on 2026-07-01: the API layer needs its own spec."
+text = "Quartz has a dedicated API-layer Spec that governs externally callable API behavior before implementation."

@@ -1,0 +1,14 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "proj-quartz-api"
+version = "v0.0.0"
+source = "Human request on 2026-07-01 that the Quartz API layer should have its own spec, start with API-key authenticated Library ingestion, support production Library listing, model API-key actor choice as either the user by default or an organization actor chosen only by admins, and link API-key persistence to Quartz project storage instead of API-owned storage."
+
+[[requirement_collections]]
+name = "requirements"
+location = "requirements"
+
+[[integration_test_collections]]
+name = "integration-tests"
+location = "integration-tests"

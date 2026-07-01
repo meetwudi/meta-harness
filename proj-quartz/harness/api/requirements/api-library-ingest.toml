@@ -1,0 +1,4 @@
+id = "proj-quartz.api.library-ingest"
+title = "Library ingest API"
+source = "Human request on 2026-07-01: start from an API that literally just ingests Libraries."
+text = "The initial Quartz API supports ingesting Libraries into Quartz."

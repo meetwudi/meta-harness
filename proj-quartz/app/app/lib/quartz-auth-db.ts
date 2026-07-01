@@ -4,6 +4,11 @@
 // Harness-Requirement: proj-quartz.organization-invite-flow
 // Harness-Requirement: proj-quartz.organization-profiles
 // Harness-Requirement: proj-quartz.organization-resource-actors
+// Harness-Requirement: proj-quartz.api.key-authentication
+// Harness-Requirement: proj-quartz.api.key-actor-scope
+// Harness-Requirement: proj-quartz.api.key-settings-dialog
+// Harness-Requirement: proj-quartz.api.project-storage
+// Harness-Requirement: proj-quartz.storage.api-key-project-storage
 // Harness-Requirement: proj-quartz.user-account-organizations
 
 import { createHash, randomBytes, randomUUID } from "node:crypto";
@@ -72,6 +77,32 @@ export type QuartzResourceActorContext = {
   defaultReadActors: string[];
   defaultUpdateActors: string[];
   conversationLibraryRootPath: string;
+};
+
+export type QuartzApiKeyActorScope = "user" | "organization";
+
+export type QuartzApiKey = {
+  id: string;
+  label: string;
+  tokenPrefix: string;
+  actorScope: QuartzApiKeyActorScope;
+  actorUri: string;
+  organizationId: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+};
+
+export type QuartzApiActorContext = {
+  actorUri: string;
+  actorUris: string[];
+  defaultReadActors: string[];
+  defaultUpdateActors: string[];
+};
+
+export type QuartzApiKeyAuthentication = {
+  apiKey: QuartzApiKey;
+  actorContext: QuartzApiActorContext;
 };
 
 type Migration = {
@@ -177,6 +208,29 @@ const migrations: readonly Migration[] = [
        DROP CONSTRAINT IF EXISTS organization_invites_invited_by_profile_id_fkey`,
       `ALTER TABLE IF EXISTS ${schemaName}.organization_invites
        DROP CONSTRAINT IF EXISTS organization_invites_accepted_by_profile_id_fkey`,
+    ],
+  },
+  {
+    id: "202607010003_api_keys",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS ${schemaName}.api_keys (
+         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+         user_id uuid NOT NULL,
+         label text NOT NULL,
+         token_hash text NOT NULL UNIQUE,
+         token_prefix text NOT NULL,
+         actor_scope text NOT NULL,
+         actor_uri text NOT NULL,
+         organization_id uuid,
+         last_used_at timestamptz,
+         revoked_at timestamptz,
+         created_at timestamptz NOT NULL DEFAULT now(),
+         updated_at timestamptz NOT NULL DEFAULT now()
+       )`,
+      `CREATE INDEX IF NOT EXISTS api_keys_user_idx
+       ON ${schemaName}.api_keys(user_id)`,
+      `CREATE INDEX IF NOT EXISTS api_keys_token_hash_idx
+       ON ${schemaName}.api_keys(token_hash)`,
     ],
   },
 ];
@@ -424,6 +478,95 @@ export async function createOrganizationInvite(input: {
   });
   return {
     status: "sent",
+  };
+}
+
+export async function listApiKeys(
+  client: QuartzQueryClient,
+  session: QuartzAuthSession,
+): Promise<QuartzApiKey[]> {
+  const result = await client.query<ApiKeyRow>(
+    `SELECT id, label, token_prefix, actor_scope, actor_uri, organization_id,
+            created_at, last_used_at, revoked_at
+     FROM ${schemaName}.api_keys
+     WHERE user_id = $1
+       AND revoked_at IS NULL
+     ORDER BY created_at DESC`,
+    [session.user.id],
+  );
+  return result.rows.map(apiKeyFromRow);
+}
+
+export async function createApiKey(input: {
+  client: QuartzQueryClient;
+  session: QuartzAuthSession;
+  label: string;
+  actorScope?: QuartzApiKeyActorScope;
+  organizationId?: string;
+}): Promise<{ apiKey: QuartzApiKey; token: string }> {
+  const label = requiredApiKeyLabel(input.label);
+  const actorScope = input.actorScope ?? "user";
+  const actor = await apiKeyActorForScope({
+    client: input.client,
+    session: input.session,
+    actorScope,
+    organizationId: input.organizationId,
+  });
+  const token = `qz_${randomToken()}`;
+  const tokenHash = hashToken(token);
+  const tokenPrefix = token.slice(0, 10);
+  const result = await input.client.query<ApiKeyRow>(
+    `INSERT INTO ${schemaName}.api_keys
+     (user_id, label, token_hash, token_prefix, actor_scope, actor_uri, organization_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id, label, token_prefix, actor_scope, actor_uri, organization_id,
+               created_at, last_used_at, revoked_at`,
+    [
+      input.session.user.id,
+      label,
+      tokenHash,
+      tokenPrefix,
+      actorScope,
+      actor.actorUri,
+      actor.organizationId,
+    ],
+  );
+  return {
+    apiKey: apiKeyFromRow(requiredRow(result, "API key")),
+    token,
+  };
+}
+
+export async function authenticateApiKey(
+  client: QuartzQueryClient,
+  token: string,
+): Promise<QuartzApiKeyAuthentication | null> {
+  const trimmed = token.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const result = await client.query<ApiKeyRow>(
+    `SELECT id, label, token_prefix, actor_scope, actor_uri, organization_id,
+            created_at, last_used_at, revoked_at
+     FROM ${schemaName}.api_keys
+     WHERE token_hash = $1
+       AND revoked_at IS NULL`,
+    [hashToken(trimmed)],
+  );
+  const row = result.rows[0];
+  if (!row) {
+    return null;
+  }
+  await client.query(
+    `UPDATE ${schemaName}.api_keys
+     SET last_used_at = now(), updated_at = now()
+     WHERE id = $1`,
+    [row.id],
+  );
+  const apiKey = apiKeyFromRow(row);
+  return {
+    apiKey,
+    actorContext: quartzApiActorContext(apiKey.actorUri),
   };
 }
 
@@ -749,6 +892,82 @@ function inviteDeliveryMode(): "resend" | "email" | "development_link" {
   );
 }
 
+type ApiKeyRow = {
+  id: string;
+  label: string;
+  token_prefix: string;
+  actor_scope: string;
+  actor_uri: string;
+  organization_id: string | null;
+  created_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+};
+
+async function apiKeyActorForScope(input: {
+  client: QuartzQueryClient;
+  session: QuartzAuthSession;
+  actorScope: QuartzApiKeyActorScope;
+  organizationId?: string;
+}): Promise<{ actorUri: string; organizationId: string | null }> {
+  if (input.actorScope === "user") {
+    return {
+      actorUri: quartzUserActorUri(input.session.user.id),
+      organizationId: null,
+    };
+  }
+  if (input.actorScope !== "organization") {
+    throw new Error("API key actor scope must be user or organization.");
+  }
+  const organizationId = input.organizationId?.trim();
+  if (!organizationId) {
+    throw new Error("Organization actor API keys require an organization.");
+  }
+  await adminProfileForOrganization(input.client, input.session.user.id, organizationId);
+  const organization = await requiredOrganizationForUser(
+    input.client,
+    input.session.user.id,
+    organizationId,
+  );
+  return {
+    actorUri: organization.actorUri,
+    organizationId,
+  };
+}
+
+function apiKeyFromRow(row: ApiKeyRow): QuartzApiKey {
+  const actorScope = apiKeyActorScopeFromStorage(row.actor_scope);
+  return {
+    id: row.id,
+    label: row.label,
+    tokenPrefix: row.token_prefix,
+    actorScope,
+    actorUri: row.actor_uri,
+    organizationId: row.organization_id,
+    createdAt: row.created_at,
+    lastUsedAt: row.last_used_at,
+    revokedAt: row.revoked_at,
+  };
+}
+
+function apiKeyActorScopeFromStorage(value: string): QuartzApiKeyActorScope {
+  if (value === "user" || value === "organization") {
+    return value;
+  }
+  throw new Error(`Unknown API key actor scope: ${value}`);
+}
+
+function requiredApiKeyLabel(value: string): string {
+  const label = value.trim();
+  if (!label) {
+    throw new Error("API key label is required.");
+  }
+  if (label.length > 120) {
+    throw new Error("API key label must be 120 characters or fewer.");
+  }
+  return label;
+}
+
 function requiredInviteEmailWebhookUrl(): string {
   const webhookUrl = process.env.QUARTZ_INVITE_EMAIL_WEBHOOK_URL?.trim();
   if (!webhookUrl) {
@@ -857,6 +1076,16 @@ export function quartzResourceActorEnv(
     META_HARNESS_DEFAULT_READ_ACTORS: context.defaultReadActors.join("\n"),
     META_HARNESS_DEFAULT_UPDATE_ACTORS: context.defaultUpdateActors.join("\n"),
     META_HARNESS_CONVERSATION_LIBRARY_ROOT_PATH: context.conversationLibraryRootPath,
+  };
+}
+
+export function quartzApiActorContext(actorUri: string): QuartzApiActorContext {
+  const projectActorUri = quartzProjectActorUri();
+  return {
+    actorUri,
+    actorUris: uniqueActors([actorUri, projectActorUri]),
+    defaultReadActors: [actorUri],
+    defaultUpdateActors: [actorUri],
   };
 }
 

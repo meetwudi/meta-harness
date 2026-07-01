@@ -1,0 +1,4 @@
+id = "proj-quartz.api.key-settings-dialog"
+title = "API keys in settings"
+source = "Human request on 2026-07-01: people can create API keys in a settings dialog."
+text = "Quartz exposes API key creation from the settings dialog."

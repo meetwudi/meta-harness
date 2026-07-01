@@ -1,0 +1,18 @@
+id = "proj-quartz.migration-intent.api-keys-v1"
+title = "Initial Quartz API key storage"
+source = "Human requests on 2026-07-01 for API keys created in settings, API-key actors, default user actor scope, admin-only organization actor scope, API access to production Libraries, and API-key persistence through project storage rather than API-owned storage."
+requirements = [
+  "proj-quartz.api.key-authentication",
+  "proj-quartz.api.key-settings-dialog",
+  "proj-quartz.api.key-actor-scope",
+  "proj-quartz.api.production-library-listing",
+  "proj-quartz.storage.api-key-project-storage",
+  "storage.no-database-foreign-keys",
+]
+text = "Introduce generated application storage migrations for Quartz API keys and their actor scopes."
+statements = [
+  "The generated migration artifacts create durable application storage for API keys created from settings.",
+  "The generated migration artifacts record the creating user identifier, actor scope, actor URI, and optional organization identifier for organization-scoped API keys.",
+  "The generated migration artifacts support API-key authenticated access to production Library listing and Library ingestion.",
+  "The generated migration artifacts create ordinary identifier columns for cross-record relationships and do not create database-enforced foreign keys.",
+]

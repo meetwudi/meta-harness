@@ -1,0 +1,4 @@
+id = "proj-quartz.api.key-actor-scope"
+title = "API key actor scope"
+source = "Human request on 2026-07-01: people should be able to choose whether an API key actor is themselves as the user or the organization; only admins can designate an organization actor; the default is the user."
+text = "Each Quartz API key has an actor scope. The default actor is the creating user. An admin can designate an organization actor for an API key, and non-admins cannot designate an organization actor."

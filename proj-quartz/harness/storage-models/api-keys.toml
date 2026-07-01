@@ -1,0 +1,22 @@
+id = "proj-quartz.model.api-keys"
+title = "Quartz API key model"
+source = "Human requests on 2026-07-01 for settings-created API keys, API-key authenticated Quartz access, default user actors, admin-only organization actors, production Library listing by API-key actor, and API-key persistence through project storage rather than API-owned storage."
+requirements = [
+  "proj-quartz.api.key-authentication",
+  "proj-quartz.api.key-settings-dialog",
+  "proj-quartz.api.key-actor-scope",
+  "proj-quartz.api.production-library-listing",
+  "proj-quartz.storage.api-key-project-storage",
+  "proj-quartz.organization-resource-actors",
+  "storage.no-database-foreign-keys",
+]
+text = "Quartz project storage connects a settings-created API key to its creating user, its actor scope, and the actor URI used for Library access and ingestion."
+statements = [
+  "An API key belongs to the signed-in user who created it from settings.",
+  "An API key authenticates external Quartz API requests.",
+  "An API key actor scope is either the creating user actor or an organization actor.",
+  "The default API key actor scope is the creating user actor.",
+  "An organization actor scope records the organization identifier and is only created for a user who is an admin of that organization.",
+  "The API key actor URI is used for production Library listing and Library ingestion authorization.",
+  "Quartz API key relationships are stored as ordinary identifiers and are governed by application, migration, validation, repair, and acceptance logic rather than database-enforced foreign keys.",
+]

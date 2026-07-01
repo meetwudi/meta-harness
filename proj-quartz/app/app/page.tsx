@@ -14,6 +14,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  KeyRound,
   LogOut,
   Mail,
   MessageSquare,
@@ -82,6 +83,17 @@ type QuartzAuthSession = {
   activeOrganization: QuartzOrganization | null;
 };
 
+type QuartzApiKey = {
+  id: string;
+  label: string;
+  tokenPrefix: string;
+  actorScope: "user" | "organization";
+  actorUri: string;
+  organizationId: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+};
+
 type QuartzThreadChatContextValue = {
   activeThreadId: string;
   storedMessages: Message[];
@@ -92,6 +104,7 @@ type QuartzThreadChatContextValue = {
 
 const untitledThreadTitle = "New chat";
 const quartzConversationApiPath = "/api/knowledge-agent/conversations";
+const quartzApiKeysApiPath = "/api/settings/api-keys";
 const conversationFetchOptions: RequestInit = { cache: "no-store" };
 const chatRoutePrefix = "/c/";
 const maxConversationRefreshAttempts = 48;
@@ -416,6 +429,58 @@ async function parseJsonResponse(response: Response): Promise<unknown> {
     throw new Error(message);
   }
   return json;
+}
+
+function apiKeysFromApi(value: unknown): QuartzApiKey[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return [];
+  }
+  const apiKeys = (value as Record<string, unknown>).apiKeys;
+  if (!Array.isArray(apiKeys)) {
+    return [];
+  }
+  return apiKeys.flatMap((apiKey) => {
+    if (!apiKey || typeof apiKey !== "object" || Array.isArray(apiKey)) {
+      return [];
+    }
+    const record = apiKey as Record<string, unknown>;
+    if (
+      typeof record.id !== "string" ||
+      typeof record.label !== "string" ||
+      typeof record.tokenPrefix !== "string" ||
+      (record.actorScope !== "user" && record.actorScope !== "organization") ||
+      typeof record.actorUri !== "string" ||
+      (record.organizationId !== null && typeof record.organizationId !== "string") ||
+      typeof record.createdAt !== "string"
+    ) {
+      return [];
+    }
+    return [{
+      id: record.id,
+      label: record.label,
+      tokenPrefix: record.tokenPrefix,
+      actorScope: record.actorScope,
+      actorUri: record.actorUri,
+      organizationId: record.organizationId,
+      createdAt: record.createdAt,
+      lastUsedAt: typeof record.lastUsedAt === "string" ? record.lastUsedAt : null,
+    }];
+  });
+}
+
+function apiKeyCreationFromApi(value: unknown): { apiKey: QuartzApiKey; token: string } {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("API key response was malformed.");
+  }
+  const record = value as Record<string, unknown>;
+  const apiKeys = apiKeysFromApi({ apiKeys: [record.apiKey] });
+  if (apiKeys.length !== 1 || typeof record.token !== "string") {
+    throw new Error("API key response was malformed.");
+  }
+  return {
+    apiKey: apiKeys[0] as QuartzApiKey,
+    token: record.token,
+  };
 }
 
 function conversationFromApi(
@@ -1330,6 +1395,8 @@ function accountInitial(session: QuartzAuthSession | null) {
 }
 
 type OrganizationSettingsTab = "manage" | "create";
+type SettingsSection = "organizations" | "api-keys";
+type ApiKeyActorValue = "user" | `organization:${string}`;
 
 const organizationSettingsTabs: TabItem<OrganizationSettingsTab>[] = [
   { id: "manage", label: "Manage" },
@@ -1338,6 +1405,8 @@ const organizationSettingsTabs: TabItem<OrganizationSettingsTab>[] = [
 
 // Harness-Requirement: proj-quartz.organization-settings-dialog
 // Harness-Requirement: proj-quartz.organization-invite-flow
+// Harness-Requirement: proj-quartz.api.key-settings-dialog
+// Harness-Requirement: proj-quartz.api.key-actor-scope
 function QuartzOrganizationSettingsDialog({
   open,
   session,
@@ -1362,12 +1431,37 @@ function QuartzOrganizationSettingsDialog({
   runAction: (label: string, action: () => Promise<void>) => Promise<void>;
 }) {
   const activeOrganization = session.activeOrganization;
+  const [section, setSection] = useState<SettingsSection>("organizations");
   const [tab, setTab] = useState<OrganizationSettingsTab>(
     activeOrganization ? "manage" : "create",
   );
   const [organizationName, setOrganizationName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
+  const [apiKeys, setApiKeys] = useState<QuartzApiKey[]>([]);
+  const [apiKeysLoaded, setApiKeysLoaded] = useState(false);
+  const [apiKeyLabel, setApiKeyLabel] = useState("");
+  const [apiKeyActorValue, setApiKeyActorValue] =
+    useState<ApiKeyActorValue>("user");
+  const [createdApiKeyToken, setCreatedApiKeyToken] = useState("");
+  const [apiKeyError, setApiKeyError] = useState("");
   const canInvite = activeOrganization?.role === "admin";
+  const adminOrganizations = useMemo(
+    () => session.organizations.filter((organization) => organization.role === "admin"),
+    [session.organizations],
+  );
+  const selectedApiKeyOrganizationId =
+    apiKeyActorValue.startsWith("organization:")
+      ? apiKeyActorValue.slice("organization:".length)
+      : "";
+
+  const refreshApiKeys = useCallback(async () => {
+    setApiKeyError("");
+    const json = await parseJsonResponse(
+      await fetch(quartzApiKeysApiPath, { cache: "no-store" }),
+    );
+    setApiKeys(apiKeysFromApi(json));
+    setApiKeysLoaded(true);
+  }, []);
 
   useEffect(() => {
     if (open && !activeOrganization) {
@@ -1375,154 +1469,289 @@ function QuartzOrganizationSettingsDialog({
     }
   }, [activeOrganization, open]);
 
+  useEffect(() => {
+    if (!open || section !== "api-keys" || apiKeysLoaded) {
+      return;
+    }
+    void refreshApiKeys().catch(() => {
+      setApiKeysLoaded(true);
+      setApiKeyError("API key listing failed.");
+    });
+  }, [apiKeysLoaded, open, refreshApiKeys, section]);
+
+  useEffect(() => {
+    if (
+      apiKeyActorValue !== "user" &&
+      !adminOrganizations.some((organization) =>
+        apiKeyActorValue === `organization:${organization.id}`,
+      )
+    ) {
+      setApiKeyActorValue("user");
+    }
+  }, [adminOrganizations, apiKeyActorValue]);
+
+  const settingsError = error || apiKeyError;
+
   return (
     <Dialog
       open={open}
       title="Settings"
-      description="Manage organization context for this Quartz account."
+      description="Manage this Quartz account."
       onOpenChange={onOpenChange}
     >
       <div className="quartz-settings-layout">
         <nav className="quartz-settings-nav" aria-label="Settings sections">
-          <button type="button" className="is-active">
+          <button
+            type="button"
+            className={section === "organizations" ? "is-active" : ""}
+            onClick={() => setSection("organizations")}
+          >
             <Building2 aria-hidden="true" size={16} strokeWidth={1.9} />
             <span>Organizations</span>
+          </button>
+          <button
+            type="button"
+            className={section === "api-keys" ? "is-active" : ""}
+            onClick={() => setSection("api-keys")}
+          >
+            <KeyRound aria-hidden="true" size={16} strokeWidth={1.9} />
+            <span>API keys</span>
           </button>
         </nav>
 
         <section className="quartz-settings-content">
           <div className="quartz-settings-title-row">
             <div>
-              <h3>Organizations</h3>
+              <h3>{section === "organizations" ? "Organizations" : "API keys"}</h3>
               <p>{session.user.email}</p>
             </div>
           </div>
 
-          <Tabs
-            items={organizationSettingsTabs}
-            value={tab}
-            ariaLabel="Organization settings"
-            onValueChange={setTab}
-          />
+          {section === "organizations" ? (
+            <>
+              <Tabs
+                items={organizationSettingsTabs}
+                value={tab}
+                ariaLabel="Organization settings"
+                onValueChange={setTab}
+              />
 
-          <TabPanel value="manage" activeValue={tab}>
-            <section className="quartz-settings-section">
-              <div className="quartz-settings-section-heading">
-                <h4>Current organization</h4>
-              </div>
-              {activeOrganization ? (
-                <div className="quartz-current-organization">
-                  <Building2 aria-hidden="true" size={17} strokeWidth={1.9} />
-                  <div>
-                    <strong>{activeOrganization.name}</strong>
-                    <span>{activeOrganization.role}</span>
+              <TabPanel value="manage" activeValue={tab}>
+                <section className="quartz-settings-section">
+                  <div className="quartz-settings-section-heading">
+                    <h4>Current organization</h4>
                   </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="quartz-settings-text-button"
-                  onClick={() => setTab("create")}
-                >
-                  Create organization
-                </button>
-              )}
-            </section>
-
-            <section className="quartz-settings-section">
-              <div className="quartz-settings-section-heading">
-                <h4>Memberships</h4>
-              </div>
-              <div className="quartz-organization-list">
-                {session.organizations.map((organization) => {
-                  const active = organization.id === activeOrganization?.id;
-                  return (
+                  {activeOrganization ? (
+                    <div className="quartz-current-organization">
+                      <Building2 aria-hidden="true" size={17} strokeWidth={1.9} />
+                      <div>
+                        <strong>{activeOrganization.name}</strong>
+                        <span>{activeOrganization.role}</span>
+                      </div>
+                    </div>
+                  ) : (
                     <button
-                      key={organization.id}
                       type="button"
-                      className={
-                        active
-                          ? "quartz-organization-list-row is-active"
-                          : "quartz-organization-list-row"
-                      }
-                      onClick={() => runAction(
-                        "switch",
-                        () => onSwitchOrganization(organization.id),
-                      )}
-                      disabled={Boolean(busy) || active}
+                      className="quartz-settings-text-button"
+                      onClick={() => setTab("create")}
                     >
-                      <Building2 aria-hidden="true" size={16} strokeWidth={1.9} />
-                      <span>{organization.name}</span>
-                      {active ? <Check aria-hidden="true" size={15} strokeWidth={1.9} /> : null}
+                      Create organization
                     </button>
-                  );
-                })}
-              </div>
-            </section>
+                  )}
+                </section>
 
-            {canInvite && activeOrganization ? (
+                <section className="quartz-settings-section">
+                  <div className="quartz-settings-section-heading">
+                    <h4>Memberships</h4>
+                  </div>
+                  <div className="quartz-organization-list">
+                    {session.organizations.map((organization) => {
+                      const active = organization.id === activeOrganization?.id;
+                      return (
+                        <button
+                          key={organization.id}
+                          type="button"
+                          className={
+                            active
+                              ? "quartz-organization-list-row is-active"
+                              : "quartz-organization-list-row"
+                          }
+                          onClick={() => runAction(
+                            "switch",
+                            () => onSwitchOrganization(organization.id),
+                          )}
+                          disabled={Boolean(busy) || active}
+                        >
+                          <Building2 aria-hidden="true" size={16} strokeWidth={1.9} />
+                          <span>{organization.name}</span>
+                          {active ? <Check aria-hidden="true" size={15} strokeWidth={1.9} /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                {canInvite && activeOrganization ? (
+                  <section className="quartz-settings-section">
+                    <div className="quartz-settings-section-heading">
+                      <h4>Invite by email</h4>
+                    </div>
+                    <form
+                      className="quartz-settings-form"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        void runAction("invite", async () => {
+                          await onInvite(activeOrganization.id, inviteEmail);
+                          setInviteEmail("");
+                        });
+                      }}
+                    >
+                      <input
+                        value={inviteEmail}
+                        onChange={(event) => setInviteEmail(event.target.value)}
+                        placeholder="name@example.com"
+                        aria-label="Invite email"
+                      />
+                      <button type="submit" disabled={Boolean(busy) || !inviteEmail.trim()}>
+                        <Mail aria-hidden="true" size={15} strokeWidth={1.9} />
+                        <span>Invite</span>
+                      </button>
+                    </form>
+                  </section>
+                ) : null}
+              </TabPanel>
+
+              <TabPanel value="create" activeValue={tab}>
+                <section className="quartz-settings-section">
+                  <div className="quartz-settings-section-heading">
+                    <h4>Create organization</h4>
+                  </div>
+                  <form
+                    className="quartz-settings-form"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void runAction("create", async () => {
+                        await onCreateOrganization(organizationName);
+                        setOrganizationName("");
+                        setTab("manage");
+                      });
+                    }}
+                  >
+                    <input
+                      value={organizationName}
+                      onChange={(event) => setOrganizationName(event.target.value)}
+                      placeholder="Organization name"
+                      aria-label="Organization name"
+                    />
+                    <button type="submit" disabled={Boolean(busy) || !organizationName.trim()}>
+                      <Plus aria-hidden="true" size={15} strokeWidth={1.9} />
+                      <span>Create</span>
+                    </button>
+                  </form>
+                </section>
+              </TabPanel>
+            </>
+          ) : (
+            <div className="quartz-tab-panel">
               <section className="quartz-settings-section">
                 <div className="quartz-settings-section-heading">
-                  <h4>Invite by email</h4>
+                  <h4>New key</h4>
                 </div>
                 <form
-                  className="quartz-settings-form"
+                  className="quartz-settings-form quartz-api-key-form"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    void runAction("invite", async () => {
-                      await onInvite(activeOrganization.id, inviteEmail);
-                      setInviteEmail("");
+                    void runAction("api-key", async () => {
+                      const actorScope = apiKeyActorValue === "user" ? "user" : "organization";
+                      const json = await parseJsonResponse(
+                        await fetch(quartzApiKeysApiPath, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            label: apiKeyLabel,
+                            actorScope,
+                            organizationId:
+                              actorScope === "organization"
+                                ? selectedApiKeyOrganizationId
+                                : undefined,
+                          }),
+                        }),
+                      );
+                      const created = apiKeyCreationFromApi(json);
+                      setCreatedApiKeyToken(created.token);
+                      setApiKeyLabel("");
+                      setApiKeysLoaded(false);
+                      await refreshApiKeys();
                     });
                   }}
                 >
                   <input
-                    value={inviteEmail}
-                    onChange={(event) => setInviteEmail(event.target.value)}
-                    placeholder="name@example.com"
-                    aria-label="Invite email"
+                    value={apiKeyLabel}
+                    onChange={(event) => setApiKeyLabel(event.target.value)}
+                    placeholder="Key label"
+                    aria-label="API key label"
                   />
-                  <button type="submit" disabled={Boolean(busy) || !inviteEmail.trim()}>
-                    <Mail aria-hidden="true" size={15} strokeWidth={1.9} />
-                    <span>Invite</span>
+                  <select
+                    value={apiKeyActorValue}
+                    onChange={(event) =>
+                      setApiKeyActorValue(event.target.value as ApiKeyActorValue)
+                    }
+                    aria-label="API key actor"
+                  >
+                    <option value="user">User actor</option>
+                    {adminOrganizations.map((organization) => (
+                      <option key={organization.id} value={`organization:${organization.id}`}>
+                        {organization.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" disabled={Boolean(busy) || !apiKeyLabel.trim()}>
+                    <KeyRound aria-hidden="true" size={15} strokeWidth={1.9} />
+                    <span>Create</span>
                   </button>
                 </form>
+                {createdApiKeyToken ? (
+                  <input
+                    className="quartz-api-key-token"
+                    value={createdApiKeyToken}
+                    readOnly
+                    aria-label="Created API key"
+                    onFocus={(event) => event.currentTarget.select()}
+                  />
+                ) : null}
               </section>
-            ) : null}
-          </TabPanel>
 
-          <TabPanel value="create" activeValue={tab}>
-            <section className="quartz-settings-section">
-              <div className="quartz-settings-section-heading">
-                <h4>Create organization</h4>
-              </div>
-              <form
-                className="quartz-settings-form"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void runAction("create", async () => {
-                    await onCreateOrganization(organizationName);
-                    setOrganizationName("");
-                    setTab("manage");
-                  });
-                }}
-              >
-                <input
-                  value={organizationName}
-                  onChange={(event) => setOrganizationName(event.target.value)}
-                  placeholder="Organization name"
-                  aria-label="Organization name"
-                />
-                <button type="submit" disabled={Boolean(busy) || !organizationName.trim()}>
-                  <Plus aria-hidden="true" size={15} strokeWidth={1.9} />
-                  <span>Create</span>
-                </button>
-              </form>
-            </section>
-          </TabPanel>
+              <section className="quartz-settings-section">
+                <div className="quartz-settings-section-heading">
+                  <h4>Existing keys</h4>
+                </div>
+                <div className="quartz-api-key-list">
+                  {apiKeys.map((apiKey) => (
+                    <div className="quartz-api-key-row" key={apiKey.id}>
+                      <KeyRound aria-hidden="true" size={15} strokeWidth={1.9} />
+                      <div>
+                        <strong>{apiKey.label}</strong>
+                        <span>{apiKey.tokenPrefix} · {apiKey.actorScope}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {apiKeysLoaded && apiKeys.length === 0 ? (
+                    <div className="quartz-api-key-row">
+                      <KeyRound aria-hidden="true" size={15} strokeWidth={1.9} />
+                      <div>
+                        <strong>No keys</strong>
+                        <span>{session.user.email}</span>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+            </div>
+          )}
 
-          {status || error ? (
+          {status || settingsError ? (
             <div className="quartz-settings-status" role="status">
-              {error || status}
+              {settingsError || status}
             </div>
           ) : null}
         </section>

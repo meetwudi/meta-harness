@@ -1,0 +1,14 @@
+id = "proj-quartz.api.integration.production-library-listing"
+title = "Production Library listing integration"
+requirements = [
+  "proj-quartz.api.production-library-listing",
+  "proj-quartz.api.key-authentication",
+  "proj-quartz.api.key-actor-scope",
+]
+procedure = [
+  "Run `npm --prefix proj-quartz/app run test:api`.",
+]
+expected = [
+  "The API test suite verifies that an authenticated API-key actor can list production Libraries visible to that actor.",
+  "The API test suite verifies that the Library list reflects the API key's user or organization actor scope.",
+]

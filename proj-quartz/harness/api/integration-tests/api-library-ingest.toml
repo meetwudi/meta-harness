@@ -1,0 +1,14 @@
+id = "proj-quartz.api.integration.library-ingest"
+title = "Library ingest API integration"
+requirements = [
+  "proj-quartz.api.library-ingest",
+  "proj-quartz.api.key-authentication",
+  "proj-quartz.api.key-actor-scope",
+]
+procedure = [
+  "Run `npm --prefix proj-quartz/app run test:api`.",
+]
+expected = [
+  "The API test suite verifies that an authenticated API-key actor can ingest a Library into Quartz.",
+  "The API test suite verifies that ingested Library resources use the API-key actor scope for Library authorization.",
+]

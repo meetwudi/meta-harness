@@ -1,0 +1,18 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "proj-quartz-storage"
+version = "v0.0.0"
+source = "Human request on 2026-07-01 that Quartz should have one project storage Spec, currently database-backed, with room for future storage decomposition, and that API persistence should link to project storage instead of being owned by the API Spec."
+
+[[requirement_collections]]
+name = "requirements"
+location = "requirements"
+
+[[storage_model_collections]]
+name = "project-storage-models"
+location = "../storage-models"
+
+[[migration_intent_collections]]
+name = "project-migration-intents"
+location = "../migration-intents"

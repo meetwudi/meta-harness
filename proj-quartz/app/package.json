@@ -10,6 +10,7 @@
     "migrate:resource-schema": "node scripts/migrate-resource-storage-to-quartz-core.mjs",
     "start": "next start",
     "test:auth-org": "../../meta-harness/knowledge-agent/impl/node_modules/.bin/tsx app/api/auth/auth-organization-flow.test.ts",
+    "test:api": "../../meta-harness/knowledge-agent/impl/node_modules/.bin/tsx app/api/libraries/library-api.test.ts",
     "test:conversations": "../../meta-harness/knowledge-agent/impl/node_modules/.bin/tsx app/api/knowledge-agent/conversations/route.test.ts",
     "test:streaming": "../../meta-harness/knowledge-agent/impl/node_modules/.bin/tsx app/api/knowledge-agent/stream-response.test.ts",
     "typecheck": "tsc --noEmit"

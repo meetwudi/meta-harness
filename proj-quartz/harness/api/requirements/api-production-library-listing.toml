@@ -1,0 +1,4 @@
+id = "proj-quartz.api.production-library-listing"
+title = "Production Library listing"
+source = "Human request on 2026-07-01: API-key actors should be able to list Libraries in production."
+text = "An authenticated Quartz API-key actor can list the production Libraries visible to that actor."

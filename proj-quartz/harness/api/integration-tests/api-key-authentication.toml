@@ -1,0 +1,17 @@
+id = "proj-quartz.api.integration.api-key-authentication"
+title = "API key authentication integration"
+requirements = [
+  "proj-quartz.api.key-authentication",
+  "proj-quartz.api.key-settings-dialog",
+  "proj-quartz.api.key-actor-scope",
+  "proj-quartz.api.project-storage",
+  "proj-quartz.storage.api-key-project-storage",
+]
+procedure = [
+  "Run `npm --prefix proj-quartz/app run test:api`.",
+]
+expected = [
+  "The API test suite verifies that a settings-created API key authenticates Quartz API requests.",
+  "The API test suite verifies that a newly created API key defaults to the creating user actor.",
+  "The API test suite verifies that only an organization admin can create an organization-scoped API key.",
+]
