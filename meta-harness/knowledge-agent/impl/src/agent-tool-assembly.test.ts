@@ -14,7 +14,8 @@ import {
   createLibrarianContext,
   createLocalFileSystemStorage,
 } from "../../../librarian/impl/dist/index.js";
-import type { ConversationStateRuntime } from "./conversation-state.js";
+import { ConversationStateRuntime } from "./conversation-state.js";
+import { createConversationStateOpenAITools } from "./create-conversation-state-openai-tools.js";
 import { createKnowledgeAgentOpenAITools } from "./create-knowledge-agent-openai-tools.js";
 import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
 import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream-events.js";
@@ -117,6 +118,54 @@ assert.ok(primaryToolNames.includes("librarian_intro"));
 assert.ok(primaryToolNames.includes("goal_create"));
 assert.ok(primaryToolNames.includes("conversation_state_update"));
 assert.ok(primaryToolNames.includes("fixture_text_transform"));
+
+const stateRoot = join(storageRoot, "conversation-state");
+await storage.makeDirectory(stateRoot);
+const conversationState = new ConversationStateRuntime(
+  storage,
+  join(stateRoot, "conversation-state.toml"),
+  fakeLibrarianContext,
+  {
+    actorUri: "actor://knowledge-agent",
+    mentionedGoals: [],
+    mentionedLibraries: [],
+  },
+);
+await assert.rejects(
+  () => conversationState.update({ memoryCurationLibraries: null } as never),
+  /memoryCurationLibraries must use repeated mention tables/,
+);
+const [conversationStateTool] = createConversationStateOpenAITools({
+  update: async () => {
+    throw new Error("conversation state update should not run for malformed input");
+  },
+} as unknown as ConversationStateRuntime);
+assert.equal(conversationStateTool.type, "function");
+assert.match(
+  String(await conversationStateTool.invoke({} as never, "null")),
+  /conversation_state_update input must be an object/,
+);
+const malformedStateRoot = join(storageRoot, "malformed-conversation-state");
+await storage.makeDirectory(malformedStateRoot);
+await storage.writeText(
+  join(malformedStateRoot, "conversation-state.toml"),
+  [
+    "[[mentioned_library]]",
+    'uri = "library://fixture-tool-library"',
+    "",
+  ].join("\n"),
+);
+await assert.rejects(
+  () =>
+    ConversationStateRuntime.create({
+      runtime: {
+        conversationRoot: malformedStateRoot,
+        runtimeStorage: storage,
+      } as never,
+      librarianContext: fakeLibrarianContext,
+    }),
+  /conversation-state\.toml is missing required conversation state field: actor_uri/,
+);
 
 const toolSpecToolsSource = readFileSync(
   resolve("src/create-toolspec-openai-tools.ts"),

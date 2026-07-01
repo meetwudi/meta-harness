@@ -69,5 +69,8 @@ export function createConversationStateOpenAITools(
 }
 
 function objectInput(input: unknown): Record<string, unknown> {
-  return input && typeof input === "object" ? input as Record<string, unknown> : {};
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error("conversation_state_update input must be an object.");
+  }
+  return input as Record<string, unknown>;
 }

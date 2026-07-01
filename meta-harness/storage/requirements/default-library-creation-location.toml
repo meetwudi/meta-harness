@@ -1,6 +1,6 @@
 id = "storage.default-library-creation-location"
 title = "Default Library creation location"
-source = "Human request on 2026-06-26: Quartz should configure a designated Library creation location so the agent does not ask which storage location to use."
+source = "Human request on 2026-06-26: project configuration should be able to designate a Library creation location for ordinary Library creation."
 text = "Storage location knowledge can mark one writable location as the default Library creation target for the selected project."
 clarifications = [
   "The default is project knowledge, not a hard-coded runtime rule.",

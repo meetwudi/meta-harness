@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import {
+  parseKnowledgeAgentSubprocessEvent,
+  resolveKnowledgeAgentOutput,
+  validateKnowledgeAgentModelOptions,
+} from "./route";
+import {
   createKnowledgeAgentSseStream,
   type AgUiEvent,
   type KnowledgeAgentRunner,
@@ -109,6 +114,55 @@ assert.ok(firstTextContentIndex < typeIndex("RUN_FINISHED"));
 
 assert.ok(typeIndex("REASONING_MESSAGE_END") < typeIndex("TEXT_MESSAGE_END"));
 assert.ok(typeIndex("REASONING_END") < typeIndex("TEXT_MESSAGE_END"));
+
+assert.equal(
+  resolveKnowledgeAgentOutput({
+    finalOutput: "",
+    streamedMainText: "Structured main text.",
+    rawStdout: "raw diagnostic",
+  }),
+  "Structured main text.",
+);
+assert.throws(
+  () =>
+    resolveKnowledgeAgentOutput({
+      finalOutput: "",
+      streamedMainText: "",
+      rawStdout: "plain stdout",
+    }),
+  /completed without structured final output or text events/,
+);
+assert.throws(
+  () => parseKnowledgeAgentSubprocessEvent("not json"),
+  /Malformed Knowledge Agent stream event JSON/,
+);
+assert.throws(
+  () => parseKnowledgeAgentSubprocessEvent("[]"),
+  /expected a JSON object/,
+);
+assert.throws(
+  () => parseKnowledgeAgentSubprocessEvent(JSON.stringify({ type: "progress" })),
+  /progress event: message must be a string/,
+);
+assert.throws(
+  () =>
+    parseKnowledgeAgentSubprocessEvent(
+      JSON.stringify({ type: "reasoning_delta", delta: "thinking" }),
+    ),
+  /source must be a non-empty string/,
+);
+assert.throws(
+  () => parseKnowledgeAgentSubprocessEvent(JSON.stringify({ type: "unknown" })),
+  /unknown event type/,
+);
+assert.deepEqual(
+  validateKnowledgeAgentModelOptions([{ id: "gpt-test", label: "GPT Test" }]),
+  [{ id: "gpt-test", label: "GPT Test" }],
+);
+assert.throws(
+  () => validateKnowledgeAgentModelOptions([{ id: "gpt-test" }]),
+  /modelOptions\[0\] must include string id and label fields/,
+);
 
 console.log(JSON.stringify({ ok: true, eventTypes: events.map((event) => event.type) }, null, 2));
 

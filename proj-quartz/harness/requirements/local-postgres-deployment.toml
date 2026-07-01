@@ -1,4 +1,4 @@
 id = "proj-quartz.local-postgres-deployment"
 title = "Local Postgres deployment"
 source = "Human request on 2026-06-26: think about deployment; locally use Docker, later deploy to Kubernetes or GCP, and keep a clear interface."
-text = "PROJ-Quartz has a local Docker-oriented Postgres deployment path, while the application and Knowledge Agent connect through an environment-provided Postgres connection string that can later be supplied by Kubernetes or GCP."
+text = "Quartz has a local Docker-oriented Postgres deployment path, while the application and Knowledge Agent connect through an environment-provided Postgres connection string that can later be supplied by Kubernetes or GCP."

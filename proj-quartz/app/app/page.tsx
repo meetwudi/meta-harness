@@ -364,22 +364,6 @@ function findChatScrollElement(root: HTMLElement | null) {
   }) ?? null;
 }
 
-function isStoredThread(value: unknown): value is QuartzConversationThread {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return false;
-  }
-  const candidate = value as Record<string, unknown>;
-  return (
-    typeof candidate.id === "string"
-    && typeof candidate.conversationId === "string"
-    && typeof candidate.title === "string"
-    && typeof candidate.createdAt === "string"
-    && typeof candidate.updatedAt === "string"
-    && Array.isArray(candidate.messages)
-    && typeof candidate.messagesLoaded === "boolean"
-  );
-}
-
 async function parseJsonResponse(response: Response): Promise<unknown> {
   const text = await response.text();
   let json: unknown = {};
@@ -425,21 +409,32 @@ function conversationFromApi(
     return undefined;
   }
 
-  const messages = Array.isArray(record.messages)
-    ? (record.messages.filter((message) => {
-        if (!message || typeof message !== "object" || Array.isArray(message)) {
-          return false;
-        }
-        const candidate = message as Record<string, unknown>;
-        return typeof candidate.id === "string" &&
-          (
-            candidate.role === "user" ||
-            candidate.role === "assistant" ||
-            candidate.role === "reasoning"
-          ) &&
-          typeof candidate.content === "string";
-      }) as Message[])
-    : [];
+  if (record.messages !== undefined && !Array.isArray(record.messages)) {
+    return undefined;
+  }
+  if (messagesLoaded && !Array.isArray(record.messages)) {
+    return undefined;
+  }
+
+  const messages: Message[] = [];
+  for (const message of record.messages ?? []) {
+    if (!message || typeof message !== "object" || Array.isArray(message)) {
+      return undefined;
+    }
+    const candidate = message as Record<string, unknown>;
+    if (
+      typeof candidate.id !== "string" ||
+      (
+        candidate.role !== "user" &&
+        candidate.role !== "assistant" &&
+        candidate.role !== "reasoning"
+      ) ||
+      typeof candidate.content !== "string"
+    ) {
+      return undefined;
+    }
+    messages.push(candidate as Message);
+  }
 
   return {
     id: record.id,
@@ -452,6 +447,18 @@ function conversationFromApi(
   };
 }
 
+function requireConversationFromApi(
+  value: unknown,
+  messagesLoaded: boolean,
+  label: string,
+): QuartzConversationThread {
+  const conversation = conversationFromApi(value, messagesLoaded);
+  if (!conversation) {
+    throw new Error(`${label} was malformed.`);
+  }
+  return conversation;
+}
+
 async function fetchConversationList(): Promise<QuartzConversationThread[]> {
   const json = await parseJsonResponse(
     await fetch(quartzConversationApiPath, conversationFetchOptions),
@@ -460,13 +467,17 @@ async function fetchConversationList(): Promise<QuartzConversationThread[]> {
     throw new Error("Conversation list response was malformed.");
   }
 
-  const conversations = Array.isArray(json.conversations)
-    ? json.conversations
-        .map((conversation) => conversationFromApi(conversation, false))
-        .filter(isStoredThread)
-    : [];
+  if (!Array.isArray(json.conversations)) {
+    throw new Error("Conversation list response was malformed.");
+  }
 
-  return conversations;
+  return json.conversations.map((conversation) =>
+    requireConversationFromApi(
+      conversation,
+      false,
+      "Conversation list item",
+    ),
+  );
 }
 
 async function fetchConversation(threadId: string): Promise<QuartzConversationThread> {
@@ -480,12 +491,11 @@ async function fetchConversation(threadId: string): Promise<QuartzConversationTh
     throw new Error("Conversation response was malformed.");
   }
 
-  const conversation = conversationFromApi(json.conversation, true);
-  if (!conversation) {
-    throw new Error("Conversation response was malformed.");
-  }
-
-  return conversation;
+  return requireConversationFromApi(
+    json.conversation,
+    true,
+    "Conversation response",
+  );
 }
 
 function reasoningEffortLabel(reasoningEffort: ReasoningEffort) {
@@ -1243,7 +1253,7 @@ function QuartzConversationSidebar({
     >
       <div className="quartz-sidebar-header">
         <div className="quartz-sidebar-brand" aria-label="Quartz">
-          <span>PROJ-Quartz</span>
+          <span>Quartz</span>
         </div>
         <div className="quartz-sidebar-header-actions">
           <button
@@ -1365,7 +1375,6 @@ function QuartzConversationSidebar({
 // Harness-Requirement: proj-quartz.quartz-agent-actor
 // Harness-Requirement: proj-quartz.memory-curator-actor
 // Harness-Requirement: proj-quartz.information-trading-domain
-// Harness-Requirement: proj-quartz.no-legacy-domain-positioning
 // Harness-Requirement: proj-quartz.chatgpt-style-conversation-sidebar
 export default function Page() {
   const { agent: pageAgent } = useAgent({
@@ -1743,7 +1752,7 @@ export default function Page() {
         <header className="quartz-topbar">
           <div>
             <p className="quartz-kicker">Information Trading</p>
-            <h1>PROJ-Quartz</h1>
+            <h1>Quartz</h1>
           </div>
           <div className="quartz-status" aria-label="Agent status">
             <span />

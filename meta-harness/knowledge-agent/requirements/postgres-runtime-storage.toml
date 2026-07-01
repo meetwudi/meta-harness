@@ -1,4 +1,4 @@
 id = "knowledge-agent.postgres-runtime-storage"
 title = "Postgres runtime storage"
-source = "Human request on 2026-06-26: Quartz should not store threads and conversations locally; it should run Docker/Postgres and make the app work end-to-end."
-text = "Knowledge Agent runtime state, including session items, conversation records, conversation state, conversation memory, and shared memory, can be stored in Postgres instead of local filesystem storage."
+source = "Human request on 2026-06-26: project applications should be able to store threads and conversations in Docker/Postgres and work end-to-end."
+text = "Knowledge Agent runtime state, including session items, conversation records, conversation state, conversation memory, and shared memory, can be stored in Postgres."

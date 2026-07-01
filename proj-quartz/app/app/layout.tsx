@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "PROJ-Quartz",
+  title: "Quartz",
   description: "Information Trading workspace for Meta Harness Knowledge Agent.",
 };
 

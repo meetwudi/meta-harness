@@ -67,8 +67,8 @@ Examples:
 ```toml
 update_actors = []
 update_actors = ["actor://knowledge-agent"]
-update_actors = ["actor://routine/proj-self/routines/*"]
-update_actors = ["actor://routine/daily-gmail-learning-digest/routines/*"]
+update_actors = ["actor://routine/example-project/routines/*"]
+update_actors = ["actor://routine/example-library/routines/example-routine"]
 ```
 
 Read access is configurable per Library. For example:
@@ -83,7 +83,7 @@ a Routine actor:
 
 ```text
 actor://knowledge-agent
-actor://routine/proj-self/routines/concise-cleanup
+actor://routine/example-project/routines/example-routine
 ```
 
 `agent_excludes` is an optional list of path patterns, relative to the Library
@@ -114,7 +114,7 @@ Examples:
 
 ```text
 library://meta-harness
-library://proj-self
+library://example-project
 library://routine-memory
 ```
 

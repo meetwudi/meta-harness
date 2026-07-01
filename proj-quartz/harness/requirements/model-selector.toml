@@ -1,10 +1,10 @@
 id = "proj-quartz.model-selector"
 title = "Model selector"
-source = "Human request on 2026-06-27: CopilotKit does not provide a native model selector; Quartz should handle the selector itself with a ChatGPT-style UI."
-text = "PROJ-Quartz presents a compact chat-level model selector backed by project-owned model configuration and passes the selected model to the Knowledge Agent run."
+source = "Human request on 2026-06-27: Quartz should own the model selector with a ChatGPT-style UI."
+text = "Quartz presents a compact chat-level model selector backed by project-owned model configuration and passes the selected model to the Knowledge Agent run."
 
 criteria = [
-  "Model options and the default model are declared in Quartz project configuration rather than embedded directly in the React component.",
+  "Model options and the default model are declared in Quartz project configuration.",
   "The selector shows the active model as a compact pill-style button and opens a single-choice menu.",
   "The route accepts only configured model ids and rejects unsupported model ids deterministically.",
   "The selected model is passed to the Knowledge Agent CLI with `--model`.",

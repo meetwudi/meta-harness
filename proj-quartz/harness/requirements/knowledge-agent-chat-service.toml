@@ -1,8 +1,9 @@
 id = "proj-quartz.knowledge-agent-chat-service"
 title = "Knowledge Agent chat service"
 source = "Human request on 2026-06-25: requirement number one is that we can talk to Knowledge Agent using this service, the chat service."
-text = "PROJ-Quartz users can talk to the Knowledge Agent using the chat service."
+text = "Quartz users can talk to the Knowledge Agent using the chat service."
 
 criteria = [
   "The chat service emits well-formed AG-UI run lifecycle events, including a `RUN_FINISHED` event with `outcome = { type = \"success\" }` for successful runs so clients leave running state.",
+  "The chat service treats malformed Knowledge Agent subprocess stream output as a clear run failure.",
 ]

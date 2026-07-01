@@ -6,5 +6,6 @@ clarifications = [
   "Input requires `libraryUriPatterns` as an array of strings and `query` as a string, accepts optional numeric `limit`, and disallows additional properties.",
   "The tool verifies exact non-wildcard Library URI patterns against actual storage-discovered Library URIs and fails when an exact pattern is malformed or unresolved.",
   "The tool searches only readable Libraries matching the URI patterns and skips excluded paths.",
+  "The tool fails clearly when a matched Library file cannot be read during search.",
   "Output returns the input Library URI patterns, query, and result groups containing public Library listings and content snippets keyed by Library resource URI.",
 ]

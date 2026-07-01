@@ -3,11 +3,38 @@
 
 name = "proj-quartz-acceptance"
 version = "v0.0.0"
-source = "Migrated on 2026-06-28 from Spec-owned PROJ-Quartz acceptance-test files after human direction to make Acceptance a separate primitive."
+source = "Migrated on 2026-06-28 from Spec-owned Quartz acceptance-test files after human direction to make Acceptance a separate primitive; Google sign-in/sign-out acceptance scenario captured from human request on 2026-06-30 and wording clarification on 2026-06-30."
 scope = [
   "proj-quartz/**",
 ]
-trigger = "Run the applicable PROJ-Quartz acceptance scenarios when scoped Quartz files change or when a human asks to run Quartz acceptance."
+trigger = "Run the applicable Quartz acceptance scenarios when scoped Quartz files change or when a human asks to run Quartz acceptance."
+
+[[tests]]
+id = "proj-quartz.acceptance.google-sign-in-sign-out"
+title = "Google sign-in and sign-out"
+requirements = [
+  "proj-quartz.google-sign-in",
+]
+circumstances = [
+  "Quartz is running at the tested origin.",
+  "A Google OAuth client exists for the tested Quartz origin.",
+  "The browser can complete Google sign-in for the test user.",
+]
+execution = "ai-browser"
+procedure = [
+  "Open the Quartz app while signed out.",
+  "Verify the signed-out app presents Google sign-in for the current account flow.",
+  "Click the Google sign-in action and complete the Google account flow.",
+  "Verify Quartz returns to the app as the signed-in user.",
+  "Open the lower-left account/profile menu.",
+  "Click the sign-out action.",
+]
+expected = [
+  "The signed-out account flow presents Google sign-in.",
+  "A successful Google sign-in creates or resumes the Quartz user account.",
+  "The signed-in app shows the user's account/profile affordance in the lower-left sidebar pattern.",
+  "Sign-out returns the user to a signed-out state that requires sign-in before using authenticated Quartz data.",
+]
 
 [[tests]]
 id = "proj-quartz.acceptance.chat-conversation-history-and-reasoning"
@@ -62,7 +89,7 @@ circumstances = [
   "Use the in-app browser tool so the replay exercises the real SPA, chat service, API route, Knowledge Agent CLI, Librarian tools, Postgres-backed Library storage, and post-turn Memory Curator path together.",
   "Use three separate Quartz conversations. In the current UI, a separate conversation can be simulated by reloading the page or opening a fresh app session between messages; the important property is that the later turn is not relying on React component state from the earlier turn.",
   "Capture browser-visible assistant replies and backend evidence after each conversation. Backend evidence should come from Librarian/Postgres Library state and from the recorded `memory-curator-trace.json` turn artifact when available.",
-  "When replaying against a reused local Quartz database, verify that no legacy flat stock memory file such as `library://stocks/symbols/FB.md` remains. If one exists and the equivalent folder-based entry already exists, delete the stale flat file through governed `librarian_delete` before treating recall as accepted. Otherwise the answer can pass while using the wrong memory shape.",
+  "When replaying against a reused local Quartz database, prepare the database so stock recall evidence comes from folder-based memory under `library://stocks/symbols/{symbol}/`. Any cleanup of older flat stock memory files belongs in a separate governed prep or migration record before acceptance replay.",
   "Do not ask the user to write TOML, name the storage location, or perform implementation work during the replay. The acceptance input is intentionally ordinary product language.",
   "If the first conversation asks for a human-facing Library description, answer with an ordinary description. That is expected placeholder resolution. It is not acceptable for the agent to ask for the storage location because Quartz project knowledge already designates it.",
 ]
@@ -80,7 +107,7 @@ procedure = [
   "Inspect the second conversation's recorded Memory Curator evidence. Verify the curator received the latest user message as `FB is developing a new chip.`, received only the bounded recent context needed for reference resolution, and did not treat older setup text as new learnable content.",
   "Inspect the curator tool calls. Verify it calls `librarian_intro`, calls `librarian_list_libraries`, sees writable Library candidates with names, descriptions, and governance metadata, reads `library://stocks/LIBRARY.toml`, reads `library://stocks/MEMORY.toml`, inspects existing memory under the relevant stock folder, and writes only if the fact is not already captured.",
   "Inspect backend Library state and verify the curator writes the latest user-stated FB chip fact into the FB stock folder as a dated sequential entry.",
-  "If this is a reused local database, verify no legacy flat `library://stocks/symbols/FB.md` file remains; if a duplicate exists and the folder entry already preserves the same fact with provenance, remove the flat duplicate through `librarian_delete` and record that cleanup as test evidence.",
+  "If this is a reused local database, record evidence that the recalled FB chip fact comes from folder-based memory under `library://stocks/symbols/FB/`.",
   "Start a third Quartz conversation by refreshing the browser page or opening a fresh app session.",
   "In the third Quartz conversation, the user asks in ordinary language: `What do we know about FB?`",
   "The agent inspects the stocks Memory Library and answers with the captured fact that FB is developing a new chip.",
@@ -97,7 +124,7 @@ expected = [
   "The curator reads `MEMORY.toml` before choosing where and how to write memory.",
   "The curator records the FB chip fact from the second conversation under the FB folder without re-learning older setup content or duplicating existing memory.",
   "The recorded FB memory entry is dated, sequential within `symbols/FB/`, and preserves learned-at and learned-from provenance.",
-  "No legacy flat stock memory file such as `library://stocks/symbols/FB.md` is needed for the recall answer.",
+  "The recall answer is grounded in folder-based stock memory under `library://stocks/symbols/FB/`.",
   "A later separate conversation can retrieve and answer with the FB chip fact from `library://stocks`.",
 ]
 

@@ -1,0 +1,4 @@
+id = "proj-quartz.organization-profiles"
+title = "Organization profiles"
+source = "Human request on 2026-06-30: each Google sign-in user can have different profiles, profiles can join different organizations, and some profiles are admin profiles, similar to Discord-style profiles in different organizations."
+text = "A Google-authenticated Quartz account can have profiles that join different organizations, and some organization profiles can be admin profiles."

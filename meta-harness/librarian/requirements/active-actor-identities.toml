@@ -1,4 +1,4 @@
 id = "librarian.active-actor-identities"
 title = "Librarian evaluates active actor identities"
-source = "Human-listed requirement on 2026-06-22 and renamed on 2026-06-23: Routine-backed agents should grant Routine actors while keeping Library governance actor-based."
+source = "Human-listed requirements on 2026-06-22 and 2026-06-23: Routine-backed agents carry Routine actor identities while Library governance remains actor-based."
 text = "Librarian evaluates Library governance against the active actor identities for the current agent session."

@@ -1,4 +1,4 @@
 id = "proj-quartz.postgres-backed-libraries"
 title = "Postgres-backed Libraries"
-source = "Human request on 2026-06-25: PROJ-Quartz agents should be able to use database-backed, Postgres-backed Libraries through the same Library interface, including creating a Library, querying the list of Libraries, reading from a Library, and writing through the Library interface."
-text = "PROJ-Quartz agents can use Postgres-backed Libraries through the existing Library interface."
+source = "Human request on 2026-06-25: Quartz agents should be able to use database-backed, Postgres-backed Libraries through the same Library interface, including creating a Library, querying the list of Libraries, reading from a Library, and writing through the Library interface."
+text = "Quartz agents can use Postgres-backed Libraries through the existing Library interface."

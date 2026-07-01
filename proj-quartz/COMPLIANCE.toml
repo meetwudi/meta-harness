@@ -4,8 +4,8 @@
 
 [[items]]
 id = "quartz-memory-rules-live-in-memory-primitive"
-text = "Verify PROJ-Quartz domain-specific Memory behavior is captured in project Memory primitives, such as `library://stocks/MEMORY.toml`, and not added to generic Knowledge Agent code, shared Knowledge Agent prompts, or Quartz application service code except as generic Library or Memory plumbing."
+text = "Verify Quartz domain-specific Memory behavior is captured in project Memory primitives, such as `library://stocks/MEMORY.toml`, and not added to generic Knowledge Agent code, shared Knowledge Agent prompts, or Quartz application service code except as generic Library or Memory plumbing."
 
 [[items]]
 id = "quartz-no-local-conversation-storage-fallback"
-text = "Verify PROJ-Quartz conversation history and reasoning persistence use governed configured storage and do not silently fall back to browser-local or filesystem-local conversation history when governed storage is unavailable."
+text = "Verify Quartz conversation history and reasoning persistence use governed configured storage and do not silently fall back to browser-local or filesystem-local conversation history when governed storage is unavailable."

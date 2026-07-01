@@ -79,13 +79,16 @@ export class ConversationStateRuntime {
       input,
       "memoryCurationLibraries",
     );
-    const mentionedGoals = normalizeMentionArray(input.mentionedGoals ?? [], "mentionedGoals");
-    const mentionedLibraries = normalizeMentionArray(
-      input.mentionedLibraries ?? [],
-      "mentionedLibraries",
-    );
+    const hasMentionedGoals = Object.prototype.hasOwnProperty.call(input, "mentionedGoals");
+    const hasMentionedLibraries = Object.prototype.hasOwnProperty.call(input, "mentionedLibraries");
+    const mentionedGoals = hasMentionedGoals
+      ? normalizeMentionArray(input.mentionedGoals, "mentionedGoals")
+      : [];
+    const mentionedLibraries = hasMentionedLibraries
+      ? normalizeMentionArray(input.mentionedLibraries, "mentionedLibraries")
+      : [];
     const memoryCurationLibraries = hasMemoryCurationLibraries
-      ? normalizeMentionArray(input.memoryCurationLibraries ?? [], "memoryCurationLibraries")
+      ? normalizeMentionArray(input.memoryCurationLibraries, "memoryCurationLibraries")
       : undefined;
 
     for (const mention of mentionedGoals) {
@@ -144,8 +147,12 @@ async function loadConversationState(
     }
   }
 
+  if (typeof data.actor_uri !== "string" || !data.actor_uri) {
+    throw new Error(`${path} is missing required conversation state field: actor_uri`);
+  }
+
   return normalizeConversationState({
-    actorUri: typeof data.actor_uri === "string" ? data.actor_uri : actorUri,
+    actorUri: data.actor_uri,
     mentionedGoals: parseMentions(data.mentioned_goal, "mentioned_goal"),
     mentionedLibraries: parseMentions(data.mentioned_library, "mentioned_library"),
   });

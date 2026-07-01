@@ -1,7 +1,7 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.storage-agnostic-runtime: adapts local filesystem persistence to the storage interface.
 // Supports knowledge-agent.library-writes-memory: provides local writable Libraries through Librarian.
-// Supports knowledge-agent.openai-trace-conversation-history: provides local conversation history storage.
+// Supports knowledge-agent.openai-trace-conversation-history: provides conversation history storage through the filesystem driver.
 // Supports knowledge-agent.uses-librarian: creates Librarian context for local storage.
 
 import { createLocalLibrarianContext } from "./create-local-librarian-context.js";

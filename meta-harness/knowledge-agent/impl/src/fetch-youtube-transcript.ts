@@ -69,11 +69,11 @@ export async function fetchYouTubeTranscript(
     : captionTracksFromPlayerResponse(await fetchPlayerResponse(watchUrl));
   const track = chooseCaptionTrack(tracks, language);
   if (!track) {
-    const fallbackTrack = await fetchTrackFromTimedTextList(videoId, language);
-    if (!fallbackTrack) {
+    const timedTextTrack = await fetchTrackFromTimedTextList(videoId, language);
+    if (!timedTextTrack) {
       throw new Error(`No transcript track is available for YouTube video ${videoId}.`);
     }
-    return fetchTranscriptFromTrack(videoId, watchUrl, fallbackTrack, language);
+    return fetchTranscriptFromTrack(videoId, watchUrl, timedTextTrack, language);
   }
   return fetchTranscriptFromTrack(videoId, watchUrl, track, language);
 }
@@ -97,7 +97,9 @@ async function fetchAndroidCaptionTracks(videoId: string): Promise<CaptionTrack[
     }),
   });
   if (!response.ok) {
-    return [];
+    throw new Error(
+      `YouTube Android caption track request failed with ${response.status}.`,
+    );
   }
   const data = await response.json() as Record<string, unknown>;
   return captionTracksFromPlayerResponse(data);

@@ -1,0 +1,4 @@
+id = "proj-quartz.local-library-account-migration"
+title = "Local Library account migration"
+source = "Human request on 2026-06-30: once login exists, migrate all local Libraries to the human's account because there is no production yet."
+text = "Once Google login exists, existing local Quartz Libraries are migrated to the initiating human account before production use."

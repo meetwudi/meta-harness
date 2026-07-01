@@ -255,6 +255,124 @@ assert.deepEqual(conversation?.messages, [
   },
 ]);
 
+const validationStorage = new MemoryStorage();
+await validationStorage.makeDirectory(libraryRoot);
+await validationStorage.writeText(
+  join(libraryRoot, "quartz-missing-id", "CONVERSATION.toml"),
+  [
+    `created_at = "2026-06-27T19:24:18.525Z"`,
+    `updated_at = "2026-06-27T19:24:18.525Z"`,
+    `session_file = "session.jsonl"`,
+    "",
+  ].join("\n"),
+);
+await assert.rejects(
+  () =>
+    readConversation({
+      storage: validationStorage,
+      libraryRoot,
+      folderName: "quartz-missing-id",
+      includeMessages: false,
+    }),
+  /quartz-missing-id\/CONVERSATION\.toml is missing required field: conversation_id/,
+);
+
+const missingManifestStorage = new MemoryStorage();
+await missingManifestStorage.makeDirectory(join(libraryRoot, "quartz-missing-manifest"));
+await assert.rejects(
+  () =>
+    listConversations({
+      storage: missingManifestStorage,
+      libraryRoot,
+    }),
+  /quartz-missing-manifest\/CONVERSATION\.toml is missing from conversation history/,
+);
+
+const missingSummaryStorage = new MemoryStorage();
+await seedConversation({
+  storage: missingSummaryStorage,
+  folderName: "quartz-missing-summary",
+});
+await missingSummaryStorage.makeDirectory(
+  join(libraryRoot, "quartz-missing-summary", "turns", "turn-1"),
+);
+await assert.rejects(
+  () =>
+    readConversation({
+      storage: missingSummaryStorage,
+      libraryRoot,
+      folderName: "quartz-missing-summary",
+      includeMessages: true,
+    }),
+  /turns\/turn-1\/summary\.md is missing from conversation history/,
+);
+
+await seedConversation({
+  storage: validationStorage,
+  folderName: "quartz-malformed-session",
+  turns: [
+    {
+      turnId: "turn-1",
+      startedAt: "2026-06-27T19:24:18.525Z",
+      latestUserMessage: "show malformed history",
+    },
+  ],
+});
+await validationStorage.writeText(
+  join(libraryRoot, "quartz-malformed-session", "session.jsonl"),
+  [
+    JSON.stringify({
+      type: "message",
+      role: "assistant",
+      providerData: { phase: "final_answer" },
+      content: [{ type: "output_text", text: "valid" }],
+    }),
+    "{ malformed",
+    "",
+  ].join("\n"),
+);
+await assert.rejects(
+  () =>
+    readConversation({
+      storage: validationStorage,
+      libraryRoot,
+      folderName: "quartz-malformed-session",
+      includeMessages: true,
+    }),
+  /session\.jsonl line 2 is malformed JSON/,
+);
+
+await seedConversation({
+  storage: validationStorage,
+  folderName: "quartz-malformed-reasoning",
+  turns: [
+    {
+      turnId: "turn-1",
+      startedAt: "2026-06-27T19:24:18.525Z",
+      latestUserMessage: "show malformed reasoning",
+    },
+  ],
+});
+await validationStorage.writeText(
+  join(libraryRoot, "quartz-malformed-reasoning", "turns", "turn-1", "reasoning.jsonl"),
+  `${JSON.stringify({
+    type: "note",
+    source: "main",
+    delta: "valid text with unexpected type",
+    recordedAt: "2026-06-27T19:24:19.000Z",
+  })}\n`,
+);
+await assert.rejects(
+  () =>
+    readConversation({
+      storage: validationStorage,
+      libraryRoot,
+      folderName: "quartz-malformed-reasoning",
+      includeMessages: true,
+    }),
+  /reasoning\.jsonl line 1 must be a reasoning_delta record/,
+);
+
 await seedConversation({
   storage,
   folderName: "quartz-empty",

@@ -31,7 +31,13 @@ Express durable learning as concise positive practice or compliance guidance ins
 ## Positive Descriptions
 
 Describe a thing by what it is for, not by accumulating exclusions about every
-wrong use an agent has attempted.
+unsuccessful use an agent has attempted.
+
+Describe current product capability by the supported present path and its
+scope. If a provider or option is provisional, use wording such as "currently
+supports X" or "for this release, X". Reserve exclusionary statements for cases
+where the human makes the exclusion part of the durable requirement or the test
+must verify absence.
 
 When an agent misuses a Library, primitive, or workflow, fix the source of
 confusion: improve the positive description, governing rules, Routine identity,

@@ -1,6 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
 // Supports knowledge-agent.library-writes-memory: prepares local writable Libraries for Librarian.
-// Supports knowledge-agent.openai-trace-conversation-history: prepares local conversation storage.
+// Supports knowledge-agent.openai-trace-conversation-history: prepares configured conversation storage.
 // Supports knowledge-agent.storage-discovery-runtime: keeps local Library path setup outside main agent inputs.
 // Supports knowledge-agent.storage-agnostic-runtime: implements the local filesystem storage preparation.
 

@@ -33,13 +33,26 @@ export const maxDuration = 180;
 // Harness-Requirement: proj-quartz.reasoning-event-rendering
 // Harness-Requirement: proj-quartz.model-selector
 
-type KnowledgeAgentSubprocessEvent = {
-  type?: unknown;
-  message?: unknown;
-  delta?: unknown;
-  output?: unknown;
-  source?: unknown;
-};
+type KnowledgeAgentSubprocessEvent =
+  | {
+      type: "progress";
+      message: string;
+      source: KnowledgeAgentStreamSource;
+    }
+  | {
+      type: "reasoning_delta";
+      delta: string;
+      source: KnowledgeAgentStreamSource;
+    }
+  | {
+      type: "text_delta";
+      delta: string;
+      source: KnowledgeAgentStreamSource;
+    }
+  | {
+      type: "final_output";
+      output: string;
+    };
 
 const defaultTimeoutMs = 180_000;
 const defaultReasoningEffort: ReasoningEffort = "medium";
@@ -82,7 +95,7 @@ function loadQuartzProjectEnv(): void {
 function assertQuartzPostgresConfigured(): void {
   loadQuartzProjectEnv();
   if (!process.env.QUARTZ_POSTGRES_URL) {
-    throw new Error("QUARTZ_POSTGRES_URL is required for PROJ-Quartz runtime storage.");
+    throw new Error("QUARTZ_POSTGRES_URL is required for Quartz runtime storage.");
   }
 }
 
@@ -90,9 +103,12 @@ function projectConfigFilePath(): string {
   return path.join(process.cwd(), "..", ".meta-harness.json");
 }
 
-function safeId(value: string, defaultValue: string): string {
+function safeId(value: string, label: string): string {
   const cleaned = value.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 96);
-  return cleaned || defaultValue;
+  if (!cleaned) {
+    throw new Error(`${label} must contain at least one URL-safe identifier character.`);
+  }
+  return cleaned;
 }
 
 function objectRecord(value: unknown): Record<string, unknown> {
@@ -112,10 +128,32 @@ function isModelOption(value: unknown): value is ModelOption {
   return typeof candidate.id === "string" && typeof candidate.label === "string";
 }
 
+export function validateKnowledgeAgentModelOptions(value: unknown): ModelOption[] {
+  if (!Array.isArray(value)) {
+    throw new Error(
+      "Quartz Knowledge Agent modelOptions must be configured as an array in project knowledge.",
+    );
+  }
+  if (value.length === 0) {
+    throw new Error(
+      "Quartz Knowledge Agent modelOptions must be configured in project knowledge.",
+    );
+  }
+  return value.map((option, index) => {
+    if (!isModelOption(option)) {
+      throw new Error(
+        `Quartz Knowledge Agent modelOptions[${index}] must include string id and label fields.`,
+      );
+    }
+    return option;
+  });
+}
+
 function streamSource(value: unknown): KnowledgeAgentStreamSource {
-  return typeof value === "string" && value.trim()
-    ? value.trim()
-    : "main";
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  throw new Error("Malformed Knowledge Agent stream event: source must be a non-empty string.");
 }
 
 function loadKnowledgeAgentChatConfig(): KnowledgeAgentChatConfig {
@@ -124,20 +162,13 @@ function loadKnowledgeAgentChatConfig(): KnowledgeAgentChatConfig {
     JSON.parse(readFileSync(projectConfigFilePath(), "utf8")),
   );
   const knowledgeAgent = objectRecord(config.knowledgeAgent);
-  const modelOptions = Array.isArray(knowledgeAgent.modelOptions)
-    ? knowledgeAgent.modelOptions.filter(isModelOption)
-    : [];
+  const modelOptions = validateKnowledgeAgentModelOptions(knowledgeAgent.modelOptions);
   const configuredDefault =
     typeof knowledgeAgent.defaultModel === "string"
       ? knowledgeAgent.defaultModel
       : "";
   const defaultModel = process.env.KNOWLEDGE_AGENT_MODEL ?? configuredDefault;
 
-  if (modelOptions.length === 0) {
-    throw new Error(
-      "Quartz Knowledge Agent modelOptions must be configured in project knowledge.",
-    );
-  }
   if (!defaultModel) {
     throw new Error(
       "Quartz Knowledge Agent defaultModel must be configured in project knowledge.",
@@ -280,7 +311,7 @@ function contextualUserGoal(input: RunAgentInput): string {
   if (previousAssistant && isAffirmativeFollowUp(current)) {
     promptParts.push(
       "",
-      "The current request is an affirmative follow-up. Treat it as the user accepting the previous assistant message or offer. Perform the offered action now instead of asking for confirmation again.",
+      "The current request is an affirmative follow-up. Treat it as the user accepting the previous assistant message or offer. Perform the offered action now and continue the prior intent.",
       "",
       "Previous assistant message:",
       previousAssistant,
@@ -290,15 +321,81 @@ function contextualUserGoal(input: RunAgentInput): string {
   return promptParts.join("\n");
 }
 
-function parseKnowledgeAgentSubprocessEvent(
+export function parseKnowledgeAgentSubprocessEvent(
   line: string,
-): KnowledgeAgentSubprocessEvent | undefined {
+): KnowledgeAgentSubprocessEvent {
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(line) as unknown;
-    return objectRecord(parsed);
-  } catch {
-    return undefined;
+    parsed = JSON.parse(line) as unknown;
+  } catch (error) {
+    throw new Error(
+      `Malformed Knowledge Agent stream event JSON: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Malformed Knowledge Agent stream event: expected a JSON object.");
+  }
+  const record = parsed as Record<string, unknown>;
+  switch (record.type) {
+    case "progress":
+      if (typeof record.message !== "string") {
+        throw new Error("Malformed Knowledge Agent progress event: message must be a string.");
+      }
+      return {
+        type: "progress",
+        message: record.message,
+        source: streamSource(record.source),
+      };
+    case "reasoning_delta":
+      if (typeof record.delta !== "string") {
+        throw new Error("Malformed Knowledge Agent reasoning_delta event: delta must be a string.");
+      }
+      return {
+        type: "reasoning_delta",
+        delta: record.delta,
+        source: streamSource(record.source),
+      };
+    case "text_delta":
+      if (typeof record.delta !== "string") {
+        throw new Error("Malformed Knowledge Agent text_delta event: delta must be a string.");
+      }
+      return {
+        type: "text_delta",
+        delta: record.delta,
+        source: streamSource(record.source),
+      };
+    case "final_output":
+      if (typeof record.output !== "string") {
+        throw new Error("Malformed Knowledge Agent final_output event: output must be a string.");
+      }
+      return {
+        type: "final_output",
+        output: record.output,
+      };
+    default:
+      throw new Error("Malformed Knowledge Agent stream event: unknown event type.");
+  }
+}
+
+export function resolveKnowledgeAgentOutput(input: {
+  finalOutput: string;
+  streamedMainText: string;
+  rawStdout: string;
+}): string {
+  const output = (
+    input.finalOutput ||
+    input.streamedMainText
+  ).trim();
+  if (output) {
+    return output;
+  }
+
+  const diagnostic = input.rawStdout.trim()
+    ? ` Raw stdout tail: ${input.rawStdout.trim().split("\n").slice(-4).join("\n")}`
+    : "";
+  throw new Error(
+    `Knowledge Agent completed without structured final output or text events.${diagnostic}`,
+  );
 }
 
 async function runKnowledgeAgent(input: {
@@ -325,7 +422,7 @@ async function runKnowledgeAgent(input: {
   const timeoutMs = Number(
     process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS ?? defaultTimeoutMs,
   );
-  const turnId = `quartz-${safeId(input.runId, "run")}`;
+  const turnId = `quartz-${safeId(input.runId, "runId")}`;
 
   return new Promise((resolve, reject) => {
     const reasoningRecords: ReasoningDeltaRecord[] = [];
@@ -339,7 +436,7 @@ async function runKnowledgeAgent(input: {
         "--project-config",
         projectConfigPath(),
         "--conversation-id",
-        `quartz-${safeId(input.threadId, "thread")}`,
+        `quartz-${safeId(input.threadId, "threadId")}`,
         "--turn-id",
         turnId,
         "--model",
@@ -363,9 +460,10 @@ async function runKnowledgeAgent(input: {
     let stderr = "";
     let stdoutLineBuffer = "";
     let finalOutput = "";
-    let streamedText = "";
     let streamedMainText = "";
+    let failed = false;
     const timeout = setTimeout(() => {
+      failed = true;
       child.kill("SIGTERM");
       reject(new Error("Knowledge Agent run timed out."));
     }, timeoutMs);
@@ -377,38 +475,31 @@ async function runKnowledgeAgent(input: {
       }
 
       const event = parseKnowledgeAgentSubprocessEvent(trimmed);
-      if (!event) {
-        stdout += `${line}\n`;
+
+      if (event.type === "progress") {
+        input.onProgress?.(event.message, event.source);
         return;
       }
 
-      if (event.type === "progress" && typeof event.message === "string") {
-        input.onProgress?.(event.message, streamSource(event.source));
-        return;
-      }
-
-      if (event.type === "reasoning_delta" && typeof event.delta === "string") {
-        const source = streamSource(event.source);
+      if (event.type === "reasoning_delta") {
         reasoningRecords.push({
-          source,
+          source: event.source,
           delta: event.delta,
           recordedAt: new Date().toISOString(),
         });
-        input.onReasoningDelta?.(event.delta, source);
+        input.onReasoningDelta?.(event.delta, event.source);
         return;
       }
 
-      if (event.type === "text_delta" && typeof event.delta === "string") {
-        const source = streamSource(event.source);
-        streamedText += event.delta;
-        if (source === "main") {
+      if (event.type === "text_delta") {
+        if (event.source === "main") {
           streamedMainText += event.delta;
         }
-        input.onTextDelta?.(event.delta, source);
+        input.onTextDelta?.(event.delta, event.source);
         return;
       }
 
-      if (event.type === "final_output" && typeof event.output === "string") {
+      if (event.type === "final_output") {
         finalOutput = event.output;
       }
     };
@@ -416,25 +507,41 @@ async function runKnowledgeAgent(input: {
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
     child.stdout.on("data", (chunk) => {
-      stdoutLineBuffer += chunk;
-      const lines = stdoutLineBuffer.split("\n");
-      stdoutLineBuffer = lines.pop() ?? "";
-      for (const line of lines) {
-        handleStdoutLine(line);
+      try {
+        stdoutLineBuffer += chunk;
+        const lines = stdoutLineBuffer.split("\n");
+        stdoutLineBuffer = lines.pop() ?? "";
+        for (const line of lines) {
+          handleStdoutLine(line);
+        }
+      } catch (error) {
+        failed = true;
+        clearTimeout(timeout);
+        child.kill("SIGTERM");
+        reject(error);
       }
     });
     child.stderr.on("data", (chunk) => {
       stderr += chunk;
     });
     child.on("error", (error) => {
+      failed = true;
       clearTimeout(timeout);
       reject(error);
     });
     child.on("close", async (code) => {
       clearTimeout(timeout);
+      if (failed) {
+        return;
+      }
       if (stdoutLineBuffer) {
-        handleStdoutLine(stdoutLineBuffer);
-        stdoutLineBuffer = "";
+        try {
+          handleStdoutLine(stdoutLineBuffer);
+          stdoutLineBuffer = "";
+        } catch (error) {
+          reject(error);
+          return;
+        }
       }
       if (code === 0) {
         try {
@@ -443,7 +550,11 @@ async function runKnowledgeAgent(input: {
             turnId,
             records: reasoningRecords,
           });
-          resolve((finalOutput || streamedMainText || streamedText || stdout).trim());
+          resolve(resolveKnowledgeAgentOutput({
+            finalOutput,
+            streamedMainText,
+            rawStdout: stdout,
+          }));
         } catch (error) {
           reject(error);
         }
@@ -476,8 +587,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const input = (await request.json()) as RunAgentInput;
-  const threadId = safeId(input.threadId ?? crypto.randomUUID(), "thread");
-  const runId = safeId(input.runId ?? crypto.randomUUID(), "run");
+  const threadId = safeId(input.threadId ?? crypto.randomUUID(), "threadId");
+  const runId = safeId(input.runId ?? crypto.randomUUID(), "runId");
 
   const stream = createKnowledgeAgentSseStream({
     runInput: input,

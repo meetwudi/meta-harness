@@ -1,18 +1,18 @@
-# PROJ-Quartz: Information Trading
+# Quartz: Information Trading
 
-PROJ-Quartz is an Information Trading project.
+Quartz is an Information Trading project.
 
-The principle is simple: do not trade prices first; trade information
-asymmetry. Quartz is for discovering public information that may be obvious to
-people close to a domain, but not yet absorbed by most market participants.
+The principle is simple: trade information asymmetry before prices. Quartz is
+for discovering public information that may be obvious to people close to a
+domain before most market participants absorb it.
 
 Financial markets create a useful cadence because many companies report
 quarterly. If meaningful information appears before or during a quarter, the
 asymmetry can exist before the market catches up. When the market aligns with
 the information, the asymmetry disappears. That is the exit signal.
 
-Quartz is not stock picking. Pricing can be studied when it becomes relevant,
-but the starting model is information, context, and asymmetry.
+Quartz starts from information, context, and asymmetry. Pricing can be studied
+when it becomes relevant.
 
 The user has a dedicated capital bucket for this work, separate from broader
 financial planning and mostly ETF-based investment funds.

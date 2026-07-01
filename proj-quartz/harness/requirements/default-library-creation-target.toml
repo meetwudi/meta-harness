@@ -1,10 +1,10 @@
 id = "proj-quartz.default-library-creation-target"
 title = "Default Library creation target"
 source = "Human request on 2026-06-26: Quartz Library creation should always happen in the DB through configured knowledge, without asking users to choose the storage location or exposing that internal detail."
-text = "PROJ-Quartz designates its Postgres-backed storage location as the default Library creation target."
+text = "Quartz designates its Postgres-backed storage location as the default Library creation target."
 clarifications = [
   "This is Quartz-specific project knowledge.",
   "Ordinary Quartz Library creation uses the configured Postgres-backed location without asking the user to choose a storage location.",
-  "The user-facing response should not mention the internal storage-location policy unless the user asks for internal details.",
+  "The user-facing response stays focused on the requested Library creation; storage-location policy appears only when the user asks for internal details.",
   "The project policy is captured in TOML so comments can explain the behavior near the configuration.",
 ]

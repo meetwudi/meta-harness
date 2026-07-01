@@ -1,6 +1,6 @@
 id = "storage.library-creation-target-location"
 title = "Library creation targets a storage location"
-source = "Human-listed requirement on 2026-06-22: when an agent creates a Library, it should read storage location knowledge and ask the user to choose one; amended by human request on 2026-06-26 that project knowledge may designate a default creation location so the agent does not ask."
+source = "Human-listed requirements on 2026-06-22 and 2026-06-26: Library creation reads storage location knowledge, and project knowledge may designate a default creation location."
 text = "Library creation targets a named storage location, either supplied by the request or resolved from project-designated default creation storage knowledge."
 clarifications = [
   "A storage location may set `defaultForLibraryCreation = true` in structured project storage knowledge.",

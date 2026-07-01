@@ -36,6 +36,13 @@ type QuartzConversationSummary = {
   messages?: AgUiConversationMessage[];
 };
 
+class ConversationNotFoundError extends Error {
+  constructor(folderName: string) {
+    super(`Conversation not found: ${folderName}`);
+    this.name = "ConversationNotFoundError";
+  }
+}
+
 type ConversationTurn = {
   turnId: string;
   startedAt: string;
@@ -247,7 +254,7 @@ async function ensureConversationsLibrary(
         "",
         "instructions = [",
         '  "Store each Knowledge Agent conversation under a timestamped conversation id folder.",',
-        '  "Keep prompts, summaries, model reasoning records, trace references, and local conversation records together.",',
+        '  "Keep prompts, summaries, model reasoning records, trace references, and conversation records together.",',
         '  "Do not store provider credentials.",',
         "]",
         "",
@@ -256,13 +263,16 @@ async function ensureConversationsLibrary(
   }
 }
 
-function safeId(value: string, defaultValue: string): string {
+function safeId(value: string, label: string): string {
   const cleaned = value.replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 96);
-  return cleaned || defaultValue;
+  if (!cleaned) {
+    throw new Error(`${label} must contain at least one URL-safe identifier character.`);
+  }
+  return cleaned;
 }
 
 function conversationIdFromThreadId(threadId: string): string {
-  return `quartz-${safeId(threadId, "thread")}`;
+  return `quartz-${safeId(threadId, "threadId")}`;
 }
 
 function threadIdFromConversationId(conversationId: string): string {
@@ -347,14 +357,26 @@ async function loadConversationLibrary(): Promise<RuntimeConversationLibrary> {
   return { storage, root };
 }
 
-function parseTomlStringField(toml: string, fieldName: string, defaultValue = ""): string {
+function parseTomlStringField(toml: string, fieldName: string): string {
   const escapedFieldName = fieldName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = toml.match(new RegExp(`^${escapedFieldName}\\s*=\\s*"([^"]*)"\\s*$`, "m"));
-  return match?.[1] || defaultValue;
+  return match?.[1] ?? "";
 }
 
-function parseConversationId(toml: string, defaultValue: string): string {
-  return parseTomlStringField(toml, "conversation_id", defaultValue);
+function parseRequiredTomlStringField(
+  toml: string,
+  fieldName: string,
+  fileLabel: string,
+): string {
+  const value = parseTomlStringField(toml, fieldName);
+  if (!value) {
+    throw new Error(`${fileLabel} is missing required field: ${fieldName}`);
+  }
+  return value;
+}
+
+function parseConversationId(toml: string, fileLabel: string): string {
+  return parseRequiredTomlStringField(toml, "conversation_id", fileLabel);
 }
 
 function extractField(text: string, label: string, beforeLabels: string[]): string {
@@ -399,21 +421,26 @@ function outputText(content: unknown): string {
     .trim();
 }
 
-function parseJsonlRecords(jsonl: string): Record<string, unknown>[] {
+function parseJsonlRecords(
+  jsonl: string,
+  fileLabel: string,
+): Record<string, unknown>[] {
   return jsonl
     .split(/\r?\n/)
-    .filter((line) => line.trim())
-    .map((line) => {
+    .flatMap((line, index) => {
+      if (!line.trim()) {
+        return [];
+      }
       try {
-        return JSON.parse(line) as Record<string, unknown>;
+        return [JSON.parse(line) as Record<string, unknown>];
       } catch {
-        return {};
+        throw new Error(`${fileLabel} line ${index + 1} is malformed JSON.`);
       }
     });
 }
 
 function finalAssistantMessages(sessionJsonl: string): string[] {
-  return parseJsonlRecords(sessionJsonl)
+  return parseJsonlRecords(sessionJsonl, "session.jsonl")
     .filter((item) => {
       const providerData = item.providerData;
       return item.type === "message" &&
@@ -442,20 +469,25 @@ function safeReasoningSource(value: unknown): string {
 }
 
 function parseReasoningDeltaRecords(jsonl: string): StoredReasoningDeltaRecord[] {
-  return parseJsonlRecords(jsonl)
-    .map((item) => {
+  return parseJsonlRecords(jsonl, "reasoning.jsonl")
+    .map((item, index) => {
       const delta = typeof item.delta === "string" ? item.delta : "";
-      if (item.type !== "reasoning_delta" || !delta) {
-        return undefined;
+      if (item.type !== "reasoning_delta") {
+        throw new Error(`reasoning.jsonl line ${index + 1} must be a reasoning_delta record.`);
+      }
+      if (!delta) {
+        throw new Error(`reasoning.jsonl line ${index + 1} must include a non-empty delta.`);
+      }
+      if (typeof item.source !== "string" || !item.source.trim()) {
+        throw new Error(`reasoning.jsonl line ${index + 1} must include a source.`);
       }
       return {
         type: "reasoning_delta" as const,
-        source: safeReasoningSource(item.source),
+        source: item.source.trim(),
         delta,
         recordedAt: typeof item.recordedAt === "string" ? item.recordedAt : "",
       };
-    })
-    .filter((item): item is StoredReasoningDeltaRecord => Boolean(item));
+    });
 }
 
 export function reasoningContentFromRecords(records: ReasoningDeltaRecord[]): string {
@@ -508,7 +540,7 @@ async function readTurnSummaries(
     }
     const summaryPath = join(turnsRoot, entry.name, "summary.md");
     if (!(await storage.exists(summaryPath))) {
-      continue;
+      throw new Error(`${join("turns", entry.name, "summary.md")} is missing from conversation history.`);
     }
     const summary = await storage.readText(summaryPath);
     const startedAt = extractField(summary, "Started", [
@@ -543,17 +575,20 @@ export async function readConversation(input: {
   libraryRoot: string;
   folderName: string;
   includeMessages: boolean;
-}): Promise<QuartzConversationSummary | undefined> {
+}): Promise<QuartzConversationSummary> {
   const conversationRoot = join(input.libraryRoot, input.folderName);
+  if (!(await input.storage.exists(conversationRoot))) {
+    throw new ConversationNotFoundError(input.folderName);
+  }
   const conversationTomlPath = join(conversationRoot, "CONVERSATION.toml");
   if (!(await input.storage.exists(conversationTomlPath))) {
-    return undefined;
+    throw new Error(`${input.folderName}/CONVERSATION.toml is missing from conversation history.`);
   }
 
   const conversationToml = await input.storage.readText(conversationTomlPath);
   const conversationId = parseConversationId(
     conversationToml,
-    input.folderName,
+    `${input.folderName}/CONVERSATION.toml`,
   );
   const turns = await readTurnSummaries(input.storage, conversationRoot);
   const createdAt = turns[0]?.startedAt ||
@@ -630,7 +665,7 @@ export async function listConversations(input: {
           }),
         ),
     )
-  ).filter((conversation): conversation is QuartzConversationSummary => Boolean(conversation));
+  );
 
   return conversations.sort((left, right) => {
     if (left.updatedAt && right.updatedAt) {
@@ -771,16 +806,20 @@ export async function GET(request: Request) {
     const threadId = url.searchParams.get("threadId");
     if (threadId) {
       const conversationId = conversationIdFromThreadId(threadId);
-      const conversation = await readConversation({
-        storage: library.storage,
-        libraryRoot: library.root,
-        folderName: conversationId,
-        includeMessages: true,
-      });
-      if (!conversation) {
-        return jsonResponse({ error: "Conversation not found." }, { status: 404 });
+      try {
+        const conversation = await readConversation({
+          storage: library.storage,
+          libraryRoot: library.root,
+          folderName: conversationId,
+          includeMessages: true,
+        });
+        return jsonResponse({ conversation });
+      } catch (error) {
+        if (error instanceof ConversationNotFoundError) {
+          return jsonResponse({ error: "Conversation not found." }, { status: 404 });
+        }
+        throw error;
       }
-      return jsonResponse({ conversation });
     }
 
     return jsonResponse({

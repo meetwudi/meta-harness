@@ -1,0 +1,4 @@
+id = "proj-quartz.google-sign-in"
+title = "Google sign-in"
+source = "Human request on 2026-06-30 and clarification on 2026-06-30: Quartz should support user registration and login using Google sign-in for the current account flow, users should be able to sign out, and wording should present Google as the current path."
+text = "Quartz supports user registration and sign-in through Google for the current account flow and provides sign-out."

@@ -1,6 +1,6 @@
 id = "knowledge-agent.shared-memory-configuration"
 title = "Shared Knowledge Agent memory can be disabled"
-source = "Human request on 2026-06-26: Quartz should not have general purpose Knowledge Agent memory, at least for now."
+source = "Human request on 2026-06-26: project runtime configuration should be able to disable general-purpose Knowledge Agent memory."
 text = "Knowledge Agent runtime configuration can disable creation of the shared general-purpose memory Library."
 clarifications = [
   "Shared memory is enabled only when the selected project config sets `runtime.sharedMemory.enabled = true`.",

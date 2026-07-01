@@ -1,4 +1,4 @@
 id = "proj-quartz.no-general-purpose-memory"
 title = "No general purpose Knowledge Agent memory"
 source = "Human request on 2026-06-26: delete the Knowledge Agent memory Library and do not use general purpose memory for Quartz, at least for now."
-text = "PROJ-Quartz disables the shared general-purpose Knowledge Agent memory Library while preserving conversation history storage."
+text = "Quartz disables the shared general-purpose Knowledge Agent memory Library while preserving conversation history storage."

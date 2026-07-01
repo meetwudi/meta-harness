@@ -57,8 +57,10 @@ export async function searchLibraryFiles(
       let content = "";
       try {
         content = await library.storage.readText(absolutePath);
-      } catch {
-        continue;
+      } catch (error) {
+        throw new Error(
+          `Failed to read ${libraryResourceUri(library.uri, path)} during Library search: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
       if (path.toLowerCase().includes(query) || content.toLowerCase().includes(query)) {
         matches.push({

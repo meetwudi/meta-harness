@@ -1,6 +1,6 @@
 // Generated file. Do not edit directly; update the Spec first.
-// Supports knowledge-agent.openai-trace-conversation-history: stores local conversation history and trace references.
-// Supports knowledge-agent.storage-agnostic-runtime: implements local filesystem conversation record storage.
+// Supports knowledge-agent.openai-trace-conversation-history: stores conversation history and trace references.
+// Supports knowledge-agent.storage-agnostic-runtime: implements storage-backed conversation record writes.
 // Supports librarian.tool-call-observability: stores only Librarian tool call events in librarian-trace.json.
 // Supports knowledge-agent.conversation-turns: stores each run as a conversation turn.
 // Supports knowledge-agent.conversation-state: stores per-turn prompt state and next-turn state.
@@ -13,7 +13,7 @@ import { resultSummary } from "./result-summary.js";
 import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
 
 /**
- * Writes local conversation prompt, summary, and Librarian trace files.
+ * Writes conversation prompt, summary, and Librarian trace files.
  */
 export async function recordLocalHistory(
   options: ProviderRunOptions & { provider: string },

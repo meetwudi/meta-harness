@@ -55,7 +55,23 @@ Use TOML comments for human context and durable review notes that should stay wi
 [[items]]
 id = "meta-harness-compliance"
 text = "Verify compliance from library://meta-harness."
+examples = [
+  "Example review cue.",
+]
 ```
+
+Each item includes:
+
+- `id`
+- `text`
+
+Optional item fields:
+
+- `examples`
+
+`examples` is a list of concise examples that clarify how to apply the item.
+Examples may include before/after wording when that helps reviewers recognize
+the pattern. Keep examples source-grounded and scoped to the item.
 
 For repository changes, applicable compliance should verify that:
 

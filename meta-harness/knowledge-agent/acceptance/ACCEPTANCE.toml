@@ -3,7 +3,7 @@
 
 name = "knowledge-agent-acceptance"
 version = "v0.0.0"
-source = "Migrated on 2026-06-28 from Spec-owned Knowledge Agent acceptance-test files after human direction to make Acceptance a separate primitive. Updated by human review on 2026-06-28 to remove low-value scenarios and make Goal, Memory, and dynamic ToolSpec acceptance messages concrete."
+source = "Human direction on 2026-06-28: Knowledge Agent end-to-end scenarios live in the Acceptance primitive, with concrete Goal, Memory, and dynamic ToolSpec acceptance messages."
 scope = [
   "meta-harness/knowledge-agent/**",
 ]

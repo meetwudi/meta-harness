@@ -1,20 +1,20 @@
 id = "proj-quartz.reasoning-event-rendering"
 title = "Reasoning event rendering"
-source = "Human request on 2026-06-27: emit reasoning events and render the thinking/reasoning process. Human clarification on 2026-06-27: the thinking process should stream only from the model; after finishing it collapses but remains openable with the full history; progress should update the same message instead of appending. Human bug report on 2026-06-27: the run appeared stuck and nothing actually streamed. Human clarification on 2026-06-27: match the ChatGPT/Codex-style behavior where streaming replaces the visible status, low-level text such as `Model response started` is not shown, and clicking open after the run shows the detailed history. Human bug report on 2026-06-27: visible progress still showed low-level lifecycle/tool plumbing such as `Tool output received: librarian_list_files`, and streamed output did not clearly identify which source actor produced main-agent versus Memory Curator content. Human clarification on 2026-06-28: the visible run activity row such as `Preparing run with ...` should disappear entirely; the chat should only show model-origin streaming content. Human bug report on 2026-06-28: intermediate thinking/status text such as `I'm checking...` must not become assistant response text. Human clarification on 2026-06-28: model-origin reasoning should be stored persistently with conversations so opening past chats preserves the reasoning history and source labels."
-text = "PROJ-Quartz renders only model-origin reasoning and answer content in the visible chat stream: the chat surface renders model reasoning in AG-UI reasoning messages and streams the main assistant answer as text deltas arrive, without rendering host progress/activity rows."
+source = "Human request and clarifications on 2026-06-27 and 2026-06-28: Quartz streams model-origin reasoning and answer content live, keeps host lifecycle text out of the visible chat stream, distinguishes main Knowledge Agent and Memory Curator reasoning sources, and persists model-origin reasoning history with conversations."
+text = "Quartz renders model-origin reasoning and answer content in the visible chat stream: the chat surface renders model reasoning in AG-UI reasoning messages and streams the main assistant answer as text deltas arrive, while host progress remains outside visible chat transcript content."
 
 criteria = [
   "The Quartz chat route emits `REASONING_START`, `REASONING_MESSAGE_START`, `REASONING_MESSAGE_CONTENT`, `REASONING_MESSAGE_END`, and `REASONING_END` events only when the Knowledge Agent stream provides model-origin reasoning content.",
-  "Reasoning content is updated from live model-origin Knowledge Agent stream events rather than fixed host start, progress, or completion messages.",
+  "Reasoning content is updated from live model-origin Knowledge Agent stream events.",
   "The visible reasoning row stays compact during streaming and after completion; model-origin detail history is shown only when the user opens the row.",
   "Operational host progress is not emitted as visible AG-UI activity messages; visible streaming is limited to model-origin reasoning and assistant text.",
   "The default pending cursor/loading dot is not rendered while Quartz is waiting for model-origin reasoning or answer content.",
   "Low-level model, tool, and host lifecycle markers such as `Preparing run with ...`, `Model response started`, `Model response completed`, `Tool called`, and `Tool output received` are not rendered as visible progress.",
   "The reasoning detail history makes source actor transitions clear, including at least the main Knowledge Agent and Memory Curator sources, without appending those source labels as visible progress messages.",
-  "The main Knowledge Agent assistant answer streams visibly from live text deltas rather than waiting for the Knowledge Agent subprocess and Memory Curator sequence to finish.",
+  "The main Knowledge Agent assistant answer streams visibly from live text deltas during the Knowledge Agent and Memory Curator sequence.",
   "Intermediate main-agent narration/status text emitted before the final answer is not rendered as assistant response text.",
   "Equivalent provider text-delta event shapes do not duplicate assistant text in the visible answer.",
   "When reasoning content is emitted, the reasoning message ends before the assistant text message ends.",
   "Persisted conversation history includes model-origin reasoning messages with clear source actor markers, including the main Knowledge Agent and Memory Curator when each streams reasoning.",
-  "Reopening a saved conversation reconstructs the same collapsed reasoning details from governed conversation storage instead of relying on in-memory browser state.",
+  "Reopening a saved conversation reconstructs the same collapsed reasoning details from governed conversation storage.",
 ]

@@ -9,3 +9,11 @@ text = "Verify repository changes preserve Knowledge is code: durable behavior, 
 [[items]]
 id = "no-silent-fallbacks"
 text = "Verify implementation does not silently fall back when governed knowledge, configuration, storage, or tool access is missing. It must fail clearly or consult the human instead of substituting an ungoverned path."
+
+[[items]]
+id = "positive-source-preserving-language"
+text = "Verify changes express corrections, requirements, and current behavior as positive source-preserving statements. Replace mistaken or obsolete wording instead of leaving unsourced exclusion lists, correction traces, or negative residue unless the human explicitly made the exclusion durable or the test must verify absence."
+examples = [
+  "Provider scope: write `Quartz supports Google sign-in for the current account flow` rather than preserving a temporary exclusion such as `Google-only` or `does not support email/password`.",
+  "Feature replacement: when a human replaces an AI-built feature direction, update the source of truth to describe the replacement as current behavior rather than leaving a durable warning about the removed approach.",
+]

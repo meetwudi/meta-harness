@@ -1,7 +1,7 @@
 id = "proj-quartz.reasoning-effort-selector"
 title = "Reasoning effort selector"
 source = "Human request on 2026-06-26: there should be medium reasoning and a reasoning selector on the chat."
-text = "PROJ-Quartz chat defaults Knowledge Agent runs to medium reasoning effort and gives users a chat-level selector for supported reasoning efforts."
+text = "Quartz chat defaults Knowledge Agent runs to medium reasoning effort and gives users a chat-level selector for supported reasoning efforts."
 
 criteria = [
   "The selector only exposes reasoning efforts accepted by the configured Quartz Knowledge Agent tool set.",

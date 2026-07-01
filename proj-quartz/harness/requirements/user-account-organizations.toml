@@ -1,0 +1,8 @@
+id = "proj-quartz.user-account-organizations"
+title = "User account organizations"
+source = "Human request on 2026-06-30: a new user signing in from Google can create an organization or join an organization with an invite link; each account can have multiple organizations; organization is the user-facing grouping term; assume everyone has an organization."
+text = "After Google sign-in, a new Quartz user can create an organization or join an organization with an invite link; each account can belong to multiple organizations, and organization is the user-facing grouping term."
+clarifications = [
+  "Joining an organization requires an invite link.",
+  "Every account should have an organization context.",
+]

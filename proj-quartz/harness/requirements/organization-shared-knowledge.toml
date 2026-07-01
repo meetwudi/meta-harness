@@ -1,0 +1,4 @@
+id = "proj-quartz.organization-shared-knowledge"
+title = "Organization shared knowledge"
+source = "Human request on 2026-06-30: people within an organization can share and their AI can discover the same set of Libraries."
+text = "People in the same Quartz organization can share organization Libraries, and their AI can discover the same organization Library set."

@@ -1,6 +1,6 @@
 id = "storage.created-library-governance-template"
 title = "Created Library governance template"
-source = "Human request on 2026-06-26: Quartz-created Libraries should allow the project Memory Curator actor to update Library-scoped memory without hard-coded actor rules."
+source = "Human request on 2026-06-26: project-created Libraries should allow project-declared actors such as a Memory Curator actor to update Library-scoped memory through configured governance."
 text = "Storage location knowledge can define actor URI arrays used for read and update governance on newly created Libraries."
 clarifications = [
   "`createdLibraryReadActors` defines the `read_actors` written to new Library manifests in that storage location.",

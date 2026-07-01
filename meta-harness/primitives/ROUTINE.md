@@ -37,7 +37,7 @@ proj-{project-name}/routines/
 Use `library://{library-name}` references, not paths:
 
 ```text
-library://proj-self
+library://example-project
 library://meta-harness
 library://routine-memory
 ```

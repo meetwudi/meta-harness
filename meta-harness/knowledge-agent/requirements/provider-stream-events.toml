@@ -1,19 +1,19 @@
 id = "knowledge-agent.provider-stream-events"
 title = "Provider emits public stream events"
-source = "Human clarification on 2026-06-27: Quartz reasoning output should actually stream from the Knowledge Agent run instead of showing only a fixed placeholder message. Human clarification on 2026-06-27: the thinking process should stream only from the model, while progress should update the same message outside the thinking history. Human clarification on 2026-06-27: sequenced agents, including the Memory Curator, should stream back to back so opening the thinking history shows all model-origin history. Human bug report on 2026-06-27: the run appeared stuck and nothing actually streamed. Human clarification on 2026-06-27: low-level model lifecycle text such as `Model response started` should not appear in the visible response/progress UI. Human bug report on 2026-06-27: visible progress should not surface raw tool lifecycle strings such as `Tool output received: librarian_list_files`, and streamed events should carry source actor context so hosts can distinguish the main agent from the Memory Curator in a generalizable way. Human bug report on 2026-06-28: intermediate model narration such as `I'm checking...` must not become assistant response text."
+source = "Human clarifications on 2026-06-27 and 2026-06-28: host applications receive streamed reasoning output from the Knowledge Agent run; thinking history contains model-origin reasoning while progress remains separate; sequenced agents including the Memory Curator stream back to back; visible progress uses human-level activity descriptions; streamed events carry source actor context so hosts can distinguish the main agent from the Memory Curator; and assistant response text comes from final answer content."
 text = "Knowledge Agent providers may emit public stream events while a run is active so host applications can render model-origin reasoning from sequenced agents separately from operational progress without exposing hidden chain-of-thought."
 
 criteria = [
-  "The provider interface supports an optional stream-event callback without making non-streaming callers use streaming mode.",
+  "The provider interface supports an optional stream-event callback while preserving non-streaming caller behavior.",
   "OpenAI provider streaming relays public run activity such as active agent changes, tool calls, tool outputs, and final-answer text deltas when the main SDK run resolves.",
-  "OpenAI provider streaming does not emit low-level model lifecycle markers such as response started or response completed as user-facing progress.",
+  "OpenAI provider streaming keeps low-level model lifecycle markers such as response started or response completed out of user-facing progress.",
   "OpenAI provider streaming maps raw tool/provider lifecycle events into source-aware, human-level activity descriptions or suppresses them when they are only plumbing.",
-  "OpenAI provider streaming does not branch on concrete project, domain, or ToolSpec tool names when deriving user-facing progress.",
-  "OpenAI provider streaming does not emit raw provider output text deltas as assistant answer text, because those deltas may include intermediate model narration before tool calls.",
+  "OpenAI provider streaming derives user-facing progress generically across projects, domains, and ToolSpec tool names.",
+  "OpenAI provider streaming emits assistant answer text from canonical resolved main agent output so intermediate model narration before tool calls stays outside assistant answer text.",
   "OpenAI provider streaming emits final-answer text deltas once from the canonical resolved main agent output, before sequenced Memory Curator streaming begins.",
   "OpenAI provider streaming requests safe reasoning summaries from reasoning models so reasoning summary text deltas can be provided by the SDK.",
   "OpenAI provider streaming relays model-origin reasoning summary text deltas as distinct reasoning delta events when the SDK provides them.",
   "Sequenced OpenAI agents, including the Memory Curator, relay their model-origin stream events back to back through the same stream-event callback, with enough source context for hosts to keep final-answer text separate from curator text.",
-  "Streamed progress events are sanitized user-facing trace summaries and do not expose hidden chain-of-thought.",
+  "Streamed progress events are sanitized user-facing trace summaries that preserve hidden chain-of-thought boundaries.",
   "The CLI can emit progress, reasoning delta, and text delta stream events as JSON lines for host applications that run the Knowledge Agent in a subprocess.",
 ]

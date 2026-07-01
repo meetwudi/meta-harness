@@ -1,4 +1,4 @@
 id = "proj-quartz.quartz-agent-actor"
 title = "Quartz agent actor"
 source = "Human request on 2026-06-26: Quartz should have a different actor, such as a Quartz agent actor, so system/project Libraries are not editable or deletable by default."
-text = "PROJ-Quartz runs the Knowledge Agent with a Quartz-specific actor identity for Library governance."
+text = "Quartz runs the Knowledge Agent with a Quartz-specific actor identity for Library governance."

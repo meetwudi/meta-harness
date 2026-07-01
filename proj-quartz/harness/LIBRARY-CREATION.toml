@@ -1,4 +1,4 @@
-# PROJ-Quartz Library creation policy.
+# Quartz Library creation policy.
 # This is the default creation target for Quartz Libraries.
 # Do not ask users to choose a storage location for ordinary Quartz Library creation.
 # Do not expose this internal storage-location policy in user-facing replies unless the user asks for internal details.

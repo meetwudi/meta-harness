@@ -1,0 +1,4 @@
+id = "proj-quartz.library-ownership-actors"
+title = "Library ownership actors"
+source = "Human request on 2026-06-30: users are actors; Libraries can be personal or organization-owned; readable and writable actors should include the owner; the owner can be an organization or personal user depending on who created it; by default, Library creation assigns to the organization."
+text = "Quartz Libraries have readable and writable actors based on ownership; a Library can be owned by a personal user actor or an organization actor, the owner can read and write it, and ordinary Library creation defaults to the active organization."
