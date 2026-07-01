@@ -2,9 +2,9 @@ id = "proj-quartz.deployment.resource-snapshot.latest"
 title = "Latest Quartz production resource snapshot"
 environment = "production"
 provider = "google-cloud"
-captured_at = "2026-07-01T21:15:32Z"
+captured_at = "2026-07-01T22:25:51Z"
 captured_by = "codex"
-source = "Captured after the 2026-07-01 Quartz production copy cleanup redeploy."
+source = "Captured after the 2026-07-01 Quartz production API deployment and finance Library ingestion."
 requirements = [
   "proj-quartz.deployment-primitive",
   "proj-quartz.production-cloud-run-deployment",
@@ -28,15 +28,15 @@ dependencies = []
 secrets_or_sensitive_values = "Do not record secret values."
 
 [[resources]]
-id = "container-image-quartz-deploy-20260701t210913z"
+id = "container-image-quartz-deploy-20260701t221218z"
 type = "artifact-registry-container-image"
-name = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260701t210913z"
+name = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260701t221218z"
 resource_change = "proj-quartz.deployment.resource-change.2026-07-01-artifact-registry-repository-quartz"
-provider_uri = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:b2550a7c2616c9c61c72df48c47bd3f11ead504be38660745d9b29d889d6584a"
+provider_uri = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:4bbdfbc92029cb2993d1d37a9cfa83a3860eeaa859f1c31e9f494a0361cf9c22"
 provider_console_url = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
 region = "us-east1"
 purpose = "Quartz production image built from the repository root with Meta Harness and Quartz Libraries included."
-configuration_summary = "Cloud Build `af4157ef-283e-4731-b8ca-0707739e961d` pushed digest `sha256:b2550a7c2616c9c61c72df48c47bd3f11ead504be38660745d9b29d889d6584a`."
+configuration_summary = "Cloud Build `57eaae1f-3a9b-4cca-abc0-3cb6b61e4902` pushed digest `sha256:4bbdfbc92029cb2993d1d37a9cfa83a3860eeaa859f1c31e9f494a0361cf9c22`."
 change_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
 scale_pointer = "not applicable: container image is deployed by Cloud Run service revisions"
 delete_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
@@ -252,12 +252,12 @@ provider_uri = "//run.googleapis.com/projects/future-of-work-497100/locations/us
 provider_console_url = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
 region = "us-east1"
 purpose = "Hosts Quartz production web application and Knowledge Agent chat API."
-configuration_summary = "Cloud Run service `quartz` is Ready, revision `quartz-00006-8rl` serves 100 percent of traffic, public URL is `https://quartz-839963098585.us-east1.run.app`, status URL is `https://quartz-ohr3gjzfza-ue.a.run.app`, image tag is `deploy-20260701t210913z`, service account is `839963098585-compute@developer.gserviceaccount.com`, memory is `512Mi`, Cloud SQL attachment is `future-of-work-497100:us-east1:quartz-postgres`, and runtime config includes `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL=https://quartz-839963098585.us-east1.run.app`, and `QUARTZ_GOOGLE_REDIRECT_URI=https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`."
+configuration_summary = "Cloud Run service `quartz` is Ready, revision `quartz-00007-jmt` serves 100 percent of traffic, public URL is `https://quartz-839963098585.us-east1.run.app`, status URL is `https://quartz-ohr3gjzfza-ue.a.run.app`, image tag is `deploy-20260701t221218z`, service account is `839963098585-compute@developer.gserviceaccount.com`, memory is `512Mi`, Cloud SQL attachment is `future-of-work-497100:us-east1:quartz-postgres`, and runtime config includes `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL=https://quartz-839963098585.us-east1.run.app`, and `QUARTZ_GOOGLE_REDIRECT_URI=https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`."
 change_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
 scale_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz/revisions?project=future-of-work-497100"
 delete_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
 dependencies = [
-  "container-image-quartz-deploy-20260701t210913z",
+  "container-image-quartz-deploy-20260701t221218z",
   "cloud-sql-instance-quartz-postgres",
   "secret-quartz-openai-api-key",
   "secret-quartz-postgres-url",

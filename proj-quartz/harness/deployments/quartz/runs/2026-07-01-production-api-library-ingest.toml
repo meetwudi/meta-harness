@@ -1,0 +1,177 @@
+id = "proj-quartz.deployment.run.2026-07-01-production-api-library-ingest"
+title = "Quartz production API and finance Library ingest deployment"
+environment = "production"
+started_at = "2026-07-01T22:12:18Z"
+finished_at = "2026-07-01T22:25:51Z"
+actor = "codex"
+source = "Run record for the 2026-07-01 human request to implement the Quartz API/storage Spec, deploy it to production, and ingest local Investment-Tools knowledge into production as a Library."
+requirements = [
+  "proj-quartz.deployment-primitive",
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
+  "proj-quartz.api.layer",
+  "proj-quartz.api.library-ingest",
+  "proj-quartz.api.production-library-listing",
+  "proj-quartz.api.project-storage",
+  "proj-quartz.storage.project-storage-spec",
+]
+deployment_revision = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260701t221218z@sha256:4bbdfbc92029cb2993d1d37a9cfa83a3860eeaa859f1c31e9f494a0361cf9c22"
+cloud_run_revision = "quartz-00007-jmt"
+service_url = "https://quartz-839963098585.us-east1.run.app"
+resource_snapshot = "proj-quartz.deployment.resource-snapshot.latest"
+resource_changes = [
+  "proj-quartz.deployment.resource-change.2026-07-01-artifact-registry-repository-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-run-service-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-instance-quartz-postgres",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-database-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-user-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-openai-api-key",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-postgres-url",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-id",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-secret",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-api-key",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-from",
+  "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-cloud-sql-client",
+  "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-secret-access",
+  "proj-quartz.deployment.resource-change.2026-07-01-google-oauth-client-quartz-redirect",
+]
+
+[[commands]]
+command = "git fetch origin main; git merge-base --is-ancestor origin/main HEAD"
+status = "pass"
+log = "Verified `origin/main` was commit `4a9c0738c8643b7eeed41aae9bf53fd04d17f87b` and was an ancestor of deployment branch commit `90f5cf1ea9732f6e0bdd6972502390236f07518e`."
+
+[[commands]]
+command = "python3 meta-harness/tools/check-deployment-definitions --repo-root ."
+status = "pass"
+log = "Deployment definition validation passed for 1 deployment."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run typecheck"
+status = "pass"
+log = "TypeScript check passed after rerunning outside the sandbox so the sibling worktree could write `tsconfig.tsbuildinfo`."
+
+[[commands]]
+command = "QUARTZ_REPO_ROOT=/Users/diwu/Documents/meta-harness-quartz-api-spec QUARTZ_PROJECT_ROOT=/Users/diwu/Documents/meta-harness/proj-quartz npm --prefix proj-quartz/app run build"
+status = "pass"
+log = "Next production build passed and included `/api/libraries` and `/api/settings/api-keys` routes."
+
+[[commands]]
+command = "gcloud builds submit . --project future-of-work-497100 --config proj-quartz/harness/deployments/quartz/build/cloudbuild.yaml --substitutions _IMAGE=us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260701t221218z"
+status = "pass"
+log = "Cloud Build `57eaae1f-3a9b-4cca-abc0-3cb6b61e4902` succeeded and pushed digest `sha256:4bbdfbc92029cb2993d1d37a9cfa83a3860eeaa859f1c31e9f494a0361cf9c22`."
+
+[[commands]]
+command = "gcloud run deploy quartz --image=us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260701t221218z ..."
+status = "pass"
+log = "Deployed Cloud Run revision `quartz-00007-jmt`; it is Ready and serves 100 percent of traffic at `https://quartz-839963098585.us-east1.run.app`."
+
+[[commands]]
+command = "curl -sS -I https://quartz-839963098585.us-east1.run.app"
+status = "pass"
+log = "Production URL returned HTTP 200 after deploying revision `quartz-00007-jmt`."
+
+[[commands]]
+command = "Production DB helper from local machine"
+status = "blocked"
+log = "The direct helper path was not used because the approved production connection string targets the Cloud Run `/cloudsql/...` socket, which does not exist locally, and the instance had no existing authorized-network entry. No Cloud SQL network resource change was made."
+
+[[commands]]
+command = "Chrome UI: create API key in Settings -> API keys"
+status = "pass"
+log = "Created a production API key through the deployed Settings UI for actor `Quartz Production Acceptance`; the one-time token was used only for this ingest and was cleared from the browser by reloading the page. The token value was not recorded in deployment knowledge."
+
+[[commands]]
+command = "node /tmp/quartz-http-ingest.mjs"
+status = "pass"
+log = "Called production `/api/libraries` with the UI-created API key. Before ingest it listed `meta-harness` and `proj-quartz`; POST wrote 164 files to `library://quartz-finance`; after ingest it listed `meta-harness`, `proj-quartz`, and `quartz-finance`. The temporary token file was removed."
+
+[[commands]]
+command = "Chrome browser acceptance: ask `list all libraries` in production chat"
+status = "pass"
+log = "Through the signed-in Quartz UI, sent `list all libraries` in fresh chat `09ef149f-9465-4776-b667-39d27e7a5e14`; the assistant answer listed `library://quartz-finance`, `library://meta-harness`, and `library://proj-quartz`."
+
+[[artifacts]]
+path = "https://console.cloud.google.com/cloud-build/builds/57eaae1f-3a9b-4cca-abc0-3cb6b61e4902?project=839963098585"
+description = "Successful Cloud Build log for the API and finance Library ingest deployment image."
+
+[[artifacts]]
+path = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:4bbdfbc92029cb2993d1d37a9cfa83a3860eeaa859f1c31e9f494a0361cf9c22"
+description = "Pushed Quartz production image digest."
+
+[[artifacts]]
+path = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+description = "Cloud Run service `quartz`, serving revision `quartz-00007-jmt`."
+
+[[artifacts]]
+path = "https://quartz-839963098585.us-east1.run.app"
+description = "Reachable Quartz production URL; HTTP 200 check passed."
+
+[[artifacts]]
+path = "https://quartz-839963098585.us-east1.run.app/c/09ef149f-9465-4776-b667-39d27e7a5e14"
+description = "Browser acceptance chat that answered `list all libraries` with `library://quartz-finance`, `library://meta-harness`, and `library://proj-quartz`."
+
+[[artifacts]]
+path = "/tmp/quartz-finance-ingest.json"
+description = "Temporary local ingest payload generated from `/Users/diwu/code/Investment-Tools`; 164 resources and 5,673,014 bytes. Payload is not a deployment secret."
+
+[[checklist]]
+item = "environment-selected"
+status = "pass"
+evidence = "Production environment `proj-quartz.deployment.environment.production` selected."
+
+[[checklist]]
+item = "specs-read"
+status = "pass"
+evidence = "Read Quartz Spec, API/storage Specs, Deployment primitive, runbook, checklist, production environment, and deployment resource-change records during this deployment work."
+
+[[checklist]]
+item = "configuration-present"
+status = "pass"
+evidence = "Cloud Run revision `quartz-00007-jmt` has required repo/project env values, approved Secret Manager bindings, and approved Cloud SQL attachment."
+
+[[checklist]]
+item = "build-and-tests"
+status = "pass"
+evidence = "Deployment definition validation, TypeScript check, local Next production build, Cloud Build production build, API integration test, TOML parse, and whitespace checks passed during this branch's implementation and deployment verification."
+
+[[checklist]]
+item = "resource-snapshot"
+status = "pass"
+evidence = "Current production snapshot updated in `resource-snapshots/latest.toml`."
+
+[[checklist]]
+item = "resource-changes"
+status = "pass"
+evidence = "This redeploy used existing approved Cloud Run, Artifact Registry, Cloud SQL, Secret Manager, runtime IAM, and OAuth resources. No Cloud SQL authorized-network change was made."
+
+[[checklist]]
+item = "deployment-executed"
+status = "pass"
+evidence = "Cloud Run service `quartz` is deployed and serving revision `quartz-00007-jmt` at `https://quartz-839963098585.us-east1.run.app`."
+
+[[checklist]]
+item = "post-deploy-verification"
+status = "pass"
+evidence = "HTTP 200 check passed; production API listed Libraries before and after ingest; production chat listed all expected Libraries after ingest."
+
+[[checklist]]
+item = "production-library-discovery"
+status = "pass"
+evidence = "Signed-in production chat listed `library://quartz-finance`, `library://meta-harness`, and `library://proj-quartz`."
+
+[[checklist]]
+item = "history-and-artifacts"
+status = "pass"
+evidence = "Run record includes command results, build URL, image digest, Cloud Run URL/revision, current snapshot, API ingest result, and browser acceptance URL."
+
+[[checklist]]
+item = "attestation"
+status = "blocked"
+evidence = "Deployment execution and post-deploy verification passed; final attestation is blocked until the independent compliance subagent review required by repository compliance is approved and completed."
+
+[attestation]
+status = "blocked"
+text = "Quartz production API deployment and finance Library ingest are live and verified. Final deployment attestation is blocked pending human approval to run the independent compliance subagent review required by repository compliance."
+attested_by = "codex"
+attested_at = "2026-07-01T22:25:51Z"
