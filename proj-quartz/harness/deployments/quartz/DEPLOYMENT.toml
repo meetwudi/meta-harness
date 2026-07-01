@@ -7,7 +7,8 @@ source = "Human request on 2026-07-01 for deployment as a Quartz primitive cover
 service = "Quartz"
 requirements = [
   "proj-quartz.deployment-primitive",
-  "proj-quartz.cloud-resource-human-approval",
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
 ]
 referenced_specs = [
   "library://proj-quartz/harness/SPEC.toml",
@@ -29,9 +30,9 @@ location = "checklists"
 name = "resource-snapshots"
 location = "resource-snapshots"
 
-[[cloud_resource_approval_collections]]
-name = "cloud-resource-approvals"
-location = "cloud-resource-approvals"
+[[resource_change_collections]]
+name = "resource-changes"
+location = "resource-changes"
 
 [[run_record_collections]]
 name = "runs"
@@ -42,7 +43,7 @@ executor = "ai-or-human"
 completion_requires_checklist_attestation = true
 completion_requires_run_record = true
 completion_requires_resource_snapshot_for_production = true
-completion_requires_cloud_resource_approvals_for_production = true
+completion_requires_resource_changes_for_production = true
 unknown_provider_detail_policy = "consult-human"
 run_record_storage_policy = "human-decision-required"
-cloud_resource_change_policy = "one-human-approval-record-per-resource-change"
+resource_change_policy = "one-human-approval-per-resource-change"

@@ -1,0 +1,36 @@
+id = "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-instance-quartz-postgres"
+title = "Create Quartz Cloud SQL Postgres instance"
+environment = "production"
+provider = "google-cloud"
+resource_id = "quartz-postgres"
+resource_type = "cloud-sql-postgres-instance"
+resource_name = "quartz-postgres"
+action = "create"
+approval_kind = "human"
+approved_at = "2026-07-01T17:18:38Z"
+approved_by = "human user in Codex thread"
+approval_source = "Codex thread message `approved` after the AI listed Cloud SQL Postgres as required when no existing reachable Postgres was found."
+source = "Human request on 2026-07-01 to deploy Quartz production with a working Postgres-backed Library runtime."
+requirements = [
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
+]
+scope = "Create Cloud SQL Postgres instance `quartz-postgres` in project `future-of-work-497100`, region `us-east1`, for Quartz production runtime storage."
+supersedes = []
+
+[provider_pointers]
+project = "future-of-work-497100"
+region_or_location = "us-east1"
+resource_uri = "//sqladmin.googleapis.com/projects/future-of-work-497100/instances/quartz-postgres"
+resource_name = "quartz-postgres"
+console_url = "https://console.cloud.google.com/sql/instances/quartz-postgres/overview?project=future-of-work-497100"
+change_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/edit?project=future-of-work-497100"
+scale_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/edit?project=future-of-work-497100"
+delete_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/overview?project=future-of-work-497100"
+
+[[history]]
+approved_at = "2026-07-01T17:18:38Z"
+approved_by = "human user in Codex thread"
+action = "create"
+summary = "Human approved creating the Quartz production Cloud SQL Postgres instance."
+

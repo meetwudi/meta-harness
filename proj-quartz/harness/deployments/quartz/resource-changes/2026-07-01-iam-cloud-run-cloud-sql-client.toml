@@ -1,0 +1,36 @@
+id = "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-cloud-sql-client"
+title = "Grant Quartz Cloud Run runtime Cloud SQL client access"
+environment = "production"
+provider = "google-cloud"
+resource_id = "future-of-work-497100/roles/cloudsql.client/839963098585-compute@developer.gserviceaccount.com"
+resource_type = "project-iam-binding"
+resource_name = "cloudsql.client for 839963098585-compute@developer.gserviceaccount.com"
+action = "grant"
+approval_kind = "human"
+approved_at = "2026-07-01T17:56:02Z"
+approved_by = "human user in Codex thread"
+approval_source = "Codex thread message approving Cloud Run runtime IAM bindings for Secret Manager plus Cloud SQL access."
+source = "Human approval on 2026-07-01 to add Cloud Run runtime IAM bindings needed by Quartz production."
+requirements = [
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
+]
+scope = "Grant the default runtime service account `839963098585-compute@developer.gserviceaccount.com` Cloud SQL Client on project `future-of-work-497100` so Cloud Run can connect to the approved Quartz Cloud SQL instance."
+supersedes = []
+
+[provider_pointers]
+project = "future-of-work-497100"
+region_or_location = "global"
+resource_uri = "//cloudresourcemanager.googleapis.com/projects/future-of-work-497100"
+resource_name = "roles/cloudsql.client -> serviceAccount:839963098585-compute@developer.gserviceaccount.com"
+console_url = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+change_pointer = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+scale_pointer = "not applicable: IAM binding is not scaled"
+delete_pointer = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+
+[[history]]
+approved_at = "2026-07-01T17:56:02Z"
+approved_by = "human user in Codex thread"
+action = "grant"
+summary = "Human approved granting the Cloud Run runtime service account Cloud SQL Client access."
+

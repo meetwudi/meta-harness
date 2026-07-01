@@ -1,0 +1,16 @@
+.git
+.gitignore
+.DS_Store
+
+**/node_modules
+**/.next
+meta-harness/knowledge-agent/impl/dist
+meta-harness/librarian/impl/dist
+meta-harness/storage/impl/dist
+**/*.tsbuildinfo
+
+proj-quartz/.env
+proj-quartz/app/.env*.local
+
+meta-harness/knowledge-agent/sandbox-workspaces
+meta-harness/knowledge-agent/sandbox-workspaces/**

@@ -2,14 +2,28 @@ id = "proj-quartz.deployment.environment.production"
 title = "Production Quartz deployment environment"
 kind = "production"
 provider = "google-cloud"
-status = "draft"
-source = "Human request on 2026-07-01 that Quartz uses Google Cloud for deployment and separates production from local deployment."
+status = "approved-for-execution"
+source = "Human request on 2026-07-01 that Quartz uses Google Cloud for deployment and separates production from local deployment; human approval on 2026-07-01T17:18:38Z to deploy Quartz production to Google Cloud resources; human clarification that the target project is `future-of-work-497100`."
 requirements = [
   "proj-quartz.deployment-primitive",
-  "proj-quartz.cloud-resource-human-approval",
+  "proj-quartz.deployment-resource-changes",
   "proj-quartz.project-owned-config",
   "proj-quartz.postgres-backed-libraries",
+  "proj-quartz.production-cloud-run-deployment",
 ]
+project_id = "future-of-work-497100"
+project_number = "839963098585"
+region = "us-east1"
+application_hosting = "google-cloud-run"
+service_name = "quartz"
+production_origin = "https://quartz-839963098585.us-east1.run.app"
+google_oauth_callback = "https://quartz-839963098585.us-east1.run.app/api/auth/google/callback"
+artifact_registry_repository = "quartz"
+container_image = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz"
+database_product = "cloud-sql-postgres"
+cloud_sql_instance = "quartz-postgres"
+cloud_sql_database = "quartz"
+cloud_sql_user = "quartz"
 config_files = [
   "proj-quartz/.meta-harness.json",
 ]
@@ -23,20 +37,31 @@ required_resource_classes = [
 ]
 environment_values = [
   "`QUARTZ_PROJECT_CONFIG` points at the Quartz project marker.",
+  "`QUARTZ_REPO_ROOT` points at the repository root inside the production container.",
+  "`QUARTZ_PROJECT_ROOT` points at the Quartz project root inside the production container.",
   "`QUARTZ_POSTGRES_URL` is supplied by the production database deployment.",
   "`QUARTZ_PUBLIC_BASE_URL` identifies the production Quartz origin.",
   "`QUARTZ_GOOGLE_CLIENT_ID` and `QUARTZ_GOOGLE_CLIENT_SECRET` are supplied by production secret management.",
   "`QUARTZ_RESEND_API_KEY` and `QUARTZ_RESEND_FROM` or an approved invite email webhook are supplied by production secret management.",
   "`OPENAI_API_KEY` is available to the production Knowledge Agent runtime.",
 ]
+secret_manager_secrets = [
+  "quartz-openai-api-key",
+  "quartz-postgres-url",
+  "quartz-google-client-id",
+  "quartz-google-client-secret",
+  "quartz-resend-api-key",
+  "quartz-resend-from",
+]
+expected_system_libraries = [
+  "library://meta-harness",
+  "library://proj-quartz",
+]
 open_decisions = [
-  "The exact Google Cloud application hosting surface is not recorded yet.",
-  "The production Quartz base URL is not recorded yet.",
-  "The production database product, instance, region, and backup policy are not recorded yet.",
-  "The source and storage policy for raw deployment logs and artifacts is not decided yet.",
+  "Raw deployment logs are recorded in the run record and local command output unless a human approves an external artifact store.",
 ]
 blockers = [
   "Do not call a production deployment finished until the concrete Google Cloud resource snapshot has been captured.",
-  "Do not create, change, scale, delete, or continue using a production cloud resource until the one-resource human approval record for that action is captured.",
-  "Do not execute production deployment commands until the exact Google Cloud target and credential path are human-approved.",
+  "Do not create, change, scale, delete, or continue using a production cloud resource until the one-resource human approval for that action is captured in a resource change record.",
+  "Do not call Google sign-in acceptance passed until the final Cloud Run callback URL is authorized in the configured Google OAuth client.",
 ]

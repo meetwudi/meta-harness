@@ -1,0 +1,13 @@
+# Generated file. Do not edit directly; update the Quartz Deployment first.
+# Harness-Requirement: proj-quartz.production-cloud-run-deployment
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - proj-quartz/harness/deployments/quartz/build/Dockerfile
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}

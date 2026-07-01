@@ -1,0 +1,9 @@
+id = "knowledge-agent.prompt-primitive-list"
+title = "Shared prompt primitive list"
+source = "Human request on 2026-07-01: Deployment should exist as a Meta Harness primitive, not only as a Quartz-local file."
+text = "The shared Knowledge Agent prompt identifies Deployment as a generic Meta Harness primitive when describing primitive use."
+
+criteria = [
+  "The shared prompt may mention Deployment in the generic primitive list.",
+  "The shared prompt does not include project-specific Deployment targets, providers, resources, or runbook details.",
+]

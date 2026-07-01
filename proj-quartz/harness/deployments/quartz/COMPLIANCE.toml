@@ -1,0 +1,11 @@
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+[[items]]
+id = "quartz-deployment-resource-change-human-approval"
+text = "Verify Quartz Deployment changes do not create, change, scale, migrate, continue using, or delete cloud-managed resources unless a human approval is recorded for that resource change with approval time and provider pointers sufficient to later find, change, scale, or delete the resource."
+examples = [
+  "A production Google Cloud application target, database, secret store, OAuth client, email service configuration, VM, Kubernetes workload, Cloud Run service, bucket, or network rule must have a resource change record before deployment action.",
+  "A resource snapshot is incomplete for production if its cloud-managed resources do not point to the approved resource changes that justify using them.",
+]

@@ -19,6 +19,8 @@ Some knowledge is a primitive:
   trigger scope, procedure, and expected behavior.
 - ToolSpec: a modular definition of one agent-usable tool, including actor
   invocation governance, schemas, implementation reference, and test cases.
+- Deployment: an environment-scoped deployment map with runbooks, checklists,
+  run records, resource snapshots, and approved resource changes.
 - Tags: independent retrieval metadata for scoped knowledge.
 
 The primitives compose:
@@ -42,6 +44,8 @@ The primitives compose:
   implementation changes.
 - ToolSpecs define discoverable tools whose generated code is derived from
   knowledge and whose invocation is governed by actor URI patterns.
+- Deployments define how a service is deployed and how environment resources,
+  run evidence, and resource changes are governed.
 - Tags help agents query by tags without requiring every primitive schema to
   include tag fields.
 - Libraries organize all primitives.
@@ -64,4 +68,4 @@ Requirement files are structured harness files, but they are not primitives.
 
 When starting work, first discover the relevant Libraries, then identify
 applicable Routines, Goals, Memory, Compliance, Specs, Acceptance suites,
-ToolSpecs, and Tags.
+ToolSpecs, Deployments, and Tags.

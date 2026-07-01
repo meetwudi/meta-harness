@@ -10,7 +10,7 @@ requirements = [
 ]
 deployment_revision = ""
 resource_snapshot = ""
-cloud_resource_approvals = []
+resource_changes = []
 
 [[commands]]
 command = ""

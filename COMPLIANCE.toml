@@ -25,3 +25,11 @@ examples = [
   "DDL review: reject `FOREIGN KEY (...) REFERENCES ...` and `user_id uuid REFERENCES users(id)` in generated or handwritten database migrations.",
   "Relationship modeling: store related record identifiers as ordinary columns, then enforce lifecycle and cleanup behavior through explicit code, acceptance checks, repair routines, or migration verification.",
 ]
+
+[[items]]
+id = "deployment-resource-change-human-approval"
+text = "Verify changes that define, execute, or record cloud-managed deployment resource creation, configuration changes, scaling, migration, continued use, or deletion have explicit human approval before action or completion is claimed. Approval evidence must include the approval time and provider pointers sufficient to find and later change, scale, or delete the resource."
+examples = [
+  "Deployment review: a Google Cloud VM, Cloud Run service, Kubernetes workload, database instance, bucket, secret store, provider-managed email service, OAuth client, or network change must cite human approval before deploy commands are run or completion is attested.",
+  "Pointer review: provider project or account, region or location when applicable, resource name or URI, and console or operation pointers should be enough for a later operator to find and manage the resource.",
+]

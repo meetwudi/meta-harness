@@ -1,0 +1,291 @@
+id = "proj-quartz.deployment.resource-snapshot.latest"
+title = "Latest Quartz production resource snapshot"
+environment = "production"
+provider = "google-cloud"
+captured_at = "2026-07-01T19:52:14Z"
+captured_by = "codex"
+source = "Captured after the 2026-07-01 Quartz production deployment completed browser acceptance."
+requirements = [
+  "proj-quartz.deployment-primitive",
+  "proj-quartz.production-cloud-run-deployment",
+]
+capture_method = "gcloud resource discovery, Cloud Run deployment output, HTTP check, and browser acceptance output; secret values were not read or recorded."
+
+[[resources]]
+id = "artifact-registry-repository-quartz"
+type = "artifact-registry-repository"
+name = "quartz"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-artifact-registry-repository-quartz"
+provider_uri = "//artifactregistry.googleapis.com/projects/future-of-work-497100/locations/us-east1/repositories/quartz"
+provider_console_url = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz?project=future-of-work-497100"
+region = "us-east1"
+purpose = "Stores Quartz production container images."
+configuration_summary = "Docker repository created in project `future-of-work-497100`."
+change_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz?project=future-of-work-497100"
+scale_pointer = "not applicable: Artifact Registry repository is not scaled"
+delete_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz?project=future-of-work-497100"
+dependencies = []
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "container-image-quartz-deploy-20260701t194433z"
+type = "artifact-registry-container-image"
+name = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260701t194433z"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-artifact-registry-repository-quartz"
+provider_uri = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:1aea7d102652d0b14df18efa27bea1e208bf932c07bc0210c19b9cd2525202c0"
+provider_console_url = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
+region = "us-east1"
+purpose = "Quartz production image built from the repository root with Meta Harness and Quartz Libraries included."
+configuration_summary = "Cloud Build `aa29739e-c4b6-48af-b1fd-5a211d2cbb8d` pushed digest `sha256:1aea7d102652d0b14df18efa27bea1e208bf932c07bc0210c19b9cd2525202c0`."
+change_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
+scale_pointer = "not applicable: container image is deployed by Cloud Run service revisions"
+delete_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
+dependencies = [
+  "artifact-registry-repository-quartz",
+]
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "cloud-sql-instance-quartz-postgres"
+type = "cloud-sql-postgres-instance"
+name = "quartz-postgres"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-instance-quartz-postgres"
+provider_uri = "//sqladmin.googleapis.com/projects/future-of-work-497100/instances/quartz-postgres"
+provider_console_url = "https://console.cloud.google.com/sql/instances/quartz-postgres/overview?project=future-of-work-497100"
+region = "us-east1"
+purpose = "Hosts Quartz production Postgres storage."
+configuration_summary = "Cloud SQL instance is RUNNABLE with databaseVersion `POSTGRES_16`, installed version `POSTGRES_16_14`, tier `db-f1-micro`, edition `ENTERPRISE`, zone `us-east1-c`, and connection name `future-of-work-497100:us-east1:quartz-postgres`."
+change_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/overview?project=future-of-work-497100"
+scale_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/edit?project=future-of-work-497100"
+delete_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/overview?project=future-of-work-497100"
+dependencies = []
+secrets_or_sensitive_values = "Do not record database passwords or connection secret values."
+
+[[resources]]
+id = "cloud-sql-database-quartz"
+type = "cloud-sql-database"
+name = "quartz"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-database-quartz"
+provider_uri = "//sqladmin.googleapis.com/projects/future-of-work-497100/instances/quartz-postgres/databases/quartz"
+provider_console_url = "https://console.cloud.google.com/sql/instances/quartz-postgres/databases?project=future-of-work-497100"
+region = "us-east1"
+purpose = "Quartz production application and Library storage database."
+configuration_summary = "Database `quartz` exists on instance `quartz-postgres` with UTF8 charset."
+change_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/databases?project=future-of-work-497100"
+scale_pointer = "not applicable: database scaling is managed by the Cloud SQL instance"
+delete_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/databases?project=future-of-work-497100"
+dependencies = [
+  "cloud-sql-instance-quartz-postgres",
+]
+secrets_or_sensitive_values = "Do not record database passwords or connection secret values."
+
+[[resources]]
+id = "cloud-sql-user-quartz"
+type = "cloud-sql-user"
+name = "quartz"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-user-quartz"
+provider_uri = "//sqladmin.googleapis.com/projects/future-of-work-497100/instances/quartz-postgres/users/quartz"
+provider_console_url = "https://console.cloud.google.com/sql/instances/quartz-postgres/users?project=future-of-work-497100"
+region = "us-east1"
+purpose = "Quartz production database login for `QUARTZ_POSTGRES_URL`."
+configuration_summary = "User `quartz` exists on instance `quartz-postgres`; password is stored only in Secret Manager secret `quartz-postgres-url` latest version."
+change_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/users?project=future-of-work-497100"
+scale_pointer = "not applicable: database user is not scaled"
+delete_pointer = "https://console.cloud.google.com/sql/instances/quartz-postgres/users?project=future-of-work-497100"
+dependencies = [
+  "cloud-sql-instance-quartz-postgres",
+  "secret-quartz-postgres-url",
+]
+secrets_or_sensitive_values = "Do not record database passwords or connection secret values."
+
+[[resources]]
+id = "secret-quartz-openai-api-key"
+type = "secret-manager-secret"
+name = "quartz-openai-api-key"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-openai-api-key"
+provider_uri = "//secretmanager.googleapis.com/projects/future-of-work-497100/secrets/quartz-openai-api-key"
+provider_console_url = "https://console.cloud.google.com/security/secret-manager/secret/quartz-openai-api-key/versions?project=future-of-work-497100"
+region = "global"
+purpose = "Provides `OPENAI_API_KEY` to Quartz production."
+configuration_summary = "Secret resource exists with version 1 created during deployment attempt."
+change_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-openai-api-key/versions?project=future-of-work-497100"
+scale_pointer = "not applicable: Secret Manager secret is not scaled"
+delete_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-openai-api-key/versions?project=future-of-work-497100"
+dependencies = []
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "secret-quartz-postgres-url"
+type = "secret-manager-secret"
+name = "quartz-postgres-url"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-postgres-url"
+provider_uri = "//secretmanager.googleapis.com/projects/future-of-work-497100/secrets/quartz-postgres-url"
+provider_console_url = "https://console.cloud.google.com/security/secret-manager/secret/quartz-postgres-url/versions?project=future-of-work-497100"
+region = "global"
+purpose = "Provides `QUARTZ_POSTGRES_URL` to Quartz production."
+configuration_summary = "Secret resource exists. Version 1 was created by an interrupted failed user-creation attempt and is superseded. Version 2 is enabled and is the latest runtime value."
+change_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-postgres-url/versions?project=future-of-work-497100"
+scale_pointer = "not applicable: Secret Manager secret is not scaled"
+delete_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-postgres-url/versions?project=future-of-work-497100"
+dependencies = [
+  "cloud-sql-instance-quartz-postgres",
+  "cloud-sql-database-quartz",
+  "cloud-sql-user-quartz",
+]
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "secret-quartz-google-client-id"
+type = "secret-manager-secret"
+name = "quartz-google-client-id"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-id"
+provider_uri = "//secretmanager.googleapis.com/projects/future-of-work-497100/secrets/quartz-google-client-id"
+provider_console_url = "https://console.cloud.google.com/security/secret-manager/secret/quartz-google-client-id/versions?project=future-of-work-497100"
+region = "global"
+purpose = "Provides `QUARTZ_GOOGLE_CLIENT_ID` to Quartz production."
+configuration_summary = "Secret resource exists with version 1 created during deployment attempt."
+change_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-google-client-id/versions?project=future-of-work-497100"
+scale_pointer = "not applicable: Secret Manager secret is not scaled"
+delete_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-google-client-id/versions?project=future-of-work-497100"
+dependencies = [
+  "google-oauth-client-quartz",
+]
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "secret-quartz-google-client-secret"
+type = "secret-manager-secret"
+name = "quartz-google-client-secret"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-secret"
+provider_uri = "//secretmanager.googleapis.com/projects/future-of-work-497100/secrets/quartz-google-client-secret"
+provider_console_url = "https://console.cloud.google.com/security/secret-manager/secret/quartz-google-client-secret/versions?project=future-of-work-497100"
+region = "global"
+purpose = "Provides `QUARTZ_GOOGLE_CLIENT_SECRET` to Quartz production."
+configuration_summary = "Secret resource exists with version 1 created during deployment attempt."
+change_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-google-client-secret/versions?project=future-of-work-497100"
+scale_pointer = "not applicable: Secret Manager secret is not scaled"
+delete_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-google-client-secret/versions?project=future-of-work-497100"
+dependencies = [
+  "google-oauth-client-quartz",
+]
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "secret-quartz-resend-api-key"
+type = "secret-manager-secret"
+name = "quartz-resend-api-key"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-api-key"
+provider_uri = "//secretmanager.googleapis.com/projects/future-of-work-497100/secrets/quartz-resend-api-key"
+provider_console_url = "https://console.cloud.google.com/security/secret-manager/secret/quartz-resend-api-key/versions?project=future-of-work-497100"
+region = "global"
+purpose = "Provides `QUARTZ_RESEND_API_KEY` to Quartz production."
+configuration_summary = "Secret resource exists with version 1 created during deployment attempt."
+change_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-resend-api-key/versions?project=future-of-work-497100"
+scale_pointer = "not applicable: Secret Manager secret is not scaled"
+delete_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-resend-api-key/versions?project=future-of-work-497100"
+dependencies = []
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "secret-quartz-resend-from"
+type = "secret-manager-secret"
+name = "quartz-resend-from"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-from"
+provider_uri = "//secretmanager.googleapis.com/projects/future-of-work-497100/secrets/quartz-resend-from"
+provider_console_url = "https://console.cloud.google.com/security/secret-manager/secret/quartz-resend-from/versions?project=future-of-work-497100"
+region = "global"
+purpose = "Provides `QUARTZ_RESEND_FROM` to Quartz production."
+configuration_summary = "Secret resource exists with version 1 created during deployment attempt."
+change_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-resend-from/versions?project=future-of-work-497100"
+scale_pointer = "not applicable: Secret Manager secret is not scaled"
+delete_pointer = "https://console.cloud.google.com/security/secret-manager/secret/quartz-resend-from/versions?project=future-of-work-497100"
+dependencies = []
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "iam-cloud-run-cloud-sql-client"
+type = "project-iam-binding"
+name = "roles/cloudsql.client -> serviceAccount:839963098585-compute@developer.gserviceaccount.com"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-cloud-sql-client"
+provider_uri = "//cloudresourcemanager.googleapis.com/projects/future-of-work-497100"
+provider_console_url = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+region = "global"
+purpose = "Allows Cloud Run runtime service account to connect to the approved Cloud SQL instance."
+configuration_summary = "IAM policy includes `roles/cloudsql.client` for `serviceAccount:839963098585-compute@developer.gserviceaccount.com`."
+change_pointer = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+scale_pointer = "not applicable: IAM binding is not scaled"
+delete_pointer = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+dependencies = [
+  "cloud-sql-instance-quartz-postgres",
+]
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "iam-cloud-run-secret-access"
+type = "project-iam-binding"
+name = "roles/secretmanager.secretAccessor -> serviceAccount:839963098585-compute@developer.gserviceaccount.com"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-secret-access"
+provider_uri = "//cloudresourcemanager.googleapis.com/projects/future-of-work-497100"
+provider_console_url = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+region = "global"
+purpose = "Allows Cloud Run runtime service account to read approved Secret Manager secrets."
+configuration_summary = "IAM policy includes `roles/secretmanager.secretAccessor` for `serviceAccount:839963098585-compute@developer.gserviceaccount.com`."
+change_pointer = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+scale_pointer = "not applicable: IAM binding is not scaled"
+delete_pointer = "https://console.cloud.google.com/iam-admin/iam?project=future-of-work-497100"
+dependencies = [
+  "secret-quartz-openai-api-key",
+  "secret-quartz-postgres-url",
+  "secret-quartz-google-client-id",
+  "secret-quartz-google-client-secret",
+  "secret-quartz-resend-api-key",
+  "secret-quartz-resend-from",
+]
+secrets_or_sensitive_values = "Do not record secret values."
+
+[[resources]]
+id = "cloud-run-service-quartz"
+type = "cloud-run-service"
+name = "quartz"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-cloud-run-service-quartz"
+provider_uri = "//run.googleapis.com/projects/future-of-work-497100/locations/us-east1/services/quartz"
+provider_console_url = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+region = "us-east1"
+purpose = "Hosts Quartz production web application and Knowledge Agent chat API."
+configuration_summary = "Cloud Run service `quartz` is Ready, revision `quartz-00005-86z` serves 100 percent of traffic, public URL is `https://quartz-839963098585.us-east1.run.app`, status URL is `https://quartz-ohr3gjzfza-ue.a.run.app`, image tag is `deploy-20260701t194433z`, service account is `839963098585-compute@developer.gserviceaccount.com`, memory is `512Mi`, Cloud SQL attachment is `future-of-work-497100:us-east1:quartz-postgres`, and runtime config includes `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL=https://quartz-839963098585.us-east1.run.app`, and `QUARTZ_GOOGLE_REDIRECT_URI=https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`."
+change_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+scale_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz/revisions?project=future-of-work-497100"
+delete_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+dependencies = [
+  "container-image-quartz-deploy-20260701t194433z",
+  "cloud-sql-instance-quartz-postgres",
+  "secret-quartz-openai-api-key",
+  "secret-quartz-postgres-url",
+  "secret-quartz-google-client-id",
+  "secret-quartz-google-client-secret",
+  "secret-quartz-resend-api-key",
+  "secret-quartz-resend-from",
+  "iam-cloud-run-cloud-sql-client",
+  "iam-cloud-run-secret-access",
+]
+secrets_or_sensitive_values = "Secret values are bound by Secret Manager reference only."
+
+[[resources]]
+id = "google-oauth-client-quartz"
+type = "google-oauth-client"
+name = "839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+resource_change = "proj-quartz.deployment.resource-change.2026-07-01-google-oauth-client-quartz-redirect"
+provider_uri = "google-oauth-client://839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+provider_console_url = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+region = "global"
+purpose = "Authorizes Google sign-in for Quartz production."
+configuration_summary = "Google OAuth client authorizes `https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`; browser acceptance signed in with Google and returned to Quartz production."
+change_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+scale_pointer = "not applicable: OAuth client is not scaled"
+delete_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+dependencies = [
+  "secret-quartz-google-client-id",
+  "secret-quartz-google-client-secret",
+  "cloud-run-service-quartz",
+]
+secrets_or_sensitive_values = "Do not record OAuth client secret values."

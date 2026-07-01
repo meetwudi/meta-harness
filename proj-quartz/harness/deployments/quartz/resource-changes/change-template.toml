@@ -1,17 +1,18 @@
-id = "proj-quartz.deployment.cloud-resource-approval.template"
-title = "Quartz cloud resource approval template"
+id = "proj-quartz.deployment.resource-change.template"
+title = "Quartz resource change template"
 environment = ""
 provider = "google-cloud"
 resource_id = ""
 resource_type = ""
 resource_name = ""
-approved_action = ""
+action = ""
+approval_kind = "human"
 approved_at = ""
 approved_by = ""
 approval_source = ""
-source = "Template created on 2026-07-01 from the human request for one-by-one human approval of cloud resources."
+source = "Template created on 2026-07-01 from the human request for one-by-one human approval of cloud resource changes."
 requirements = [
-  "proj-quartz.cloud-resource-human-approval",
+  "proj-quartz.deployment-resource-changes",
 ]
 scope = ""
 supersedes = []
@@ -33,5 +34,5 @@ text = ""
 [[history]]
 approved_at = ""
 approved_by = ""
-approved_action = ""
+action = ""
 summary = ""

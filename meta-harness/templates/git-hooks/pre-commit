@@ -11,3 +11,7 @@ git diff --cached --name-only --diff-filter=ACMR > "$changed_files"
 python3 "$repo_root/meta-harness/tools/check-harness-file-metadata" \
   --repo-root "$repo_root" \
   --changed-files "$changed_files"
+
+python3 "$repo_root/meta-harness/tools/check-deployment-definitions" \
+  --repo-root "$repo_root" \
+  --changed-files "$changed_files"

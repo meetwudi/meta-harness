@@ -10,6 +10,39 @@ scope = [
 trigger = "Run the applicable Quartz acceptance scenarios when scoped Quartz files change or when a human asks to run Quartz acceptance."
 
 [[tests]]
+id = "proj-quartz.acceptance.production-cloud-run-library-list"
+title = "Production Cloud Run Google sign-in and Library listing"
+requirements = [
+  "proj-quartz.google-sign-in",
+  "proj-quartz.knowledge-agent-chat-service",
+  "proj-quartz.postgres-backed-libraries",
+  "proj-quartz.project-owned-config",
+  "proj-quartz.production-cloud-run-deployment",
+]
+circumstances = [
+  "Quartz production is deployed to the approved Cloud Run service.",
+  "The production Cloud Run service has `QUARTZ_REPO_ROOT`, `QUARTZ_PROJECT_ROOT`, and `QUARTZ_PROJECT_CONFIG` set so the Quartz project marker can discover checked-in filesystem Libraries.",
+  "The production Cloud Run service can connect to the approved Cloud SQL Postgres database through `QUARTZ_POSTGRES_URL`.",
+  "The production Google OAuth client authorizes the Cloud Run callback URL.",
+  "The browser can complete Google sign-in for the test user.",
+]
+execution = "ai-browser"
+procedure = [
+  "Open the production Cloud Run URL.",
+  "Sign in with Google.",
+  "Create or open a Quartz chat.",
+  "Send `list all libraries`.",
+  "Wait for the assistant response to finish.",
+  "Inspect the assistant response and record browser evidence.",
+]
+expected = [
+  "Google sign-in completes and returns to the production Quartz app.",
+  "Quartz creates or resumes the signed-in account and active organization context needed for chat.",
+  "The chat request returns a real assistant answer rather than a deployment, configuration, storage, or tool-access error.",
+  "The answer lists the expected system Libraries `library://meta-harness` and `library://proj-quartz`.",
+]
+
+[[tests]]
 id = "proj-quartz.acceptance.google-sign-in-sign-out"
 title = "Google sign-in and sign-out"
 requirements = [

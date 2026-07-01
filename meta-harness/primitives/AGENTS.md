@@ -20,8 +20,9 @@ For folder-scoped primitives, the structured file is the marker. For example,
 `LIBRARY.toml` marks a Library root, `ROUTINE.toml` marks a folder as a
 Routine, `GOAL.toml` marks a Goal, `MEMORY.toml` marks a Memory collection,
 `COMPLIANCE.toml` marks compliance rules for that folder and its descendants,
-`SPEC.toml` marks a Spec, `ACCEPTANCE.toml` marks an Acceptance suite, and
-`TAGS.toml` marks a tagged knowledge scope.
+`SPEC.toml` marks a Spec, `ACCEPTANCE.toml` marks an Acceptance suite,
+`DEPLOYMENT.toml` marks a Deployment, and `TAGS.toml` marks a tagged knowledge
+scope.
 
 ## Primitive docs
 
@@ -38,5 +39,7 @@ Compliance: [COMPLIANCE.md](COMPLIANCE.md)
 Spec: [SPEC.md](SPEC.md)
 
 Acceptance: [ACCEPTANCE.md](ACCEPTANCE.md)
+
+Deployment: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 Tags: [TAGS.md](TAGS.md)

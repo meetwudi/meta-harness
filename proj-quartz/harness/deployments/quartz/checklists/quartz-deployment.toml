@@ -3,7 +3,8 @@ title = "Quartz deployment checklist"
 source = "Human request on 2026-07-01 for deployment checklists and checklist attestation before a deployment is called finished."
 requirements = [
   "proj-quartz.deployment-primitive",
-  "proj-quartz.cloud-resource-human-approval",
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
 ]
 applies_to = [
   "proj-quartz.deployment.environment.local",
@@ -36,9 +37,9 @@ text = "The run captures the resource snapshot required for the selected environ
 evidence = "Run record links to the resource snapshot record, or marks the item not applicable for local-only replay."
 
 [[items]]
-id = "cloud-resource-approvals"
-text = "Every cloud resource created, changed, scaled, deleted, or used by the run has a one-resource human approval record with provider pointers."
-evidence = "Run record links to cloud resource approval records for each changed or used cloud resource."
+id = "resource-changes"
+text = "Every cloud resource created, changed, scaled, deleted, or used by the run has a resource change record with human approval and provider pointers."
+evidence = "Run record links to resource change records for each changed or used cloud resource."
 
 [[items]]
 id = "deployment-executed"
@@ -49,6 +50,11 @@ evidence = "Run record lists commands or provider actions executed and their out
 id = "post-deploy-verification"
 text = "The deployed Quartz service is verified at the selected environment origin."
 evidence = "Run record captures URL checks, API checks, browser checks, or other verification artifacts."
+
+[[items]]
+id = "production-library-discovery"
+text = "For production, a signed-in Quartz chat can list Libraries and includes the expected system Libraries."
+evidence = "Run record captures the Google sign-in and chat acceptance evidence for `library://meta-harness` and `library://proj-quartz`."
 
 [[items]]
 id = "history-and-artifacts"

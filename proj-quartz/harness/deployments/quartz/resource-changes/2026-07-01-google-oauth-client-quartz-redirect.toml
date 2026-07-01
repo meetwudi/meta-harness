@@ -1,0 +1,39 @@
+id = "proj-quartz.deployment.resource-change.2026-07-01-google-oauth-client-quartz-redirect"
+title = "Authorize Quartz production Google OAuth redirect URI"
+environment = "production"
+provider = "google-cloud"
+resource_id = "839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+resource_type = "google-oauth-client"
+resource_name = "Quartz Google OAuth client"
+action = "update-authorized-redirect-uri"
+approval_kind = "human"
+approved_at = "2026-07-01T19:21:02Z"
+approved_by = "human user in Codex thread"
+approval_source = "Codex thread message `Yeah, just edit yourself, right? Just edit yourself, using the browser tool.` after the AI reported Google OAuth `redirect_uri_mismatch` for the production Cloud Run callback URL."
+source = "Human request on 2026-07-01 to complete Quartz production Google sign-in acceptance."
+requirements = [
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
+]
+scope = "Update Google OAuth client `839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com` in project `future-of-work-497100` to authorize redirect URI `https://quartz-839963098585.us-east1.run.app/api/auth/google/callback` for Quartz production sign-in."
+supersedes = []
+
+[provider_pointers]
+project = "future-of-work-497100"
+region_or_location = "global"
+resource_uri = "google-oauth-client://839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+resource_name = "839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+console_url = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+change_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+scale_pointer = "not applicable: OAuth client is not scaled"
+delete_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+
+[[conditions]]
+id = "authorized-redirect-uri"
+text = "Add only the production Quartz callback URI `https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`; do not record or expose OAuth client secrets."
+
+[[history]]
+approved_at = "2026-07-01T19:21:02Z"
+approved_by = "human user in Codex thread"
+action = "update-authorized-redirect-uri"
+summary = "Human approved the AI agent editing the Google OAuth client in the browser to authorize the production Cloud Run callback URI."

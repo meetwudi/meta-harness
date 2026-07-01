@@ -1,0 +1,11 @@
+id = "proj-quartz.production-cloud-run-deployment"
+title = "Production Cloud Run deployment"
+source = "Human request on 2026-07-01 to deploy Quartz to production on Google Cloud, log in with Google, create a chat, ask it to list all Libraries, and verify system Libraries are listed correctly."
+text = "Quartz production deploys to Google Cloud Run with a container image that includes the Quartz app, the Meta Harness runtime implementation, and the checked-in filesystem Libraries needed for Library discovery."
+
+criteria = [
+  "The production container is built from the repository root so `library://meta-harness` and `library://proj-quartz` can be discovered through the Quartz project marker.",
+  "Production runtime configuration uses Secret Manager for sensitive values and Cloud SQL Postgres for `QUARTZ_POSTGRES_URL`.",
+  "The production service sets `QUARTZ_REPO_ROOT`, `QUARTZ_PROJECT_ROOT`, and `QUARTZ_PROJECT_CONFIG` so the Knowledge Agent resolves the Quartz project marker and checked-in Libraries.",
+  "The production verification signs in through Google, creates or opens a chat, asks Quartz to list all Libraries, and confirms the response includes the system Libraries `library://meta-harness` and `library://proj-quartz`.",
+]

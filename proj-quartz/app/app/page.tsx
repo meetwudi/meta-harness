@@ -1002,6 +1002,10 @@ function QuartzPersistentChatView({
     () => messageFingerprint(liveMessages),
     [liveMessages],
   );
+  const agentFingerprint = useMemo(
+    () => messageFingerprint(agent.messages as Message[]),
+    [agent.messages],
+  );
   const liveIncludesStored = useMemo(
     () => startsWithStoredMessages(liveMessages, storedMessages),
     [liveMessages, storedMessages],
@@ -1179,12 +1183,15 @@ function QuartzPersistentChatView({
       return;
     }
 
-    const agentFingerprint = messageFingerprint(agent.messages as Message[]);
     if (hydratedThreadRef.current !== activeThreadId) {
       hydratedThreadRef.current = activeThreadId;
       hydrationPendingRef.current = true;
       if (agentFingerprint !== storedFingerprint) {
         agent.setMessages(cloneMessages(storedMessages));
+        if (storedMessages.length === 0) {
+          hydrationPendingRef.current = false;
+          onHydratedThread(activeThreadId);
+        }
         return;
       }
     }
@@ -1217,6 +1224,7 @@ function QuartzPersistentChatView({
   }, [
     activeThreadId,
     agent,
+    agentFingerprint,
     liveFingerprint,
     liveIncludesStored,
     liveMessages,
@@ -2106,7 +2114,9 @@ export default function Page() {
   );
 
   useEffect(() => {
-    setHydratedThreadId("");
+    setHydratedThreadId((current) =>
+      current === activeThreadId ? current : "",
+    );
   }, [activeThreadId]);
 
   const handleNewThread = useCallback(() => {

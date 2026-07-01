@@ -12,8 +12,8 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 2. Read the selected environment record in `environments/`.
 3. Read `library://proj-quartz/harness/SPEC.toml` and the requirement IDs cited by the environment and checklist.
 4. Read `checklists/quartz-deployment.toml`.
-5. Read the cloud resource approval records for every cloud resource the run will create, change, scale, delete, or use.
-6. If a cloud resource approval record, approval time, or provider pointer is missing, consult the human before deploying.
+5. Read the resource change records for every cloud resource the run will create, change, scale, delete, or use.
+6. If a resource change record, approval time, or provider pointer is missing, consult the human before deploying.
 7. If the selected environment has blockers or unresolved provider details, consult the human before deploying.
 
 ## Local Deployment
@@ -31,14 +31,37 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 
 ## Production Deployment
 
-Production deployment is draft until the concrete Google Cloud application target, database target, secret source, base URL, and resource snapshot source are recorded.
-
 1. Use `environments/production.toml` as the environment record.
-2. Verify one-by-one human approval records for every Google Cloud resource the run will create, change, scale, delete, or use.
+2. Verify one-by-one human approval in resource change records for every Google Cloud resource the run will create, change, scale, delete, or use.
 3. Capture or refresh the Google Cloud resource snapshot before deployment.
 4. Verify the production checklist items that apply before build or release.
-5. Execute only the human-approved Google Cloud deployment commands recorded in this Deployment primitive.
-6. Capture provider command output, build output, URLs, revisions, approval records, and verification evidence in a run record.
+5. Use Google Cloud project `future-of-work-497100` and region `us-east1`.
+6. Use Artifact Registry repository `quartz` and image prefix `us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz`.
+7. Use Cloud SQL Postgres instance `quartz-postgres`, database `quartz`, and database user `quartz`.
+8. Store production runtime secrets in Secret Manager secrets named by `environments/production.toml`; do not record secret values in deployment knowledge.
+9. Build the production image from the repository root with:
+
+   ```sh
+   gcloud builds submit . \
+     --project future-of-work-497100 \
+     --config proj-quartz/harness/deployments/quartz/build/cloudbuild.yaml \
+     --substitutions _IMAGE=us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:{revision}
+   ```
+
+10. Deploy the approved image to Cloud Run service `quartz` in `us-east1`, setting `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL` to the final Cloud Run origin, and binding the approved Secret Manager secrets to their matching runtime environment variables.
+11. Attach the approved Cloud SQL instance to the Cloud Run service.
+12. Verify the Google OAuth client authorizes `{QUARTZ_PUBLIC_BASE_URL}/api/auth/google/callback` before running Google sign-in acceptance.
+13. Capture provider command output, build output, URLs, revisions, resource change records, and verification evidence in a run record.
+
+## Production Acceptance
+
+1. Open the Cloud Run service URL.
+2. Sign in with Google.
+3. Create or open a chat.
+4. Ask `list all libraries`.
+5. Verify Quartz returns a real assistant answer and includes the expected system Libraries:
+   `library://meta-harness` and `library://proj-quartz`.
+6. Record the browser verification evidence in the run record.
 
 ## Completion
 
@@ -46,6 +69,6 @@ A deployment is finished only when:
 
 1. Every checklist item is marked `pass`, `blocked`, or `na`.
 2. The run record includes command evidence, deployed revision or local build identifier, environment name, actor, started and finished timestamps, and remaining blockers.
-3. Production runs include one-by-one human approval records for cloud resources and changes.
+3. Production runs include one-by-one human approval in resource change records for cloud resources and changes.
 4. Production runs include a current Google Cloud resource snapshot.
 5. The run record includes checklist attestation.

@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+import argparse
+import ast
+import re
+import sys
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    tomllib = None
+
+
+DEPLOYMENT_REQUIRED_FIELDS = {
+    "name": str,
+    "version": str,
+    "source": str,
+    "service": str,
+    "requirements": list,
+    "referenced_specs": list,
+    "environment_collections": list,
+    "runbook_collections": list,
+    "checklist_collections": list,
+    "resource_snapshot_collections": list,
+    "resource_change_collections": list,
+    "run_record_collections": list,
+}
+RESOURCE_CHANGE_REQUIRED_FIELDS = {
+    "id": str,
+    "title": str,
+    "environment": str,
+    "provider": str,
+    "resource_id": str,
+    "resource_type": str,
+    "resource_name": str,
+    "action": str,
+    "approval_kind": str,
+    "approved_at": str,
+    "approved_by": str,
+    "approval_source": str,
+    "source": str,
+    "requirements": list,
+    "scope": str,
+}
+PROVIDER_POINTER_FIELDS = [
+    "project",
+    "region_or_location",
+    "resource_uri",
+    "resource_name",
+    "console_url",
+    "change_pointer",
+    "delete_pointer",
+]
+TIMESTAMP_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$"
+)
+ID_RE = re.compile(r"^[a-z0-9][a-z0-9_.-]*$")
+
+
+def fail(failures, message):
+    failures.append(message)
+
+
+def strip_comment(line):
+    in_string = False
+    result = []
+    for char in line:
+        if char == '"':
+            in_string = not in_string
+        if char == "#" and not in_string:
+            break
+        result.append(char)
+    return "".join(result).strip()
+
+
+def parse_value(raw):
+    raw = raw.strip()
+    if raw == "true":
+        return True
+    if raw == "false":
+        return False
+    if raw.startswith("["):
+        return ast.literal_eval(raw)
+    if raw.startswith('"') and raw.endswith('"'):
+        return ast.literal_eval(raw)
+    return raw
+
+
+def parse_minimal_toml(text):
+    data = {}
+    current = data
+    pending_key = None
+    pending_lines = []
+
+    def finish_pending():
+        nonlocal pending_key, pending_lines, current
+        if pending_key is None:
+            return
+        current[pending_key] = parse_value("\n".join(pending_lines))
+        pending_key = None
+        pending_lines = []
+
+    for raw_line in text.splitlines():
+        line = strip_comment(raw_line)
+        if not line:
+            continue
+        if pending_key is not None:
+            pending_lines.append(line)
+            if line.endswith("]"):
+                finish_pending()
+            continue
+        if line.startswith("[[") and line.endswith("]]"):
+            finish_pending()
+            table = line.strip("[]")
+            item = {}
+            data.setdefault(table, []).append(item)
+            current = item
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            finish_pending()
+            table = line.strip("[]")
+            current = data.setdefault(table, {})
+            continue
+        if "=" not in line:
+            continue
+        key, value = [part.strip() for part in line.split("=", 1)]
+        if value.startswith("[") and not value.endswith("]"):
+            pending_key = key
+            pending_lines = [value]
+            continue
+        current[key] = parse_value(value)
+
+    finish_pending()
+    return data
+
+
+def load_toml(path, failures):
+    try:
+        if tomllib is not None:
+            return tomllib.loads(path.read_text())
+        return parse_minimal_toml(path.read_text())
+    except Exception as exc:
+        fail(failures, f"{path}: invalid TOML: {exc}")
+    return None
+
+
+def non_empty_string(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
+def validate_required_fields(path, data, required_fields, failures):
+    for field, expected_type in required_fields.items():
+        value = data.get(field)
+        if not isinstance(value, expected_type):
+            fail(failures, f"{path}: {field} must be a {expected_type.__name__}")
+            continue
+        if expected_type is str and not value.strip():
+            fail(failures, f"{path}: {field} must be non-empty")
+        if expected_type is list and not value:
+            fail(failures, f"{path}: {field} must not be empty")
+
+
+def validate_collections(path, root, data, field, failures):
+    collections = data.get(field)
+    if not isinstance(collections, list):
+        return
+    for index, collection in enumerate(collections, start=1):
+        if not isinstance(collection, dict):
+            fail(failures, f"{path}: {field} entry {index} must be a table")
+            continue
+        name = collection.get("name")
+        location = collection.get("location")
+        if not non_empty_string(name):
+            fail(failures, f"{path}: {field} entry {index} name must be non-empty")
+        if not non_empty_string(location):
+            fail(failures, f"{path}: {field} entry {index} location must be non-empty")
+            continue
+        target = root / location
+        if not target.is_dir():
+            fail(failures, f"{path}: {field} location does not exist as a directory: {location}")
+
+
+def validate_deployment(path, failures):
+    data = load_toml(path, failures)
+    if not isinstance(data, dict):
+        return
+    validate_required_fields(path, data, DEPLOYMENT_REQUIRED_FIELDS, failures)
+    if non_empty_string(data.get("name")) and not ID_RE.fullmatch(data["name"]):
+        fail(failures, f"{path}: name must use lowercase identifier characters")
+    for field in [
+        "environment_collections",
+        "runbook_collections",
+        "checklist_collections",
+        "resource_snapshot_collections",
+        "resource_change_collections",
+        "run_record_collections",
+    ]:
+        validate_collections(path, path.parent, data, field, failures)
+
+
+def is_template(path, data):
+    stem = path.stem
+    identifier = data.get("id")
+    return stem.endswith("template") or (
+        isinstance(identifier, str) and identifier.endswith(".template")
+    )
+
+
+def validate_timestamp(path, field, value, failures):
+    if not non_empty_string(value):
+        return
+    if not TIMESTAMP_RE.fullmatch(value):
+        fail(failures, f"{path}: {field} must be an ISO-8601 timestamp with timezone")
+
+
+def validate_provider_pointers(path, data, failures):
+    pointers = data.get("provider_pointers")
+    if not isinstance(pointers, dict):
+        fail(failures, f"{path}: provider_pointers table is required")
+        return
+    for field in PROVIDER_POINTER_FIELDS:
+        value = pointers.get(field)
+        if not non_empty_string(value):
+            fail(failures, f"{path}: provider_pointers.{field} must be non-empty")
+
+
+def validate_history(path, data, failures):
+    history = data.get("history")
+    if not isinstance(history, list) or not history:
+        fail(failures, f"{path}: at least one [[history]] entry is required")
+        return
+    for index, entry in enumerate(history, start=1):
+        if not isinstance(entry, dict):
+            fail(failures, f"{path}: history entry {index} must be a table")
+            continue
+        for field in ["approved_at", "approved_by", "action", "summary"]:
+            value = entry.get(field)
+            if not non_empty_string(value):
+                fail(failures, f"{path}: history entry {index} {field} must be non-empty")
+        validate_timestamp(path, f"history entry {index} approved_at", entry.get("approved_at"), failures)
+
+
+def validate_resource_change(path, failures):
+    data = load_toml(path, failures)
+    if not isinstance(data, dict) or is_template(path, data):
+        return
+    validate_required_fields(path, data, RESOURCE_CHANGE_REQUIRED_FIELDS, failures)
+    if data.get("approval_kind") != "human":
+        fail(failures, f"{path}: approval_kind must be human")
+    validate_timestamp(path, "approved_at", data.get("approved_at"), failures)
+    validate_provider_pointers(path, data, failures)
+    validate_history(path, data, failures)
+
+
+def deployment_roots(repo_root):
+    ignored_roots = {".git", "node_modules", ".next", "dist"}
+    for path in sorted(repo_root.rglob("DEPLOYMENT.toml")):
+        parts = set(path.relative_to(repo_root).parts)
+        if parts & ignored_roots:
+            continue
+        yield path.parent
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Verify Meta Harness Deployment definitions.")
+    parser.add_argument("--repo-root", default=".")
+    parser.add_argument("--changed-files")
+    args = parser.parse_args()
+
+    repo_root = Path(args.repo_root).resolve()
+    failures = []
+    roots = list(deployment_roots(repo_root))
+
+    for root in roots:
+        validate_deployment(root / "DEPLOYMENT.toml", failures)
+        for resource_change in sorted((root / "resource-changes").glob("*.toml")):
+            validate_resource_change(resource_change, failures)
+
+    if failures:
+        print("Meta Harness deployment definition check failed:", file=sys.stderr)
+        for failure in failures:
+            print(f"- {failure}", file=sys.stderr)
+        return 1
+
+    print(f"Meta Harness deployment definitions passed for {len(roots)} deployment(s).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
