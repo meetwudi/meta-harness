@@ -1,0 +1,224 @@
+id = "proj-quartz.deployment.run.2026-07-02-production-chat-ux-redeploy"
+title = "Quartz production chat UX redeploy"
+environment = "production"
+started_at = "2026-07-02T04:37:00Z"
+finished_at = "2026-07-02T04:49:29Z"
+actor = "codex"
+source = "Human request on 2026-07-01/2026-07-02 to deploy the Quartz chat UX fixes to production."
+requirements = [
+  "proj-quartz.deployment-primitive",
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
+]
+source_revision = "fe02cdf23475647af0d74c0bee0a6433d0664c98"
+deployment_revision = "quartz-00009-gff"
+image = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t043700z"
+image_digest = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:465f3b874fc2e00d775e4757a3deff8099af964bf2909e83be2d861b81b74c57"
+cloud_build_id = "a386359a-aade-4f76-b78d-4789c4e29353"
+cloud_build_log = "https://console.cloud.google.com/cloud-build/builds/a386359a-aade-4f76-b78d-4789c4e29353?project=839963098585"
+service_url = "https://quartz-839963098585.us-east1.run.app"
+status_url = "https://quartz-ohr3gjzfza-ue.a.run.app"
+resource_snapshot = "proj-quartz/harness/deployments/quartz/resource-snapshots/latest.toml"
+resource_changes = [
+  "proj-quartz.deployment.resource-change.2026-07-01-artifact-registry-repository-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-instance-quartz-postgres",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-database-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-user-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-openai-api-key",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-postgres-url",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-id",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-secret",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-api-key",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-from",
+  "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-cloud-sql-client",
+  "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-secret-access",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-run-service-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-google-oauth-client-quartz-redirect",
+]
+configuration_checked = [
+  "QUARTZ_REPO_ROOT",
+  "QUARTZ_PROJECT_ROOT",
+  "QUARTZ_PROJECT_CONFIG",
+  "QUARTZ_PUBLIC_BASE_URL",
+  "QUARTZ_GOOGLE_REDIRECT_URI",
+  "OPENAI_API_KEY secret binding",
+  "QUARTZ_POSTGRES_URL secret binding",
+  "QUARTZ_GOOGLE_CLIENT_ID secret binding",
+  "QUARTZ_GOOGLE_CLIENT_SECRET secret binding",
+  "QUARTZ_RESEND_API_KEY secret binding",
+  "QUARTZ_RESEND_FROM secret binding",
+  "Cloud SQL attachment future-of-work-497100:us-east1:quartz-postgres",
+]
+secrets_or_sensitive_values = "Secret values were not read or recorded."
+
+[[commands]]
+command = "git status --short && git rev-parse HEAD && git rev-parse origin/main"
+status = "pass"
+log = "Main checkout was clean before build; HEAD and origin/main were `fe02cdf23475647af0d74c0bee0a6433d0664c98`."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run typecheck"
+status = "pass"
+log = "TypeScript typecheck passed."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run test:api"
+status = "pass"
+log = "API tests passed."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run test:conversations"
+status = "pass"
+log = "Conversation tests passed with `{ \"ok\": true, \"conversations\": 4 }`."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run test:streaming"
+status = "pass"
+log = "Streaming test passed and observed run events through `RUN_FINISHED`."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run test:auth-org"
+status = "pass"
+log = "Auth/org test passed with invite and resend webhook deliveries."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run build"
+status = "pass"
+log = "Production build passed for storage, librarian, knowledge-agent, and Next app routes."
+
+[[commands]]
+command = "gcloud builds submit . --project future-of-work-497100 --config proj-quartz/harness/deployments/quartz/build/cloudbuild.yaml --substitutions _IMAGE=us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t043700z"
+status = "pass"
+log = "Cloud Build `a386359a-aade-4f76-b78d-4789c4e29353` succeeded and pushed digest `sha256:465f3b874fc2e00d775e4757a3deff8099af964bf2909e83be2d861b81b74c57`."
+
+[[commands]]
+command = "gcloud run deploy quartz --project future-of-work-497100 --region us-east1 --platform managed --image us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t043700z --service-account 839963098585-compute@developer.gserviceaccount.com --port 8080 --memory 512Mi --cpu 1 --concurrency 80 --timeout 300 --max-instances 20 --ingress all --allow-unauthenticated --add-cloudsql-instances future-of-work-497100:us-east1:quartz-postgres --set-env-vars QUARTZ_REPO_ROOT=/workspace,QUARTZ_PROJECT_ROOT=/workspace/proj-quartz,QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json,QUARTZ_PUBLIC_BASE_URL=https://quartz-839963098585.us-east1.run.app,QUARTZ_GOOGLE_REDIRECT_URI=https://quartz-839963098585.us-east1.run.app/api/auth/google/callback --set-secrets OPENAI_API_KEY=quartz-openai-api-key:latest,QUARTZ_POSTGRES_URL=quartz-postgres-url:latest,QUARTZ_GOOGLE_CLIENT_ID=quartz-google-client-id:latest,QUARTZ_GOOGLE_CLIENT_SECRET=quartz-google-client-secret:latest,QUARTZ_RESEND_API_KEY=quartz-resend-api-key:latest,QUARTZ_RESEND_FROM=quartz-resend-from:latest"
+status = "pass"
+log = "Cloud Run revision `quartz-00009-gff` became Ready and serves 100 percent of traffic."
+
+[[commands]]
+command = "curl -sS -o /tmp/quartz-prod-root.html -w '%{http_code} %{url_effective}\\n' https://quartz-839963098585.us-east1.run.app/"
+status = "pass"
+log = "Returned `200 https://quartz-839963098585.us-east1.run.app/`."
+
+[[commands]]
+command = "curl -sS -o /tmp/quartz-prod-libraries.html -w '%{http_code} %{url_effective}\\n' https://quartz-839963098585.us-east1.run.app/libraries"
+status = "pass"
+log = "Returned `200 https://quartz-839963098585.us-east1.run.app/libraries`."
+
+[[commands]]
+command = "Chrome production browser acceptance"
+status = "pass"
+log = "Signed-in Quartz production session opened chat `c55f2522-1c78-42db-be4e-35b63b8256e5`, submitted `list all libraries`, and received `library://meta-harness` and `library://proj-quartz` in the assistant response."
+
+[[commands]]
+command = "Chrome production Libraries page check"
+status = "pass"
+log = "Signed-in `/libraries` page rendered the Library explorer and file list; visible DOM included deep `source/investment-tools/...` entries."
+
+[[artifacts]]
+path = "https://console.cloud.google.com/cloud-build/builds/a386359a-aade-4f76-b78d-4789c4e29353?project=839963098585"
+description = "Cloud Build log for the deployed image."
+
+[[artifacts]]
+path = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+description = "Cloud Run service details for revision `quartz-00009-gff`."
+
+[[artifacts]]
+path = "https://quartz-839963098585.us-east1.run.app/c/c55f2522-1c78-42db-be4e-35b63b8256e5"
+description = "Production acceptance chat that returned expected Library URIs."
+
+[[checklist]]
+item = "environment-selected"
+status = "pass"
+evidence = "Run uses `environments/production.toml` and Cloud Run service `quartz` in project `future-of-work-497100`, region `us-east1`."
+
+[[checklist]]
+item = "specs-read"
+status = "pass"
+evidence = "Read `DEPLOYMENT.toml`, `environments/production.toml`, runbook, checklist, COMPLIANCE, and cited production deployment requirements before executing deployment steps."
+
+[[checklist]]
+item = "configuration-present"
+status = "pass"
+evidence = "Runtime env keys, Secret Manager bindings, Cloud SQL attachment, service account, public base URL, and OAuth callback URI were checked without reading secret values."
+
+[[checklist]]
+item = "local-env-file"
+status = "na"
+evidence = "Production run."
+
+[[checklist]]
+item = "local-hostname-consistency"
+status = "na"
+evidence = "Production run."
+
+[[checklist]]
+item = "local-oauth-callback-slot"
+status = "na"
+evidence = "Production run uses approved production OAuth callback URI."
+
+[[checklist]]
+item = "local-database-slot"
+status = "na"
+evidence = "Production run."
+
+[[checklist]]
+item = "local-database-provisioning"
+status = "na"
+evidence = "Production run did not provision local databases."
+
+[[checklist]]
+item = "local-chat-smoke"
+status = "na"
+evidence = "Production run; production chat acceptance was executed instead."
+
+[[checklist]]
+item = "build-and-tests"
+status = "pass"
+evidence = "Typecheck, API, conversations, streaming, auth/org, and production build commands passed."
+
+[[checklist]]
+item = "resource-snapshot"
+status = "pass"
+evidence = "Updated `proj-quartz/harness/deployments/quartz/resource-snapshots/latest.toml` for image digest `sha256:465f3b874fc2e00d775e4757a3deff8099af964bf2909e83be2d861b81b74c57` and revision `quartz-00009-gff`."
+
+[[checklist]]
+item = "resource-changes"
+status = "pass"
+evidence = "Verified resource change records for used Google Cloud resources include human approval timestamps and provider pointers."
+
+[[checklist]]
+item = "deployment-executed"
+status = "pass"
+evidence = "Cloud Build succeeded and Cloud Run deployed `quartz-00009-gff` with 100 percent traffic."
+
+[[checklist]]
+item = "post-deploy-verification"
+status = "pass"
+evidence = "Production root and `/libraries` returned HTTP 200; browser acceptance confirmed signed-in production chat."
+
+[[checklist]]
+item = "production-library-discovery"
+status = "pass"
+evidence = "Production chat `c55f2522-1c78-42db-be4e-35b63b8256e5` answered `list all libraries` and included `library://meta-harness` and `library://proj-quartz`."
+
+[[checklist]]
+item = "history-and-artifacts"
+status = "pass"
+evidence = "Run record includes command summaries, build log, Cloud Run service URL, deployed revision, image digest, and acceptance chat URL."
+
+[[checklist]]
+item = "attestation"
+status = "blocked"
+evidence = "Checklist statuses are recorded, but independent subagent review required by COMPLIANCE.toml was not performed because explicit human approval for the subagent review was not given in this deployment turn."
+
+[attestation]
+status = "blocked"
+text = "Deployment executed and production verification passed, but final checklist attestation is blocked pending independent subagent review required by `proj-quartz/harness/deployments/quartz/COMPLIANCE.toml`."
+attested_by = "codex"
+attested_at = "2026-07-02T04:49:29Z"
+
+[[blockers]]
+id = "independent-subagent-review"
+text = "COMPLIANCE.toml requires independent subagent review before attesting; explicit human approval for that subagent review was not provided after the request surfaced during this run."
