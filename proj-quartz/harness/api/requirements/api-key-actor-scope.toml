@@ -1,4 +1,11 @@
 id = "proj-quartz.api.key-actor-scope"
 title = "API key actor scope"
-source = "Human request on 2026-07-01: people should be able to choose whether an API key actor is themselves as the user or the organization; only admins can designate an organization actor; the default is the user."
-text = "Each Quartz API key has an actor scope. The default actor is the creating user. An admin can designate an organization actor for an API key, and non-admins cannot designate an organization actor."
+source = "Human request on 2026-07-01: people should be able to choose whether an API key actor is themselves as the user or the organization; only admins can designate an organization actor; the default is the user. Human clarification on 2026-07-02: a user actor may create an API key on behalf of itself, but still within the tenant or organization boundary; creating API keys for a user is also specific to an organization, not only to the user. Human clarification on 2026-07-02: organizational API keys should have their own actor, such as a service account actor."
+text = "Each Quartz API key has an actor scope within an organization tenant. The default actor is the creating user within that organization. An admin can create an organization-scoped API key with its own service-account-style actor, and non-admins cannot create organization-scoped API-key actor authority."
+
+criteria = [
+  "API key management is scoped to the active organization tenant.",
+  "The default user-actor API key remains organization-specific.",
+  "An organization-scoped API key records the organization tenant boundary.",
+  "An organization-scoped API key has service-account-style actor authority distinct from human admin or member actor authority.",
+]

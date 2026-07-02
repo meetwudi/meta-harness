@@ -1,0 +1,11 @@
+id = "proj-quartz.multi-tenancy.conversation-tenant-scope"
+title = "Conversation tenant scope"
+source = "Human request on 2026-07-02: chats were previously treated as specific to a person, but each chat is specific to a person within a tenant or organization; after creating a new organization, conversations from another organization must not still appear."
+text = "Each Quartz conversation belongs to a person within an organization tenant."
+
+criteria = [
+  "Conversation listing is scoped by the signed-in user and the active organization tenant.",
+  "Conversation read, update, and delete access is scoped by the signed-in user and the active organization tenant.",
+  "A user viewing one organization does not see that user's conversations from a different organization.",
+  "A user does not see another user's conversations merely because both users belong to the same organization.",
+]

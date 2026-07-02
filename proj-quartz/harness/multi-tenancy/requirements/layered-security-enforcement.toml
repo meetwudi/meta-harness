@@ -1,0 +1,12 @@
+id = "proj-quartz.multi-tenancy.layered-security-enforcement"
+title = "Layered tenant security enforcement"
+source = "Human request on 2026-07-02: security should be implemented at different levels, including application level and database level; if a future database does not support row-level security, application security must still be in place; future work should still make sure application and database-level security exist."
+text = "Quartz enforces tenant security at the application layer, storage-driver layer, and database-native layer when the selected database supports it."
+
+criteria = [
+  "Application-level actor guards are required for tenant-scoped reads and writes.",
+  "Storage-driver guards are required for tenant-scoped reads and writes.",
+  "Database-native row-level or equivalent security is required when supported by the selected database.",
+  "A backend without database-native tenant security does not remove application-level or storage-driver enforcement.",
+  "A missing database-native security layer is explicit governed knowledge, not silent behavior.",
+]

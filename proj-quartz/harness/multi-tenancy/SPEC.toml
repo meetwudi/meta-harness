@@ -1,0 +1,10 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "proj-quartz-multi-tenancy"
+version = "v0.0.0"
+source = "Human request on 2026-07-02: Quartz must be formulated as multi-tenant; each organization is a tenant; organization boundaries must be respected for conversations and API keys; low-level security must be strict down to the tenant level; security must be spec-driven across application, storage, database, role policy, and actor acquisition layers; the folder structure should expose all policies and actor exchange knowledge clearly; and organizational API keys should have their own service-account-style actor."
+
+[[requirement_collections]]
+name = "requirements"
+location = "requirements"

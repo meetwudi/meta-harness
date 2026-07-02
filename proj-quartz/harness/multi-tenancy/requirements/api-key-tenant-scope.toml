@@ -1,0 +1,12 @@
+id = "proj-quartz.multi-tenancy.api-key-tenant-scope"
+title = "API key tenant scope"
+source = "Human request on 2026-07-02: API keys created in one organization must not still appear in another organization; a user actor may create an API key on behalf of itself, but still within the tenant or organization boundary; creating API keys for a user is also specific to an organization, not only to the user."
+text = "Each Quartz API key belongs within an organization tenant, including API keys whose actor scope is the creating user."
+
+criteria = [
+  "API key listing is scoped to the active organization tenant.",
+  "API key creation records the organization tenant boundary.",
+  "API keys created in one organization are not visible from a different organization.",
+  "A user-actor API key is still organization-specific.",
+  "An API key created for a user is still organization-specific.",
+]

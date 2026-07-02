@@ -3,7 +3,7 @@
 
 name = "proj-quartz-storage"
 version = "v0.0.0"
-source = "Human request on 2026-07-01 that Quartz should have one project storage Spec, currently database-backed, with room for future storage decomposition, and that API persistence should link to project storage instead of being owned by the API Spec."
+source = "Human request on 2026-07-01 that Quartz should have one project storage Spec, currently database-backed, with room for future storage decomposition, and that API persistence should link to project storage instead of being owned by the API Spec. Human clarification on 2026-07-02: conversation and API-key storage must respect organization tenant boundaries."
 
 [[requirement_collections]]
 name = "requirements"

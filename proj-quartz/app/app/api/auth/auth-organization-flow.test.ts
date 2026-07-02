@@ -228,6 +228,12 @@ try {
         assert.equal(refreshedOwnerSession?.activeOrganization?.id, ownerOrganization.id);
         const ownerActorContext = quartzResourceActorContext(refreshedOwnerSession!);
         assert.deepEqual(ownerActorContext.defaultReadActors, [ownerOrganization.actorUri]);
+        assert(ownerActorContext.actorUris.includes(
+          `actor://proj-quartz/organization/${ownerOrganization.id}/member`,
+        ));
+        assert(ownerActorContext.actorUris.includes(
+          `actor://proj-quartz/organization/${ownerOrganization.id}/admin`,
+        ));
         assert.deepEqual(ownerActorContext.conversationReadActors, [
           `actor://proj-quartz/user/${refreshedOwnerSession!.user.id}`,
         ]);
@@ -236,7 +242,7 @@ try {
         ]);
         assert.equal(
           ownerActorContext.conversationLibraryRootPath,
-          `/libraries/users/${refreshedOwnerSession!.user.id}/knowledge-agent-conversations`,
+          `/libraries/organizations/${ownerOrganization.id}/users/${refreshedOwnerSession!.user.id}/knowledge-agent-conversations`,
         );
         assert.equal(
           quartzResourceActorEnv(ownerActorContext).META_HARNESS_DEFAULT_READ_ACTORS,
@@ -283,10 +289,23 @@ try {
         const inviteeAfterCreate = await sessionFromToken(client, inviteeToken);
         assert.equal(inviteeAfterCreate?.organizations.length, 2);
         assert.equal(inviteeAfterCreate?.activeOrganization?.id, inviteeOrganization.id);
+        const inviteeOwnOrgConversationRoot =
+          quartzResourceActorContext(inviteeAfterCreate!).conversationLibraryRootPath;
+        assert.equal(
+          inviteeOwnOrgConversationRoot,
+          `/libraries/organizations/${inviteeOrganization.id}/users/${inviteeAfterCreate!.user.id}/knowledge-agent-conversations`,
+        );
 
         await switchOrganization(client, inviteeAfterCreate!, ownerOrganization.id);
         const inviteeAfterSwitch = await sessionFromToken(client, inviteeToken);
         assert.equal(inviteeAfterSwitch?.activeOrganization?.id, ownerOrganization.id);
+        const inviteeSharedOrgConversationRoot =
+          quartzResourceActorContext(inviteeAfterSwitch!).conversationLibraryRootPath;
+        assert.equal(
+          inviteeSharedOrgConversationRoot,
+          `/libraries/organizations/${ownerOrganization.id}/users/${inviteeAfterSwitch!.user.id}/knowledge-agent-conversations`,
+        );
+        assert.notEqual(inviteeOwnOrgConversationRoot, inviteeSharedOrgConversationRoot);
 
         await revokeSession(client, ownerToken);
         assert.equal(await sessionFromToken(client, ownerToken), null);

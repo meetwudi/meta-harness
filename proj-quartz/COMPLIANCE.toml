@@ -9,3 +9,20 @@ text = "Verify Quartz domain-specific Memory behavior is captured in project Mem
 [[items]]
 id = "quartz-no-local-conversation-storage-fallback"
 text = "Verify Quartz conversation history and reasoning persistence use governed configured storage and do not silently fall back to browser-local or filesystem-local conversation history when governed storage is unavailable."
+
+[[items]]
+id = "quartz-security-spec-driven"
+text = "Verify Quartz security-sensitive behavior is backed by Spec knowledge and policy records before implementation, especially durable data creation, tenant scoping, actor acquisition, role authority, and application, storage, or database access checks."
+examples = [
+  "Tenant security policy records live under `proj-quartz/harness/multi-tenancy/policies/`.",
+  "Actor acquisition records live under `proj-quartz/harness/multi-tenancy/actor-exchange/`.",
+  "A new durable data path should cite a requirement or policy record instead of relying only on implementation-local assumptions.",
+]
+
+[[items]]
+id = "quartz-tenant-security-layers"
+text = "Verify tenant-scoped Quartz data access is guarded at the application layer and storage-driver layer, and also at the database-native layer when the selected database supports row-level or equivalent security; absence of database-native enforcement must be explicit in governed deployment or storage knowledge and must not remove application or storage-driver enforcement."
+
+[[items]]
+id = "quartz-actor-acquisition-required"
+text = "Verify code that grants additional Quartz actor authority uses a governed actor acquisition or exchange path, rather than constructing organization, role, or admin actors ad hoc at the call site."

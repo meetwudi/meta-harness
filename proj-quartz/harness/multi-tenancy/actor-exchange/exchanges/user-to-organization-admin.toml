@@ -1,0 +1,24 @@
+id = "proj-quartz.actor-exchange.user-to-organization-admin"
+title = "User to organization admin actor"
+source = "Human request on 2026-07-02: acting as an organization admin differs from acting as the organization for every member; actor acquisition should return or deny based on whether the user is admin or viewer/member."
+requirements = [
+  "proj-quartz.multi-tenancy.actor-acquisition",
+  "proj-quartz.multi-tenancy.role-specific-organization-actors",
+]
+input_actors = [
+  "actor://proj-quartz/user/{userId}",
+]
+requested_actor = "actor://proj-quartz/organization/{organizationId}/admin"
+allow = [
+  "The current user has an organization profile for the requested organization with role `admin`.",
+]
+deny = [
+  "No active user actor is present.",
+  "The current user does not have an organization profile for the requested organization.",
+  "The current user has a non-admin role for the requested organization.",
+]
+output_actors = [
+  "actor://proj-quartz/user/{userId}",
+  "actor://proj-quartz/organization/{organizationId}/member",
+  "actor://proj-quartz/organization/{organizationId}/admin",
+]

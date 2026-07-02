@@ -1,0 +1,10 @@
+id = "proj-quartz.multi-tenancy.organization-tenant-boundary"
+title = "Organization tenant boundary"
+source = "Human request on 2026-07-02: Quartz has not been formulated as multi-tenancy but it is multi-tenancy; each organization is a tenant; the code does not have to use the word tenant, but the Spec can say tenant is an organization."
+text = "Quartz is multi-tenant, and each Quartz organization is a tenant boundary."
+
+criteria = [
+  "Quartz Spec knowledge may use tenant to describe the security boundary.",
+  "Quartz implementation code may continue to use organization terminology for the user-facing grouping.",
+  "Tenant boundary means organization boundary.",
+]

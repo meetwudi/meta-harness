@@ -1,0 +1,22 @@
+id = "proj-quartz.actor-exchange.user-to-organization-member"
+title = "User to organization member actor"
+source = "Human request on 2026-07-02: a user starts from a user actor and can acquire organization actors based on membership or role."
+requirements = [
+  "proj-quartz.multi-tenancy.actor-acquisition",
+  "proj-quartz.multi-tenancy.role-specific-organization-actors",
+]
+input_actors = [
+  "actor://proj-quartz/user/{userId}",
+]
+requested_actor = "actor://proj-quartz/organization/{organizationId}/member"
+allow = [
+  "The current user has an organization profile for the requested organization.",
+]
+deny = [
+  "No active user actor is present.",
+  "The current user does not have an organization profile for the requested organization.",
+]
+output_actors = [
+  "actor://proj-quartz/user/{userId}",
+  "actor://proj-quartz/organization/{organizationId}/member",
+]

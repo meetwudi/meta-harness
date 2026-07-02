@@ -1,0 +1,15 @@
+id = "proj-quartz.policy.layered-security"
+title = "Layered tenant security policy"
+source = "Human request on 2026-07-02: security should be implemented at application level and database level; if a future database lacks row-level security, application security remains in place; future work should still make sure application and database-level security exist."
+requirements = [
+  "proj-quartz.multi-tenancy.layered-security-enforcement",
+  "proj-quartz.multi-tenancy.low-level-tenant-security",
+]
+layer = "application-storage-database"
+text = "Quartz tenant security is enforced in multiple layers rather than delegated to one layer alone."
+statements = [
+  "Application-level actor guards authorize tenant-scoped operations before business logic reads or writes tenant data.",
+  "Storage-driver guards enforce active actor sets and tenant scope for storage operations regardless of backend.",
+  "Database-native row-level or equivalent policies enforce tenant scope when the selected backend supports them.",
+  "A backend without database-native tenant security requires explicit governed deployment or storage knowledge and does not disable application-level or storage-driver guards.",
+]

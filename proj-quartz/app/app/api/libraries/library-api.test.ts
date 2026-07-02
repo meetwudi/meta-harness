@@ -4,7 +4,11 @@ import {
   createApiKey,
   createOrganization,
   createOrUpdateGoogleSession,
+  listApiKeys,
+  quartzOrganizationServiceAccountActorUri,
   quartzUserActorUri,
+  sessionFromToken,
+  switchOrganization,
   withQuartzAuthDb,
   type QuartzApiActorContext,
   type QuartzQueryClient,
@@ -23,18 +27,21 @@ import {
 const testRun = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const ownerEmail = `quartz-api-owner-${testRun}@example.com`;
 const memberEmail = `quartz-api-member-${testRun}@example.com`;
-const libraryName = `api_test_${testRun.replace(/[^a-z0-9]+/gi, "_").toLowerCase()}`;
+const libraryNameUser = `api_user_${testRun.replace(/[^a-z0-9]+/gi, "_").toLowerCase()}`;
+const libraryNameOrganization = `api_org_${testRun.replace(/[^a-z0-9]+/gi, "_").toLowerCase()}`;
 
 async function cleanupTestRows(
   client: QuartzQueryClient,
   emails: string[],
-  library: string,
+  libraries: string[],
 ): Promise<void> {
-  await client.query(
-    `DELETE FROM quartz_core.resources
-     WHERE path = $1 OR path LIKE $2`,
-    [`/libraries/${library}`, `/libraries/${library}/%`],
-  ).catch(() => undefined);
+  for (const library of libraries) {
+    await client.query(
+      `DELETE FROM quartz_core.resources
+       WHERE path = $1 OR path LIKE $2`,
+      [`/libraries/${library}`, `/libraries/${library}/%`],
+    ).catch(() => undefined);
+  }
   await client.query(
     `DELETE FROM quartz_app.api_keys
      WHERE user_id IN (
@@ -114,46 +121,74 @@ function librariesFromResult(result: Record<string, unknown>): Record<string, un
     : [];
 }
 
-let orgActorContext: QuartzApiActorContext | null = null;
+let orgAUserActorContext: QuartzApiActorContext | null = null;
+let orgAServiceActorContext: QuartzApiActorContext | null = null;
+let orgBUserActorContext: QuartzApiActorContext | null = null;
+let orgBServiceActorContext: QuartzApiActorContext | null = null;
 
 try {
   await withQuartzAuthDb(async (client) => {
-    await cleanupTestRows(client, [ownerEmail, memberEmail], libraryName);
+    await cleanupTestRows(
+      client,
+      [ownerEmail, memberEmail],
+      [libraryNameUser, libraryNameOrganization],
+    );
 
-    const { session: ownerSession } = await createOrUpdateGoogleSession(client, {
+    const { token: ownerToken, session: ownerSession } = await createOrUpdateGoogleSession(client, {
       providerSubject: `api-owner-${testRun}`,
       email: ownerEmail,
       displayName: "Quartz API Owner",
       avatarUrl: "",
     });
-    const organization = await createOrganization(
+    const organizationA = await createOrganization(
       client,
       ownerSession,
-      `Quartz API Org ${testRun}`,
+      `Quartz API Org A ${testRun}`,
     );
+    const ownerSessionA = await sessionFromToken(client, ownerToken);
+    assert.equal(ownerSessionA?.activeOrganization?.id, organizationA.id);
+
     const { apiKey: userApiKey, token: userToken } = await createApiKey({
       client,
-      session: ownerSession,
+      session: ownerSessionA!,
       label: "User actor key",
     });
     assert.equal(userApiKey.actorScope, "user");
+    assert.equal(userApiKey.organizationId, organizationA.id);
     assert.equal(userApiKey.actorUri, quartzUserActorUri(ownerSession.user.id));
     assert.match(userToken, /^qz_/);
 
     const userAuthentication = await authenticateApiKey(client, userToken);
     assert.equal(userAuthentication?.actorContext.actorUri, userApiKey.actorUri);
+    assert.equal(userAuthentication?.actorContext.organizationId, organizationA.id);
+    assert.deepEqual(userAuthentication?.actorContext.contextFilterActorUris, [
+      organizationA.actorUri,
+    ]);
+    orgAUserActorContext = userAuthentication!.actorContext;
 
     const { apiKey: organizationApiKey, token: organizationToken } = await createApiKey({
       client,
-      session: ownerSession,
+      session: ownerSessionA!,
       label: "Organization actor key",
       actorScope: "organization",
-      organizationId: organization.id,
+      organizationId: organizationA.id,
     });
     assert.equal(organizationApiKey.actorScope, "organization");
-    assert.equal(organizationApiKey.actorUri, organization.actorUri);
+    assert.equal(organizationApiKey.organizationId, organizationA.id);
+    assert.equal(
+      organizationApiKey.actorUri,
+      quartzOrganizationServiceAccountActorUri(organizationA.id, organizationApiKey.id),
+    );
 
-    const { session: memberSession } = await createOrUpdateGoogleSession(client, {
+    const organizationAuthentication = await authenticateApiKey(client, organizationToken);
+    assert(organizationAuthentication);
+    assert.equal(organizationAuthentication.actorContext.organizationId, organizationA.id);
+    assert.deepEqual(organizationAuthentication.actorContext.contextFilterActorUris, [
+      organizationA.actorUri,
+    ]);
+    orgAServiceActorContext = organizationAuthentication.actorContext;
+
+    const { token: memberToken, session: memberSession } = await createOrUpdateGoogleSession(client, {
       providerSubject: `api-member-${testRun}`,
       email: memberEmail,
       displayName: "Quartz API Member",
@@ -163,50 +198,120 @@ try {
       `INSERT INTO quartz_app.organization_profiles
        (organization_id, user_id, display_name, role)
        VALUES ($1, $2, $3, 'member')`,
-      [organization.id, memberSession.user.id, memberSession.user.email],
+      [organizationA.id, memberSession.user.id, memberSession.user.email],
     );
+    await switchOrganization(client, memberSession, organizationA.id);
+    const memberSessionA = await sessionFromToken(client, memberToken);
     await assert.rejects(
       () => createApiKey({
         client,
-        session: memberSession,
+        session: memberSessionA!,
         label: "Member organization key",
         actorScope: "organization",
-        organizationId: organization.id,
+        organizationId: organizationA.id,
       }),
       /organization admin profile/,
     );
 
-    const organizationAuthentication = await authenticateApiKey(client, organizationToken);
-    assert(organizationAuthentication);
-    orgActorContext = organizationAuthentication.actorContext;
+    const organizationB = await createOrganization(
+      client,
+      ownerSessionA!,
+      `Quartz API Org B ${testRun}`,
+    );
+    const ownerSessionB = await sessionFromToken(client, ownerToken);
+    assert.equal(ownerSessionB?.activeOrganization?.id, organizationB.id);
+    assert.deepEqual(
+      (await listApiKeys(client, ownerSessionB!)).map((apiKey) => apiKey.organizationId),
+      [],
+    );
+
+    const { token: userTokenB } = await createApiKey({
+      client,
+      session: ownerSessionB!,
+      label: "User actor key B",
+    });
+    const { apiKey: organizationApiKeyB, token: organizationTokenB } = await createApiKey({
+      client,
+      session: ownerSessionB!,
+      label: "Organization actor key B",
+      actorScope: "organization",
+      organizationId: organizationB.id,
+    });
+    assert.equal(
+      organizationApiKeyB.actorUri,
+      quartzOrganizationServiceAccountActorUri(organizationB.id, organizationApiKeyB.id),
+    );
+    orgBUserActorContext = (await authenticateApiKey(client, userTokenB))!.actorContext;
+    orgBServiceActorContext = (await authenticateApiKey(client, organizationTokenB))!.actorContext;
+
+    await switchOrganization(client, ownerSessionB!, organizationA.id);
+    const ownerSessionAAgain = await sessionFromToken(client, ownerToken);
+    assert.equal(ownerSessionAAgain?.activeOrganization?.id, organizationA.id);
+    assert.deepEqual(
+      (await listApiKeys(client, ownerSessionAAgain!)).map((apiKey) => apiKey.organizationId),
+      [organizationA.id, organizationA.id],
+    );
   });
 
-  assert(orgActorContext);
-  const ingest = await ingestQuartzLibrary(orgActorContext, {
-    name: libraryName,
-    description: "Quartz API integration test Library.",
+  assert(orgAUserActorContext);
+  assert(orgAServiceActorContext);
+  assert(orgBUserActorContext);
+  assert(orgBServiceActorContext);
+  const userIngest = await ingestQuartzLibrary(orgAUserActorContext, {
+    name: libraryNameUser,
+    description: "Quartz API integration test user-key Library.",
     files: [
       {
         path: "MEMORY.toml",
-        content: [
-          "name = \"api-test-memory\"",
-          "description = \"Quartz API integration test memory.\"",
-          "",
-        ].join("\n"),
+        content: "name = \"api-test-user-memory\"\n",
       },
     ],
   });
-  assert.equal((ingest.library as Record<string, unknown>).name, libraryName);
-  assert.equal(ingest.filesWritten, 1);
+  assert.equal((userIngest.library as Record<string, unknown>).name, libraryNameUser);
+  assert.equal(userIngest.filesWritten, 1);
 
-  const listed = await listQuartzLibraries(orgActorContext);
-  const library = librariesFromResult(listed).find((candidate) =>
-    candidate.name === libraryName
+  const organizationIngest = await ingestQuartzLibrary(orgBServiceActorContext, {
+    name: libraryNameOrganization,
+    description: "Quartz API integration test organization-key Library.",
+    files: [
+      {
+        path: "MEMORY.toml",
+        content: "name = \"api-test-organization-memory\"\n",
+      },
+    ],
+  });
+  assert.equal(
+    (organizationIngest.library as Record<string, unknown>).name,
+    libraryNameOrganization,
   );
-  assert(library);
-  assert.equal(library.writable, true);
+  assert.equal(organizationIngest.filesWritten, 1);
+
+  for (const context of [orgAUserActorContext, orgAServiceActorContext]) {
+    const libraries = librariesFromResult(await listQuartzLibraries(context));
+    const library = libraries.find((candidate) => candidate.name === libraryNameUser);
+    assert(library);
+    assert.equal(library.writable, true);
+    assert.equal(
+      libraries.some((candidate) => candidate.name === libraryNameOrganization),
+      false,
+    );
+  }
+  for (const context of [orgBUserActorContext, orgBServiceActorContext]) {
+    const libraries = librariesFromResult(await listQuartzLibraries(context));
+    const library = libraries.find((candidate) => candidate.name === libraryNameOrganization);
+    assert(library);
+    assert.equal(library.writable, true);
+    assert.equal(
+      libraries.some((candidate) => candidate.name === libraryNameUser),
+      false,
+    );
+  }
 } finally {
   await withQuartzAuthDb(async (client) => {
-    await cleanupTestRows(client, [ownerEmail, memberEmail], libraryName);
+    await cleanupTestRows(
+      client,
+      [ownerEmail, memberEmail],
+      [libraryNameUser, libraryNameOrganization],
+    );
   });
 }

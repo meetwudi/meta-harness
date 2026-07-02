@@ -1,0 +1,11 @@
+id = "proj-quartz.multi-tenancy.low-level-tenant-security"
+title = "Low-level tenant security"
+source = "Human request on 2026-07-02: tenancy and organization boundaries should be respected across the codebase; Quartz needs low-level security down to the tenant level and should be very strict about this."
+text = "Quartz enforces organization tenant boundaries as a low-level security invariant for tenant-scoped resources."
+
+criteria = [
+  "Tenant-scoped resource reads are bounded by organization tenant.",
+  "Tenant-scoped resource writes are bounded by organization tenant.",
+  "Conversation and API-key storage are tenant-scoped resources.",
+  "Implementation review must verify tenant-boundary enforcement across the affected codebase.",
+]

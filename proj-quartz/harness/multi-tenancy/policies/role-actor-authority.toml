@@ -1,0 +1,19 @@
+id = "proj-quartz.policy.role-actor-authority"
+title = "Role actor authority policy"
+source = "Human discussion on 2026-07-02: acting as an organization for everyone in the organization differs from acting as an organization admin; organization actors should account for roles such as member or admin."
+requirements = [
+  "proj-quartz.multi-tenancy.actor-acquisition",
+  "proj-quartz.multi-tenancy.role-specific-organization-actors",
+  "proj-quartz.multi-tenancy.organization-api-key-service-account-actors",
+]
+layer = "application-storage"
+text = "Quartz role-specific organization authority is represented by acquired actor identities for the active organization."
+statements = [
+  "A signed-in user starts with a user actor.",
+  "Organization membership can acquire organization member actor authority for that organization.",
+  "Organization admin role can acquire organization admin actor authority for that organization.",
+  "Organization-scoped API keys use service-account-style actor authority distinct from human member or admin actor authority.",
+  "Admin-only operations require organization admin actor authority rather than generic organization membership.",
+  "The first role-specific organization actor names are `actor://proj-quartz/organization/{organizationId}/member` and `actor://proj-quartz/organization/{organizationId}/admin`.",
+  "The first organization API key service-account actor URI scheme is `actor://proj-quartz/organization/{organizationId}/service-account/{apiKeyId}`.",
+]

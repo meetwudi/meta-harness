@@ -1,0 +1,15 @@
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+[[items]]
+id = "multi-tenancy-policy-catalog"
+text = "Verify multi-tenancy policy knowledge is kept in the policy catalog under `policies/` or in the actor exchange records under `actor-exchange/`, and that security behavior changes cite the relevant source records."
+
+[[items]]
+id = "multi-tenancy-layered-security"
+text = "Verify tenant security records preserve application-level enforcement, storage-driver enforcement, and database-native enforcement when the backend supports it; do not document a database-native security gap as acceptable without explicit governed deployment or storage knowledge."
+
+[[items]]
+id = "multi-tenancy-actor-exchange"
+text = "Verify actor authority expansion is described as an actor exchange from current actors to requested actors, with allow and deny behavior tied to organization membership, role, API-key scope, or other governed proof."

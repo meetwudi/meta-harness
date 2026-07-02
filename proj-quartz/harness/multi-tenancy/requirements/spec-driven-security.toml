@@ -1,0 +1,11 @@
+id = "proj-quartz.multi-tenancy.spec-driven-security"
+title = "Spec-driven security"
+source = "Human request on 2026-07-02: security should be spec-driven; application-level security, database-level security, and each role-level security policy should be clearly documented; future sweeps should make sure everything is backed by a spec."
+text = "Quartz tenant security is authored as Spec and policy knowledge before implementation."
+
+criteria = [
+  "Security-sensitive implementation cites relevant Spec requirements or policy records.",
+  "Application-level security policy is documented before application guard implementation.",
+  "Database-level security policy is documented before database-native policy implementation.",
+  "Role-level actor authority policy is documented before role-based actor guard implementation.",
+]

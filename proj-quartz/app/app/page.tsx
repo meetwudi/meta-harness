@@ -1638,9 +1638,9 @@ function QuartzOrganizationSettingsDialog({
   const [createdApiKeyToken, setCreatedApiKeyToken] = useState("");
   const [apiKeyError, setApiKeyError] = useState("");
   const canInvite = activeOrganization?.role === "admin";
-  const adminOrganizations = useMemo(
-    () => session.organizations.filter((organization) => organization.role === "admin"),
-    [session.organizations],
+  const apiKeyOrganizationOptions = useMemo(
+    () => activeOrganization?.role === "admin" ? [activeOrganization] : [],
+    [activeOrganization],
   );
   const selectedApiKeyOrganizationId =
     apiKeyActorValue.startsWith("organization:")
@@ -1663,6 +1663,13 @@ function QuartzOrganizationSettingsDialog({
   }, [activeOrganization, open]);
 
   useEffect(() => {
+    setApiKeys([]);
+    setApiKeysLoaded(false);
+    setApiKeyActorValue("user");
+    setCreatedApiKeyToken("");
+  }, [activeOrganization?.id]);
+
+  useEffect(() => {
     if (!open || section !== "api-keys" || apiKeysLoaded) {
       return;
     }
@@ -1675,13 +1682,13 @@ function QuartzOrganizationSettingsDialog({
   useEffect(() => {
     if (
       apiKeyActorValue !== "user" &&
-      !adminOrganizations.some((organization) =>
+      !apiKeyOrganizationOptions.some((organization) =>
         apiKeyActorValue === `organization:${organization.id}`,
       )
     ) {
       setApiKeyActorValue("user");
     }
-  }, [adminOrganizations, apiKeyActorValue]);
+  }, [apiKeyOrganizationOptions, apiKeyActorValue]);
 
   const settingsError = error || apiKeyError;
 
@@ -1892,7 +1899,7 @@ function QuartzOrganizationSettingsDialog({
                     aria-label="API key actor"
                   >
                     <option value="user">User actor</option>
-                    {adminOrganizations.map((organization) => (
+                    {apiKeyOrganizationOptions.map((organization) => (
                       <option key={organization.id} value={`organization:${organization.id}`}>
                         {organization.name}
                       </option>

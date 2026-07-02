@@ -1,0 +1,17 @@
+id = "proj-quartz.policy.actor-exchange"
+title = "Actor exchange policy"
+source = "Human request on 2026-07-02: acquiring different actors requires an actor; input is current actors and output is more actors or denial based on current actors; this should be scalable."
+requirements = [
+  "proj-quartz.multi-tenancy.actor-acquisition",
+  "proj-quartz.multi-tenancy.role-specific-organization-actors",
+  "proj-quartz.multi-tenancy.organization-api-key-service-account-actors",
+]
+layer = "application"
+text = "Quartz actor authority expansion goes through a governed actor exchange."
+statements = [
+  "Actor exchange input includes the current actor set, requested actor authority, and the organization or API-key context required to evaluate the request.",
+  "Actor exchange output is an expanded actor set or a denial reason.",
+  "Actor exchange records document acquisition rules before implementation.",
+  "Organization API key actor exchange produces service-account-style authority for the key rather than a human admin or member actor.",
+  "Application code should request actor exchange rather than constructing role-specific organization actors at arbitrary call sites.",
+]

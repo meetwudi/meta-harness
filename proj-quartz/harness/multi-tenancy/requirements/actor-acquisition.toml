@@ -1,0 +1,12 @@
+id = "proj-quartz.multi-tenancy.actor-acquisition"
+title = "Actor acquisition"
+source = "Human request on 2026-07-02: a user starts from a user actor and can acquire more actors; acquiring different actors requires current actors as input and returns or denies requested actors based on current actors; a user can acquire organization actors depending on whether they are admin or viewer/member."
+text = "Quartz actor authority expansion is performed through governed actor acquisition from current actors to requested actors."
+
+criteria = [
+  "Actor acquisition input includes the current actor set.",
+  "Actor acquisition input includes the requested actor or requested actor type.",
+  "Actor acquisition output is either an expanded actor set or a denial.",
+  "Organization actor acquisition verifies organization membership or role.",
+  "Call sites do not construct additional organization role actors without the actor acquisition path.",
+]

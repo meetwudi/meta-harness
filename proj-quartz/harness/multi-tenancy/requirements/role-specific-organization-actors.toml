@@ -1,0 +1,11 @@
+id = "proj-quartz.multi-tenancy.role-specific-organization-actors"
+title = "Role-specific organization actors"
+source = "Human discussion on 2026-07-02: acting as an organization for everyone in the organization differs from acting as an organization admin; organization actors should account for roles such as member or admin."
+text = "Quartz organization actor authority distinguishes organization membership from organization administration."
+
+criteria = [
+  "Organization member authority and organization admin authority are separate actor authorities.",
+  "Admin-only operations require admin actor authority.",
+  "Member-readable tenant operations may use member actor authority when the policy allows every member of the organization to read.",
+  "The actor naming scheme is documented before role-specific actor implementation.",
+]

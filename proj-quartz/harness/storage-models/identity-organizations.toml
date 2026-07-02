@@ -1,6 +1,6 @@
 id = "proj-quartz.model.identity-organizations"
 title = "Quartz identity and organization model"
-source = "Human requests on 2026-06-30 and 2026-07-01 for Google sign-in, sessions, organizations, profiles, invites, organization switching, and organization actor resource boundaries."
+source = "Human requests on 2026-06-30 and 2026-07-01 for Google sign-in, sessions, organizations, profiles, invites, organization switching, and organization actor resource boundaries. Human clarification on 2026-07-02: each organization is a tenant boundary."
 requirements = [
   "proj-quartz.google-sign-in",
   "proj-quartz.user-account-organizations",
@@ -9,13 +9,15 @@ requirements = [
   "proj-quartz.organization-context-switcher",
   "proj-quartz.auth-storage",
   "proj-quartz.organization-resource-actors",
+  "proj-quartz.multi-tenancy.organization-tenant-boundary",
   "storage.no-database-foreign-keys",
   "storage.resource-actor-governance",
 ]
-text = "Quartz identity storage connects external sign-in identities to Quartz users, browser sessions, organization profiles, organization invites, active organization context, and organization actor URIs used for resource access."
+text = "Quartz identity storage connects external sign-in identities to Quartz users, browser sessions, organization tenant profiles, organization invites, active organization tenant context, and organization actor URIs used for resource access."
 statements = [
   "A signed-in Quartz user can create organizations and receive an admin profile in each organization they create.",
   "A signed-in Quartz user can belong to multiple organizations and choose one active organization for the current session.",
+  "Each organization is a tenant boundary.",
   "An organization invite targets an email address, carries an expiring accept link, and records acceptance by a signed-in user.",
   "Organization profiles carry membership and role for one user inside one organization.",
   "Organization actor URIs are stable actor:// identifiers usable in resource read and update actor allow-lists.",

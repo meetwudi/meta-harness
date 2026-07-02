@@ -46,6 +46,9 @@ type LibrarianContext = {
   storageLocations: StorageLocation[];
   actorUri: string;
   actorUris: string[];
+  contextFilters: {
+    actorUris: string[];
+  };
   sessionId: string;
   toolCallEvents: unknown[];
 };
@@ -58,6 +61,9 @@ type LibrarianModule = {
     actorUri: string;
     actorUris?: string[];
     sessionId: string;
+    contextFilters?: {
+      actorUris?: string[];
+    };
   }): LibrarianContext;
   listLibraries(context: LibrarianContext): Promise<Record<string, unknown>>;
 };
@@ -129,7 +135,12 @@ export async function ingestQuartzLibrary(
 
     await location.storage.writeText(
       manifestPath,
-      renderLibraryToml(name, description, actorContext.actorUri),
+      renderLibraryToml(
+        name,
+        description,
+        actorContext.defaultReadActors,
+        actorContext.defaultUpdateActors,
+      ),
     );
     for (const file of files) {
       const resourcePath = posix.join(libraryRoot, file.path);
@@ -181,6 +192,9 @@ async function withQuartzApiLibrarianContext<T>(
     }),
     actorUri: actorContext.actorUri,
     actorUris: actorContext.actorUris,
+    contextFilters: {
+      actorUris: actorContext.contextFilterActorUris,
+    },
     sessionId: `quartz-api-${Date.now()}`,
   });
 
@@ -279,7 +293,8 @@ function normalizeLibraryRelativePath(value: string): string {
 function renderLibraryToml(
   name: string,
   description: string,
-  actorUri: string,
+  readActors: string[],
+  updateActors: string[],
 ): string {
   return [
     "# This is a Harness primitive.",
@@ -288,8 +303,8 @@ function renderLibraryToml(
     `name = ${JSON.stringify(name)}`,
     "isSystemLibrary = false",
     `description = ${JSON.stringify(description)}`,
-    `read_actors = ${JSON.stringify([actorUri])}`,
-    `update_actors = ${JSON.stringify([actorUri])}`,
+    `read_actors = ${JSON.stringify(readActors)}`,
+    `update_actors = ${JSON.stringify(updateActors)}`,
     "",
   ].join("\n");
 }

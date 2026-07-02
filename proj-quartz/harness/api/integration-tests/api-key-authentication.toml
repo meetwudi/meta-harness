@@ -4,6 +4,8 @@ requirements = [
   "proj-quartz.api.key-authentication",
   "proj-quartz.api.key-settings-dialog",
   "proj-quartz.api.key-actor-scope",
+  "proj-quartz.multi-tenancy.api-key-tenant-scope",
+  "proj-quartz.multi-tenancy.organization-api-key-service-account-actors",
   "proj-quartz.api.project-storage",
   "proj-quartz.storage.api-key-project-storage",
 ]
@@ -12,6 +14,8 @@ procedure = [
 ]
 expected = [
   "The API test suite verifies that a settings-created API key authenticates Quartz API requests.",
-  "The API test suite verifies that a newly created API key defaults to the creating user actor.",
+  "The API test suite verifies that a newly created API key defaults to the creating user actor within the active organization tenant.",
+  "The API test suite verifies that API keys created in one organization are not listed from another organization.",
   "The API test suite verifies that only an organization admin can create an organization-scoped API key.",
+  "The API test suite verifies that an organization-scoped API key uses service-account-style actor authority distinct from a human admin or member actor.",
 ]

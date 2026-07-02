@@ -1,6 +1,6 @@
 id = "proj-quartz.model.api-keys"
 title = "Quartz API key model"
-source = "Human requests on 2026-07-01 for settings-created API keys, API-key authenticated Quartz access, default user actors, admin-only organization actors, production Library listing by API-key actor, and API-key persistence through project storage rather than API-owned storage."
+source = "Human requests on 2026-07-01 for settings-created API keys, API-key authenticated Quartz access, default user actors, admin-only organization actors, production Library listing by API-key actor, and API-key persistence through project storage rather than API-owned storage. Human clarification on 2026-07-02: API keys are tenant or organization-scoped even when the actor scope is the creating user. Human clarification on 2026-07-02: organizational API keys should have their own actor, such as a service account actor."
 requirements = [
   "proj-quartz.api.key-authentication",
   "proj-quartz.api.key-settings-dialog",
@@ -8,15 +8,19 @@ requirements = [
   "proj-quartz.api.production-library-listing",
   "proj-quartz.storage.api-key-project-storage",
   "proj-quartz.organization-resource-actors",
+  "proj-quartz.multi-tenancy.api-key-tenant-scope",
+  "proj-quartz.multi-tenancy.low-level-tenant-security",
+  "proj-quartz.multi-tenancy.organization-api-key-service-account-actors",
   "storage.no-database-foreign-keys",
 ]
-text = "Quartz project storage connects a settings-created API key to its creating user, its actor scope, and the actor URI used for Library access and ingestion."
+text = "Quartz project storage connects a settings-created API key to its creating user, its organization tenant, its actor scope, and the actor URI used for Library access and ingestion."
 statements = [
-  "An API key belongs to the signed-in user who created it from settings.",
+  "An API key belongs to the signed-in user who created it from settings and to the organization tenant in whose context it was created.",
   "An API key authenticates external Quartz API requests.",
-  "An API key actor scope is either the creating user actor or an organization actor.",
-  "The default API key actor scope is the creating user actor.",
-  "An organization actor scope records the organization identifier and is only created for a user who is an admin of that organization.",
+  "An API key actor scope is either the creating user actor within an organization tenant or service-account-style authority for that organization tenant.",
+  "The default API key actor scope is the creating user actor within the active organization tenant.",
+  "Every API key records the organization tenant identifier, including user-actor API keys.",
+  "An organization-scoped API key records the organization identifier and its service-account-style actor authority, and is only created for a user who is an admin of that organization.",
   "The API key actor URI is used for production Library listing and Library ingestion authorization.",
   "Quartz API key relationships are stored as ordinary identifiers and are governed by application, migration, validation, repair, and acceptance logic rather than database-enforced foreign keys.",
 ]

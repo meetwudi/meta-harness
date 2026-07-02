@@ -1,0 +1,16 @@
+id = "proj-quartz.policy.tenant-data-scope"
+title = "Tenant data scope policy"
+source = "Human request on 2026-07-02: every new data created in this role needs to support tenancy; each organization is a tenant; conversations and API keys must not cross organization boundaries."
+requirements = [
+  "proj-quartz.multi-tenancy.organization-tenant-boundary",
+  "proj-quartz.multi-tenancy.low-level-tenant-security",
+  "proj-quartz.multi-tenancy.spec-driven-security",
+]
+layer = "application-storage-database"
+text = "Every new Quartz durable data record is either organization-tenant-scoped or explicitly documented as global or system-scoped before implementation."
+statements = [
+  "Tenant-scoped data records include an organization identifier, a tenant-scoped resource path, or another spec-approved tenant boundary.",
+  "User-scoped Quartz data is scoped to a user inside an organization tenant unless a requirement explicitly says it is global to the user.",
+  "List, read, update, and delete operations for tenant-scoped data use tenant scope in addition to user or actor identity.",
+  "Global or system-scoped data requires explicit governed policy knowledge explaining why it is not tenant-scoped.",
+]

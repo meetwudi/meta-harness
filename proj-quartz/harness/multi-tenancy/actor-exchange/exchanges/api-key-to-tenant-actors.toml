@@ -1,0 +1,26 @@
+id = "proj-quartz.actor-exchange.api-key-to-tenant-actors"
+title = "API key to tenant actors"
+source = "Human request on 2026-07-02: API keys created on behalf of a user or organization remain inside the tenant or organization boundary."
+requirements = [
+  "proj-quartz.multi-tenancy.actor-acquisition",
+  "proj-quartz.multi-tenancy.api-key-tenant-scope",
+  "proj-quartz.multi-tenancy.organization-api-key-service-account-actors",
+]
+input_actors = [
+  "The actor URI recorded on the authenticated API key.",
+]
+requested_actor = "tenant-scoped-authority-recorded-on-api-key"
+allow = [
+  "The API key is valid, not revoked, and records an organization tenant.",
+  "The API key actor scope and recorded actor URI were produced by a governed API-key creation path.",
+  "Organization-scoped API keys use their recorded service-account-style actor authority.",
+]
+deny = [
+  "The API key is missing, revoked, or invalid.",
+  "The API key does not record an organization tenant.",
+  "The requested tenant authority is broader than the API key's recorded tenant and actor scope.",
+]
+output_actors = [
+  "The API key's recorded actor URI.",
+  "The API key's recorded organization tenant context.",
+]

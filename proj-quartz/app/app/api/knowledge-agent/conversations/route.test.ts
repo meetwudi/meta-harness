@@ -31,7 +31,7 @@ const actorContext: QuartzResourceActorContext = {
   ],
   conversationReadActors: ["actor://proj-quartz/user/test-user"],
   conversationUpdateActors: ["actor://proj-quartz/user/test-user"],
-  conversationLibraryRootPath: "/libraries/users/test-user/knowledge-agent-conversations",
+  conversationLibraryRootPath: "/libraries/organizations/test-org/users/test-user/knowledge-agent-conversations",
 };
 
 class MemoryStorage {
@@ -125,6 +125,7 @@ const libraryRoot = actorContext.conversationLibraryRootPath;
 
 async function seedConversation(input: {
   storage: MemoryStorage;
+  libraryRoot?: string;
   folderName: string;
   conversationId?: string;
   title?: string;
@@ -138,8 +139,9 @@ async function seedConversation(input: {
   assistantMessages?: string[];
   reasoningByTurn?: Record<string, ReasoningDeltaRecord[]>;
 }) {
+  const root = input.libraryRoot ?? libraryRoot;
   const conversationId = input.conversationId ?? input.folderName;
-  const conversationRoot = join(libraryRoot, input.folderName);
+  const conversationRoot = join(root, input.folderName);
   await input.storage.makeDirectory(conversationRoot);
   await input.storage.writeText(
     join(conversationRoot, "CONVERSATION.toml"),
@@ -179,7 +181,7 @@ async function seedConversation(input: {
     if (reasoningRecords) {
       await writeTurnReasoning({
         storage: input.storage,
-        libraryRoot,
+        libraryRoot: root,
         conversationId,
         turnId: turn.turnId,
         records: reasoningRecords,
@@ -511,6 +513,56 @@ assert.match(createdToml, /^conversation_id = "quartz-[^"]+"$/m);
 assert.match(createdToml, /^created_at = "[^"]+"$/m);
 assert.match(createdToml, /^updated_at = "[^"]+"$/m);
 assert.match(createdToml, /^session_file = "session\.jsonl"$/m);
+
+const tenantStorage = new MemoryStorage();
+const orgARoot = actorContext.conversationLibraryRootPath;
+const orgBRoot = "/libraries/organizations/test-org-b/users/test-user/knowledge-agent-conversations";
+await tenantStorage.makeDirectory(orgARoot);
+await tenantStorage.makeDirectory(orgBRoot);
+await seedConversation({
+  storage: tenantStorage,
+  libraryRoot: orgARoot,
+  folderName: "quartz-org-a",
+  turns: [
+    {
+      turnId: "turn-1",
+      startedAt: "2026-07-02T12:00:00.000Z",
+      latestUserMessage: "message in organization A",
+    },
+  ],
+});
+await seedConversation({
+  storage: tenantStorage,
+  libraryRoot: orgBRoot,
+  folderName: "quartz-org-b",
+  turns: [
+    {
+      turnId: "turn-1",
+      startedAt: "2026-07-02T12:01:00.000Z",
+      latestUserMessage: "message in organization B",
+    },
+  ],
+});
+assert.deepEqual(
+  (await listConversations({ storage: tenantStorage, libraryRoot: orgARoot }))
+    .map((item) => item.id),
+  ["org-a"],
+);
+assert.deepEqual(
+  (await listConversations({ storage: tenantStorage, libraryRoot: orgBRoot }))
+    .map((item) => item.id),
+  ["org-b"],
+);
+await assert.rejects(
+  () =>
+    readConversation({
+      storage: tenantStorage,
+      libraryRoot: orgARoot,
+      folderName: "quartz-org-b",
+      includeMessages: true,
+    }),
+  /Conversation not found: quartz-org-b/,
+);
 
 await assert.rejects(
   () => runtimeStorageFromConfig({}, actorContext),
