@@ -20,6 +20,8 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
+  Folder,
+  FolderOpen,
   GitPullRequestArrow,
   LockKeyhole,
   PanelRightClose,
@@ -49,6 +51,30 @@ type QuartzLibrary = {
 
 type QuartzLibraryFile = {
   uri: string;
+};
+
+type FileTreeFileNode = {
+  kind: "file";
+  id: string;
+  name: string;
+  path: string;
+  file: QuartzLibraryFile;
+};
+
+type FileTreeFolderNode = {
+  kind: "folder";
+  id: string;
+  name: string;
+  path: string;
+  children: FileTreeNode[];
+};
+
+type FileTreeNode = FileTreeFileNode | FileTreeFolderNode;
+
+type FileTree = {
+  nodes: FileTreeNode[];
+  topLevelFolderIds: string[];
+  fileAncestorFolderIds: Record<string, string[]>;
 };
 
 type FileBaseline = {
@@ -85,7 +111,7 @@ type ChangeSetStageResult = {
 const fetchOptions: RequestInit = { cache: "no-store" };
 const explorerWidthDefault = 260;
 const explorerWidthMin = 220;
-const explorerWidthMax = 420;
+const explorerWidthMax = 640;
 
 export function LibrariesWorkspace() {
   const [libraries, setLibraries] = useState<QuartzLibrary[]>([]);
@@ -107,12 +133,14 @@ export function LibrariesWorkspace() {
   const [selectedProposedChangeUri, setSelectedProposedChangeUri] = useState("");
   const [explorerWidth, setExplorerWidth] = useState(explorerWidthDefault);
   const [resizingExplorer, setResizingExplorer] = useState(false);
+  const [expandedFolderIds, setExpandedFolderIds] = useState<Record<string, boolean>>({});
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const explorerRef = useRef<HTMLDivElement | null>(null);
   const explorerResizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
   const selectedLibrary = libraries.find((library) => library.uri === selectedLibraryUri);
+  const fileTree = useMemo(() => buildFileTree(files), [files]);
   const selectedFile = files.find((file) => file.uri === selectedFileUri);
   const selectedBaseline = selectedFileUri ? fileBaselines[selectedFileUri] : undefined;
   const selectedStagedChange = selectedFileUri
@@ -272,12 +300,14 @@ export function LibrariesWorkspace() {
           return;
         }
         const nextFiles = parseFiles(json);
+        const nextFileTree = buildFileTree(nextFiles);
+        const nextSelectedFileUri = selectedFileUri &&
+          nextFiles.some((file) => file.uri === selectedFileUri)
+          ? selectedFileUri
+          : nextFiles[0]?.uri ?? "";
         setFiles(nextFiles);
-        setSelectedFileUri((current) =>
-          current && nextFiles.some((file) => file.uri === current)
-            ? current
-            : nextFiles[0]?.uri ?? ""
-        );
+        setSelectedFileUri(nextSelectedFileUri);
+        setExpandedFolderIds(initialExpandedFolderState(nextFileTree, nextSelectedFileUri));
         setStatus(nextFiles.length > 0 ? "" : "This library has no visible files.");
       } catch (loadError) {
         if (!cancelled) {
@@ -295,6 +325,24 @@ export function LibrariesWorkspace() {
       cancelled = true;
     };
   }, [selectedLibraryUri]);
+
+  useEffect(() => {
+    const ancestorIds = fileTree.fileAncestorFolderIds[selectedFileUri] ?? [];
+    if (ancestorIds.length === 0) {
+      return;
+    }
+    setExpandedFolderIds((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const ancestorId of ancestorIds) {
+        if (!next[ancestorId]) {
+          next[ancestorId] = true;
+          changed = true;
+        }
+      }
+      return changed ? next : current;
+    });
+  }, [fileTree, selectedFileUri]);
 
   useEffect(() => {
     let cancelled = false;
@@ -350,6 +398,9 @@ export function LibrariesWorkspace() {
 
   const handleSelectFile = useCallback((uri: string) => {
     setSelectedFileUri(uri);
+    setExpandedFolderIds((current) =>
+      expandFolderAncestors(current, ancestorFolderIdsForFileUri(uri))
+    );
     if (stagedChanges[uri]) {
       setSelectedProposedChangeUri(uri);
       setProposedChangesOpen(true);
@@ -357,6 +408,13 @@ export function LibrariesWorkspace() {
     setStatus("");
     setError("");
   }, [stagedChanges]);
+
+  const handleToggleFolder = useCallback((folderId: string) => {
+    setExpandedFolderIds((current) => ({
+      ...current,
+      [folderId]: !current[folderId],
+    }));
+  }, []);
 
   const handleSelectProposedChange = useCallback((uri: string) => {
     const libraryUri = libraryUriFromResourceUri(uri);
@@ -627,46 +685,19 @@ export function LibrariesWorkspace() {
                 </button>
                 {selected ? (
                   <div className="quartz-library-file-branch" aria-label={`${library.name} files`}>
-                    {files.map((file) => {
-                      const fileSelected = file.uri === selectedFileUri;
-                      const hasProposedChange = Boolean(stagedChanges[file.uri]);
-                      const pathLabel = resourcePathFromLibraryUri(file.uri);
-                      const fileRowClassName = [
-                        "quartz-library-file-row",
-                        fileSelected ? "is-selected" : "",
-                        hasProposedChange ? "has-proposed-change" : "",
-                      ].filter(Boolean).join(" ");
-                      return (
-                        <button
-                          key={file.uri}
-                          type="button"
-                          className={fileRowClassName}
-                          aria-current={fileSelected ? "page" : undefined}
-                          onClick={() => handleSelectFile(file.uri)}
-                        >
-                          <FileText aria-hidden="true" size={14} strokeWidth={1.8} />
-                          <span className="quartz-library-file-path">{pathLabel}</span>
-                          <span className="quartz-library-file-meta">
-                            {hasProposedChange ? (
-                              <GitPullRequestArrow
-                                className="quartz-library-file-change-marker"
-                                aria-label="Has proposed change"
-                                size={13}
-                                strokeWidth={1.8}
-                              />
-                            ) : null}
-                            {library.writable ? null : (
-                              <LockKeyhole
-                                className="quartz-library-file-lock"
-                                aria-label="Read only"
-                                size={12}
-                                strokeWidth={1.8}
-                              />
-                            )}
-                          </span>
-                        </button>
-                      );
-                    })}
+                    {fileTree.nodes.map((node) => (
+                      <LibraryFileTreeNode
+                        key={node.id}
+                        node={node}
+                        depth={0}
+                        expandedFolderIds={expandedFolderIds}
+                        libraryWritable={library.writable}
+                        selectedFileUri={selectedFileUri}
+                        stagedChanges={stagedChanges}
+                        onSelectFile={handleSelectFile}
+                        onToggleFolder={handleToggleFolder}
+                      />
+                    ))}
                     {loadingFiles ? (
                       <div className="quartz-libraries-muted">Loading files...</div>
                     ) : null}
@@ -864,6 +895,112 @@ export function LibrariesWorkspace() {
   );
 }
 
+function LibraryFileTreeNode({
+  node,
+  depth,
+  expandedFolderIds,
+  libraryWritable,
+  selectedFileUri,
+  stagedChanges,
+  onSelectFile,
+  onToggleFolder,
+}: {
+  node: FileTreeNode;
+  depth: number;
+  expandedFolderIds: Record<string, boolean>;
+  libraryWritable: boolean;
+  selectedFileUri: string;
+  stagedChanges: Record<string, StagedChange>;
+  onSelectFile: (uri: string) => void;
+  onToggleFolder: (folderId: string) => void;
+}) {
+  const rowStyle = { "--quartz-library-tree-depth": depth } as CSSProperties;
+
+  if (node.kind === "folder") {
+    const expanded = Boolean(expandedFolderIds[node.id]);
+    return (
+      <div className="quartz-library-folder-node">
+        <button
+          type="button"
+          className="quartz-library-folder-row"
+          aria-expanded={expanded}
+          title={node.path}
+          style={rowStyle}
+          onClick={() => onToggleFolder(node.id)}
+        >
+          {expanded ? (
+            <ChevronDown aria-hidden="true" size={14} strokeWidth={1.8} />
+          ) : (
+            <ChevronRight aria-hidden="true" size={14} strokeWidth={1.8} />
+          )}
+          {expanded ? (
+            <FolderOpen aria-hidden="true" size={14} strokeWidth={1.8} />
+          ) : (
+            <Folder aria-hidden="true" size={14} strokeWidth={1.8} />
+          )}
+          <span className="quartz-library-file-path">{node.name}</span>
+        </button>
+        {expanded ? (
+          <div className="quartz-library-folder-children">
+            {node.children.map((child) => (
+              <LibraryFileTreeNode
+                key={child.id}
+                node={child}
+                depth={depth + 1}
+                expandedFolderIds={expandedFolderIds}
+                libraryWritable={libraryWritable}
+                selectedFileUri={selectedFileUri}
+                stagedChanges={stagedChanges}
+                onSelectFile={onSelectFile}
+                onToggleFolder={onToggleFolder}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  const fileSelected = node.file.uri === selectedFileUri;
+  const hasProposedChange = Boolean(stagedChanges[node.file.uri]);
+  const fileRowClassName = [
+    "quartz-library-file-row",
+    fileSelected ? "is-selected" : "",
+    hasProposedChange ? "has-proposed-change" : "",
+  ].filter(Boolean).join(" ");
+  return (
+    <button
+      type="button"
+      className={fileRowClassName}
+      aria-current={fileSelected ? "page" : undefined}
+      title={node.path}
+      style={rowStyle}
+      onClick={() => onSelectFile(node.file.uri)}
+    >
+      <FileText aria-hidden="true" size={14} strokeWidth={1.8} />
+      <span className="quartz-library-file-path">{node.name}</span>
+      <span className="quartz-library-file-meta">
+        {hasProposedChange ? (
+          <GitPullRequestArrow
+            className="quartz-library-file-change-marker"
+            aria-label="Has proposed change"
+            size={13}
+            strokeWidth={1.8}
+          />
+        ) : null}
+        {libraryWritable ? null : (
+          <LockKeyhole
+            className="quartz-library-file-lock"
+            aria-label="Read only"
+            size={12}
+            strokeWidth={1.8}
+          />
+        )}
+      </span>
+    </button>
+  );
+}
+
 function clampNumber(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -874,6 +1011,122 @@ function libraryUriFromResourceUri(uri: string): string {
 
 function resourcePathFromLibraryUri(uri: string): string {
   return uri.replace(/^library:\/\/[^/]+\//, "");
+}
+
+type MutableFileTreeFolder = {
+  id: string;
+  name: string;
+  path: string;
+  folders: Map<string, MutableFileTreeFolder>;
+  files: FileTreeFileNode[];
+};
+
+function buildFileTree(files: QuartzLibraryFile[]): FileTree {
+  const root: MutableFileTreeFolder = {
+    id: "folder:",
+    name: "",
+    path: "",
+    folders: new Map(),
+    files: [],
+  };
+  const fileAncestorFolderIds: Record<string, string[]> = {};
+
+  for (const file of files) {
+    const path = resourcePathFromLibraryUri(file.uri);
+    const segments = path.split("/").filter(Boolean);
+    const fileName = segments[segments.length - 1] ?? (path || file.uri);
+    const folderSegments = segments.slice(0, -1);
+    const ancestorIds: string[] = [];
+    let currentFolder = root;
+
+    for (let index = 0; index < folderSegments.length; index += 1) {
+      const folderPath = folderSegments.slice(0, index + 1).join("/");
+      const folderId = folderIdFromPath(folderPath);
+      let nextFolder = currentFolder.folders.get(folderSegments[index]);
+      if (!nextFolder) {
+        nextFolder = {
+          id: folderId,
+          name: folderSegments[index],
+          path: folderPath,
+          folders: new Map(),
+          files: [],
+        };
+        currentFolder.folders.set(folderSegments[index], nextFolder);
+      }
+      ancestorIds.push(folderId);
+      currentFolder = nextFolder;
+    }
+
+    currentFolder.files.push({
+      kind: "file",
+      id: file.uri,
+      name: fileName,
+      path,
+      file,
+    });
+    fileAncestorFolderIds[file.uri] = ancestorIds;
+  }
+
+  const topLevelFolderIds = [...root.folders.values()].map((folder) => folder.id);
+  return {
+    nodes: finalizeFileTreeFolder(root),
+    topLevelFolderIds,
+    fileAncestorFolderIds,
+  };
+}
+
+function finalizeFileTreeFolder(folder: MutableFileTreeFolder): FileTreeNode[] {
+  const folders: FileTreeFolderNode[] = [...folder.folders.values()]
+    .sort(compareMutableFolders)
+    .map((childFolder) => ({
+      kind: "folder",
+      id: childFolder.id,
+      name: childFolder.name,
+      path: childFolder.path,
+      children: finalizeFileTreeFolder(childFolder),
+    }));
+  const files = [...folder.files].sort((left, right) => left.name.localeCompare(right.name));
+  return [...folders, ...files];
+}
+
+function compareMutableFolders(left: MutableFileTreeFolder, right: MutableFileTreeFolder): number {
+  return left.name.localeCompare(right.name);
+}
+
+function folderIdFromPath(path: string): string {
+  return `folder:${path}`;
+}
+
+function initialExpandedFolderState(
+  fileTree: FileTree,
+  selectedFileUri: string,
+): Record<string, boolean> {
+  const expandedFolderIds = new Set([
+    ...fileTree.topLevelFolderIds,
+    ...(fileTree.fileAncestorFolderIds[selectedFileUri] ?? []),
+  ]);
+  return Object.fromEntries([...expandedFolderIds].map((folderId) => [folderId, true]));
+}
+
+function ancestorFolderIdsForFileUri(uri: string): string[] {
+  const path = resourcePathFromLibraryUri(uri);
+  const folderSegments = path.split("/").filter(Boolean).slice(0, -1);
+  return folderSegments.map((_, index) => folderIdFromPath(folderSegments.slice(0, index + 1).join("/")));
+}
+
+function expandFolderAncestors(
+  current: Record<string, boolean>,
+  ancestorIds: string[],
+): Record<string, boolean> {
+  let changed = false;
+  const next = { ...current };
+  for (const ancestorId of ancestorIds) {
+    if (!next[ancestorId]) {
+      next[ancestorId] = true;
+      changed = true;
+    }
+  }
+  return changed ? next : current;
 }
 
 async function stageChangeSet(changes: StagedChange[]): Promise<ChangeSetStageResult> {

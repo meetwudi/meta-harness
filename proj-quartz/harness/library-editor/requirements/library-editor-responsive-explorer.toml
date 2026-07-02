@@ -1,12 +1,14 @@
 id = "proj-quartz.library-editor-responsive-explorer"
 title = "Responsive nested Library explorer"
-source = "Human feedback on 2026-07-01: four vertical panels are too heavy, especially on mobile, and Libraries plus files should be browsed in a nested explorer-style column. Human production feedback on 2026-07-02: the Library explorer must scroll vertically when the file list is taller than the visible viewport."
-text = "Library Editor uses a responsive explorer-oriented layout where Libraries and their files can be browsed from a compact nested column, the editor remains the main workspace, and proposed changes are opened on demand."
+source = "Human feedback on 2026-07-01: four vertical panels are too heavy, especially on mobile, and Libraries plus files should be browsed in a nested explorer-style column. Human production feedback on 2026-07-02: the Library explorer must scroll vertically when the file list is taller than the visible viewport. Human feedback on 2026-07-02: nested file paths should show expandable folders instead of a flat recursive file list, and the explorer resize affordance should allow a wider expanded width."
+text = "Library Editor uses a responsive explorer-oriented layout where Libraries and their files can be browsed from a compact nested folder column, the editor remains the main workspace, and proposed changes are opened on demand."
 
 criteria = [
   "The first-pass desktop layout uses a nested Library/file explorer column and an editor area rather than separate Libraries, Files, Editor, and change panels all visible by default.",
   "Selecting a Library reveals its files in the explorer column.",
+  "Nested file paths render as expandable folder rows with child files grouped under their folders rather than as one flat recursive file list.",
   "The explorer column keeps its header fixed and scrolls the nested Library/file list vertically when the list exceeds the visible workspace height.",
+  "The explorer column resize affordance supports a wider expanded width so deeply nested paths remain usable.",
   "The editor selects a default readable file when one is available.",
   "Proposed changes are available through a toggle or affordance with a changed-file count.",
   "The layout adapts to narrow viewports without preserving four simultaneous vertical panels.",
