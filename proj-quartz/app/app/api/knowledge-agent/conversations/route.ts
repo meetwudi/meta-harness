@@ -404,6 +404,18 @@ function parseConversationId(toml: string, fileLabel: string): string {
   return parseRequiredTomlStringField(toml, "conversation_id", fileLabel);
 }
 
+function setTomlStringField(toml: string, fieldName: string, value: string): string {
+  const escapedFieldName = fieldName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const fieldLine = `${fieldName} = ${tomlString(value)}`;
+  const fieldPattern = new RegExp(`^${escapedFieldName}\\s*=\\s*"[^"]*"\\s*$`, "m");
+  if (fieldPattern.test(toml)) {
+    return toml.replace(fieldPattern, fieldLine);
+  }
+
+  const normalized = toml.endsWith("\n") ? toml : `${toml}\n`;
+  return `${normalized}${fieldLine}\n`;
+}
+
 function extractField(text: string, label: string, beforeLabels: string[]): string {
   const startMarker = `${label}: `;
   const start = text.indexOf(startMarker);
@@ -621,7 +633,9 @@ export async function readConversation(input: {
   const updatedAt = turns.at(-1)?.startedAt ||
     parseTomlStringField(conversationToml, "updated_at") ||
     createdAt;
-  const title = trimTitle(turns.find((turn) => turn.latestUserMessage)?.latestUserMessage ?? "");
+  const storedTitle = parseTomlStringField(conversationToml, "title");
+  const title = storedTitle ||
+    trimTitle(turns.find((turn) => turn.latestUserMessage)?.latestUserMessage ?? "");
   const summary: QuartzConversationSummary = {
     id: threadIdFromConversationId(conversationId),
     conversationId,
@@ -738,6 +752,7 @@ export async function createConversation(input: {
     join(conversationRoot, "CONVERSATION.toml"),
     [
       `conversation_id = ${tomlString(conversationId)}`,
+      `title = ${tomlString("New chat")}`,
       `created_at = ${tomlString(now)}`,
       `updated_at = ${tomlString(now)}`,
       `session_file = ${tomlString("session.jsonl")}`,
@@ -753,6 +768,40 @@ export async function createConversation(input: {
     updatedAt: now,
     messages: [],
   };
+}
+
+export async function renameConversation(input: {
+  storage: LibrarianStorage;
+  libraryRoot: string;
+  threadId: string;
+  title: string;
+}): Promise<QuartzConversationSummary> {
+  const conversationId = conversationIdFromThreadId(input.threadId);
+  const conversationRoot = join(input.libraryRoot, conversationId);
+  if (!(await input.storage.exists(conversationRoot))) {
+    throw new ConversationNotFoundError(conversationId);
+  }
+
+  const conversationTomlPath = join(conversationRoot, "CONVERSATION.toml");
+  if (!(await input.storage.exists(conversationTomlPath))) {
+    throw new Error(`${conversationId}/CONVERSATION.toml is missing from conversation history.`);
+  }
+
+  const now = new Date().toISOString();
+  const currentToml = await input.storage.readText(conversationTomlPath);
+  const nextToml = setTomlStringField(
+    setTomlStringField(currentToml, "title", trimTitle(input.title)),
+    "updated_at",
+    now,
+  );
+  await input.storage.writeText(conversationTomlPath, nextToml);
+
+  return readConversation({
+    storage: input.storage,
+    libraryRoot: input.libraryRoot,
+    folderName: conversationId,
+    includeMessages: true,
+  });
 }
 
 export async function writeTurnReasoning(input: {
@@ -843,6 +892,19 @@ export async function deleteConversations(input: {
   return deleted;
 }
 
+export async function deleteConversation(input: {
+  storage: LibrarianStorage;
+  libraryRoot: string;
+  threadId: string;
+}): Promise<void> {
+  const conversationId = conversationIdFromThreadId(input.threadId);
+  const conversationRoot = join(input.libraryRoot, conversationId);
+  if (!(await input.storage.exists(conversationRoot))) {
+    throw new ConversationNotFoundError(conversationId);
+  }
+  await deleteRecursively(input.storage, conversationRoot);
+}
+
 export async function GET(request: Request) {
   let library: RuntimeConversationLibrary | undefined;
   try {
@@ -894,7 +956,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
   let library: RuntimeConversationLibrary | undefined;
   try {
     const session = await requestSession();
@@ -905,6 +967,17 @@ export async function DELETE() {
       return jsonResponse({ error: "Create or join an organization to use Quartz." }, { status: 409 });
     }
     library = await loadConversationLibrary(session);
+    const url = new URL(request.url);
+    const threadId = url.searchParams.get("threadId");
+    if (threadId) {
+      await deleteConversation({
+        storage: library.storage,
+        libraryRoot: library.root,
+        threadId,
+      });
+      return jsonResponse({ deleted: 1 });
+    }
+
     return jsonResponse({
       deleted: await deleteConversations({
         storage: library.storage,
@@ -917,6 +990,54 @@ export async function DELETE() {
         error: error instanceof Error
           ? error.message
           : "Conversation deletion failed.",
+      },
+      { status: 500 },
+    );
+  } finally {
+    await library?.storage.close?.();
+  }
+}
+
+export async function PATCH(request: Request) {
+  let library: RuntimeConversationLibrary | undefined;
+  try {
+    const session = await requestSession();
+    if (!session) {
+      return jsonResponse({ error: "Sign-in is required." }, { status: 401 });
+    }
+    if (!session.activeOrganization) {
+      return jsonResponse({ error: "Create or join an organization to use Quartz." }, { status: 409 });
+    }
+    const url = new URL(request.url);
+    const threadId = url.searchParams.get("threadId");
+    if (!threadId) {
+      return jsonResponse({ error: "threadId is required." }, { status: 400 });
+    }
+    const body = await request.json();
+    const title = body &&
+      typeof body === "object" &&
+      !Array.isArray(body) &&
+      typeof (body as Record<string, unknown>).title === "string"
+        ? (body as Record<string, string>).title
+        : "";
+    if (!title.trim()) {
+      return jsonResponse({ error: "Conversation title is required." }, { status: 400 });
+    }
+
+    library = await loadConversationLibrary(session);
+    const conversation = await renameConversation({
+      storage: library.storage,
+      libraryRoot: library.root,
+      threadId,
+      title,
+    });
+    return jsonResponse({ conversation });
+  } catch (error) {
+    return jsonResponse(
+      {
+        error: error instanceof Error
+          ? error.message
+          : "Conversation rename failed.",
       },
       { status: 500 },
     );

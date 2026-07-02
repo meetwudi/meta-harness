@@ -19,12 +19,15 @@ import {
   LogOut,
   Mail,
   MessageSquare,
+  MoreHorizontal,
   PanelLeftClose,
   PanelLeftOpen,
   PenLine,
+  Pencil,
   Plus,
   Search,
   Settings,
+  Trash2,
   UserRound,
 } from "lucide-react";
 import {
@@ -48,6 +51,7 @@ import {
 } from "./providers";
 import { Dialog } from "./components/ui/dialog";
 import { LibrariesWorkspace } from "./components/libraries/libraries-workspace";
+import { Menu, MenuItem } from "./components/ui/menu";
 import { TabPanel, Tabs, type TabItem } from "./components/ui/tabs";
 
 type QuartzChatInputProps = Parameters<
@@ -251,6 +255,18 @@ function threadTitleFromMessages(messages: Message[]) {
   return title.length > 54 ? `${title.slice(0, 51).trim()}...` : title;
 }
 
+function threadTitleAfterMessageUpdate(
+  thread: QuartzConversationThread,
+  messages: Message[],
+) {
+  const currentDerivedTitle = threadTitleFromMessages(thread.messages);
+  if (thread.title && thread.title !== currentDerivedTitle) {
+    return thread.title;
+  }
+
+  return threadTitleFromMessages(messages);
+}
+
 function compareThreadsByRecency(
   left: QuartzConversationThread,
   right: QuartzConversationThread,
@@ -372,7 +388,22 @@ function withPendingAfterLatestUser(
   pending: boolean,
   threadId: string,
 ) {
-  if (!pending || messages.some((message) => message.role === "reasoning")) {
+  if (!pending) {
+    return messages;
+  }
+
+  if (messages.some((message) => messageContentText(message.content) === quartzPendingReasoningMarker)) {
+    return messages;
+  }
+
+  let latestUserIndex = -1;
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index]?.role === "user") {
+      latestUserIndex = index;
+      break;
+    }
+  }
+  if (latestUserIndex < 0) {
     return messages;
   }
 
@@ -381,14 +412,22 @@ function withPendingAfterLatestUser(
     return messages;
   }
 
-  const nextMessages = cloneMessages(messages);
-  let insertAt = nextMessages.length;
-  for (let index = nextMessages.length - 1; index >= 0; index -= 1) {
-    if (nextMessages[index]?.role === "user") {
-      insertAt = index + 1;
+  let insertAt = latestUserIndex + 1;
+  for (let index = latestUserIndex + 1; index < messages.length; index += 1) {
+    const message = messages[index] as Message | undefined;
+    if (!message) {
+      continue;
+    }
+    if (message.role === "assistant" && messageContentText(message.content)) {
+      return messages;
+    }
+    if (message.role === "assistant") {
       break;
     }
+    insertAt = index + 1;
   }
+
+  const nextMessages = cloneMessages(messages);
   nextMessages.splice(insertAt, 0, {
     id: `quartz-pending-${threadId}-${latestUserKey}`,
     role: "reasoning",
@@ -655,6 +694,40 @@ async function fetchConversation(threadId: string): Promise<QuartzConversationTh
     json.conversation,
     true,
     "Conversation response",
+  );
+}
+
+async function updateConversationTitle(
+  threadId: string,
+  title: string,
+): Promise<QuartzConversationThread> {
+  const json = await parseJsonResponse(
+    await fetch(
+      `${quartzConversationApiPath}?threadId=${encodeURIComponent(threadId)}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      },
+    ),
+  );
+  if (!json || typeof json !== "object" || !("conversation" in json)) {
+    throw new Error("Conversation rename response was malformed.");
+  }
+
+  return requireConversationFromApi(
+    json.conversation,
+    true,
+    "Conversation rename response",
+  );
+}
+
+async function deleteConversationThread(threadId: string): Promise<void> {
+  await parseJsonResponse(
+    await fetch(
+      `${quartzConversationApiPath}?threadId=${encodeURIComponent(threadId)}`,
+      { method: "DELETE" },
+    ),
   );
 }
 
@@ -949,6 +1022,22 @@ function disabledControl(
   } as Partial<React.ComponentProps<"button"> & React.ComponentProps<"textarea">>);
 }
 
+function resizeComposerTextarea(textarea: HTMLTextAreaElement) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const style = window.getComputedStyle(textarea);
+  const lineHeight = Number.parseFloat(style.lineHeight) || 22;
+  const paddingTop = Number.parseFloat(style.paddingTop) || 0;
+  const paddingBottom = Number.parseFloat(style.paddingBottom) || 0;
+  const maxHeight = lineHeight * 6 + paddingTop + paddingBottom;
+
+  textarea.style.height = "auto";
+  textarea.style.maxHeight = `${maxHeight}px`;
+  textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`;
+  textarea.style.overflowY = textarea.scrollHeight > maxHeight + 1 ? "auto" : "hidden";
+}
+
 function QuartzChatInput({
   textArea,
   addMenuButton,
@@ -966,7 +1055,22 @@ function QuartzChatInput({
     agentId: "knowledge-agent",
     updates: [UseAgentUpdate.OnRunStatusChanged],
   });
+  const composerInputRef = useRef<HTMLDivElement | null>(null);
   const runInProgress = agent.isRunning || composerDisabled;
+
+  useLayoutEffect(() => {
+    const textarea = composerInputRef.current?.querySelector("textarea");
+    if (!(textarea instanceof HTMLTextAreaElement)) {
+      return;
+    }
+
+    resizeComposerTextarea(textarea);
+    const handleInput = () => resizeComposerTextarea(textarea);
+    textarea.addEventListener("input", handleInput);
+    return () => {
+      textarea.removeEventListener("input", handleInput);
+    };
+  });
 
   return (
     <div className="quartz-composer-shell">
@@ -975,7 +1079,7 @@ function QuartzChatInput({
         <div className="quartz-composer-add">
           {disabledControl(addMenuButton, runInProgress)}
         </div>
-        <div className="quartz-composer-input">
+        <div className="quartz-composer-input" ref={composerInputRef}>
           {disabledControl(textArea, runInProgress)}
         </div>
         <div className="quartz-composer-actions">
@@ -989,7 +1093,7 @@ function QuartzChatInput({
               <QuartzModelControl />
               <QuartzReasoningControl />
               {disabledControl(startTranscribeButton, runInProgress)}
-              {disabledControl(sendButton, runInProgress)}
+              {disabledControl(sendButton, composerDisabled)}
             </>
           )}
         </div>
@@ -1052,13 +1156,13 @@ function QuartzReasoningMessage({
   if (isPending) {
     return (
       <div
-        className="quartz-reasoning-message quartz-reasoning-pending"
+        className="quartz-reasoning-message quartz-response-pending-message"
         data-message-id={message.id}
         data-state="pending"
         role="status"
         aria-label="Waiting for response"
       >
-        <span className="quartz-reasoning-dot" aria-hidden="true" />
+        <span className="quartz-response-pending-dot" aria-hidden="true" />
       </div>
     );
   }
@@ -2047,6 +2151,8 @@ function QuartzConversationSidebar({
   onNewThread,
   onOpenLibraries,
   onSelectThread,
+  onRenameThread,
+  onDeleteThread,
   onSignIn,
   onLogout,
   onCreateOrganization,
@@ -2068,12 +2174,17 @@ function QuartzConversationSidebar({
   onNewThread: () => void;
   onOpenLibraries: () => void;
   onSelectThread: (threadId: string) => void;
+  onRenameThread: (threadId: string, title: string) => Promise<void>;
+  onDeleteThread: (threadId: string) => Promise<void>;
   onSignIn: () => void;
   onLogout: () => Promise<void>;
   onCreateOrganization: (name: string) => Promise<void>;
   onSwitchOrganization: (organizationId: string) => Promise<void>;
   onInvite: (organizationId: string, email: string) => Promise<void>;
 }) {
+  const [editingThreadId, setEditingThreadId] = useState("");
+  const [editingTitle, setEditingTitle] = useState("");
+  const skipRenameCommitRef = useRef(false);
   const normalizedSearch = search.trim().toLowerCase();
   const visibleThreads = threads
     .filter((thread) =>
@@ -2082,6 +2193,38 @@ function QuartzConversationSidebar({
         : true,
     )
     .sort(compareThreadsByRecency);
+  const editingThread = threads.find((thread) => thread.id === editingThreadId);
+
+  const beginRename = useCallback((thread: QuartzConversationThread) => {
+    skipRenameCommitRef.current = false;
+    setEditingThreadId(thread.id);
+    setEditingTitle(thread.title);
+  }, []);
+
+  const cancelRename = useCallback(() => {
+    skipRenameCommitRef.current = true;
+    setEditingThreadId("");
+    setEditingTitle("");
+  }, []);
+
+  const commitRename = useCallback(async () => {
+    if (skipRenameCommitRef.current) {
+      skipRenameCommitRef.current = false;
+      return;
+    }
+    if (!editingThreadId) {
+      return;
+    }
+    const threadId = editingThreadId;
+    const previousTitle = editingThread?.title ?? "";
+    const nextTitle = editingTitle.trim();
+    setEditingThreadId("");
+    setEditingTitle("");
+    if (!nextTitle || nextTitle === previousTitle) {
+      return;
+    }
+    await onRenameThread(threadId, nextTitle);
+  }, [editingThread?.title, editingThreadId, editingTitle, onRenameThread]);
 
   return (
     <aside
@@ -2183,10 +2326,10 @@ function QuartzConversationSidebar({
           <div className="quartz-thread-list">
             {visibleThreads.map((thread) => {
               const active = thread.id === activeThreadId;
+              const editing = thread.id === editingThreadId;
               return (
-                <button
+                <div
                   key={thread.id}
-                  type="button"
                   className={
                     active && activeWorkspace === "chat"
                       ? "quartz-sidebar-row quartz-thread-row is-active"
@@ -2194,16 +2337,83 @@ function QuartzConversationSidebar({
                   }
                   data-thread-id={thread.id}
                   data-updated-at={thread.updatedAt}
-                  aria-current={active && activeWorkspace === "chat" ? "page" : undefined}
-                  onClick={() => onSelectThread(thread.id)}
                 >
-                  <MessageSquare
-                    aria-hidden="true"
-                    size={16}
-                    strokeWidth={1.85}
-                  />
-                  <span>{thread.title}</span>
-                </button>
+                  {editing ? (
+                    <div className="quartz-thread-select is-editing">
+                      <MessageSquare
+                        aria-hidden="true"
+                        size={16}
+                        strokeWidth={1.85}
+                      />
+                      <input
+                        className="quartz-thread-title-input"
+                        value={editingTitle}
+                        aria-label="Rename chat"
+                        autoFocus
+                        onClick={(event) => event.stopPropagation()}
+                        onChange={(event) => setEditingTitle(event.target.value)}
+                        onBlur={() => {
+                          void commitRename();
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            void commitRename();
+                          }
+                          if (event.key === "Escape") {
+                            event.preventDefault();
+                            cancelRename();
+                          }
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="quartz-thread-select"
+                      aria-current={active && activeWorkspace === "chat" ? "page" : undefined}
+                      onClick={() => onSelectThread(thread.id)}
+                    >
+                      <MessageSquare
+                        aria-hidden="true"
+                        size={16}
+                        strokeWidth={1.85}
+                      />
+                      <span>{thread.title}</span>
+                    </button>
+                  )}
+                  {!editing ? (
+                    <Menu
+                      label={`Chat actions for ${thread.title}`}
+                      trigger={(
+                        <button
+                          type="button"
+                          className="quartz-thread-menu-trigger"
+                          aria-label={`Chat actions for ${thread.title}`}
+                          title="Chat actions"
+                        >
+                          <MoreHorizontal aria-hidden="true" size={16} strokeWidth={2} />
+                        </button>
+                      )}
+                    >
+                      <MenuItem
+                        icon={<Pencil aria-hidden="true" size={15} strokeWidth={1.9} />}
+                        onSelect={() => beginRename(thread)}
+                      >
+                        Rename
+                      </MenuItem>
+                      <MenuItem
+                        destructive
+                        icon={<Trash2 aria-hidden="true" size={15} strokeWidth={1.9} />}
+                        onSelect={() => {
+                          void onDeleteThread(thread.id);
+                        }}
+                      >
+                        Delete
+                      </MenuItem>
+                    </Menu>
+                  ) : null}
+                </div>
               );
             })}
           </div>
@@ -2238,6 +2448,7 @@ function QuartzConversationSidebar({
 // Harness-Requirement: proj-quartz.quartz-agent-actor
 // Harness-Requirement: proj-quartz.memory-curator-actor
 // Harness-Requirement: proj-quartz.chatgpt-style-conversation-sidebar
+// Harness-Requirement: proj-quartz.chat-composer-behavior
 // Harness-Requirement: proj-quartz.library-editor-sidebar
 // Harness-Requirement: proj-quartz.library-editor-browse-readable
 // Harness-Requirement: proj-quartz.library-editor-writable-editing
@@ -2429,7 +2640,7 @@ export default function Page() {
                 );
                 return {
                   ...loadedThread,
-                  title: threadTitleFromMessages(messages),
+                  title: loadedThread.title,
                   messages,
                   messagesLoaded: true,
                 };
@@ -2437,7 +2648,6 @@ export default function Page() {
             : [
                 {
                   ...loadedThread,
-                  title: threadTitleFromMessages(loadedThread.messages),
                   messagesLoaded: true,
                 },
                 ...current,
@@ -2510,6 +2720,53 @@ export default function Page() {
     );
   }, [pageAgent, threads]);
 
+  const handleRenameThread = useCallback(async (threadId: string, title: string) => {
+    try {
+      const updatedThread = await updateConversationTitle(threadId, title);
+      setThreads((current) =>
+        current.map((thread) => {
+          if (thread.id !== threadId) {
+            return thread;
+          }
+          const messages = mergeThreadMessages(thread.messages, updatedThread.messages);
+          return {
+            ...updatedThread,
+            messages,
+            messagesLoaded: thread.messagesLoaded || updatedThread.messagesLoaded,
+          };
+        }),
+      );
+      setHistoryError("");
+    } catch (error) {
+      setHistoryError(
+        error instanceof Error
+          ? error.message
+          : "Conversation rename failed.",
+      );
+    }
+  }, []);
+
+  const handleDeleteThread = useCallback(async (threadId: string) => {
+    try {
+      await deleteConversationThread(threadId);
+      setThreads((current) => current.filter((thread) => thread.id !== threadId));
+      if (threadId === activeThreadId) {
+        pageAgent.setMessages([]);
+        setActiveThreadId(createThreadId());
+        setActiveThreadIsHomeDraft(true);
+        setHydratedThreadId("");
+        updateChatUrl(null);
+      }
+      setHistoryError("");
+    } catch (error) {
+      setHistoryError(
+        error instanceof Error
+          ? error.message
+          : "Conversation deletion failed.",
+      );
+    }
+  }, [activeThreadId, pageAgent]);
+
   const handleOpenLibraries = useCallback(() => {
     setActiveWorkspace("libraries");
     updateLibrariesUrl();
@@ -2546,7 +2803,7 @@ export default function Page() {
 
               return {
                 ...loadedThread,
-                title: threadTitleFromMessages(refreshedMessages),
+                title: loadedThread.title,
                 messages: refreshedMessages,
                 messagesLoaded: true,
               };
@@ -2559,7 +2816,6 @@ export default function Page() {
             return [
               {
                 ...loadedThread,
-                title: threadTitleFromMessages(refreshedMessages),
                 messages: refreshedMessages,
                 messagesLoaded: true,
               },
@@ -2629,7 +2885,7 @@ export default function Page() {
 
           return {
             ...thread,
-            title: threadTitleFromMessages(mergedMessages),
+            title: threadTitleAfterMessageUpdate(thread, mergedMessages),
             updatedAt: now,
             messages: cloneMessages(mergedMessages),
             messagesLoaded: true,
@@ -2771,6 +3027,8 @@ export default function Page() {
         onNewThread={handleNewThread}
         onOpenLibraries={handleOpenLibraries}
         onSelectThread={handleSelectThread}
+        onRenameThread={handleRenameThread}
+        onDeleteThread={handleDeleteThread}
         onSignIn={handleSignIn}
         onLogout={handleLogout}
         onCreateOrganization={handleCreateOrganization}

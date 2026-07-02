@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import {
   createConversation,
+  deleteConversation,
   deleteConversations,
   listConversations,
   readConversation,
   reasoningContentFromRecords,
+  renameConversation,
   runtimeStorageFromConfig,
   writeTurnReasoning,
   type ReasoningDeltaRecord,
@@ -125,6 +127,7 @@ async function seedConversation(input: {
   storage: MemoryStorage;
   folderName: string;
   conversationId?: string;
+  title?: string;
   createdAt?: string;
   updatedAt?: string;
   turns?: Array<{
@@ -142,6 +145,7 @@ async function seedConversation(input: {
     join(conversationRoot, "CONVERSATION.toml"),
     [
       `conversation_id = ${JSON.stringify(conversationId)}`,
+      input.title ? `title = ${JSON.stringify(input.title)}` : "",
       input.createdAt ? `created_at = ${JSON.stringify(input.createdAt)}` : "",
       input.updatedAt ? `updated_at = ${JSON.stringify(input.updatedAt)}` : "",
       'session_file = "session.jsonl"',
@@ -427,6 +431,64 @@ assert.deepEqual(
   ["recent", "thread-alpha", "older", "empty"],
 );
 assert.equal(list.at(-1)?.title, "New chat");
+
+const renameStorage = new MemoryStorage();
+await renameStorage.makeDirectory(libraryRoot);
+await seedConversation({
+  storage: renameStorage,
+  folderName: "quartz-rename-me",
+  turns: [
+    {
+      turnId: "turn-1",
+      startedAt: "2026-07-02T10:00:00.000Z",
+      latestUserMessage: "original title",
+    },
+  ],
+});
+const renamed = await renameConversation({
+  storage: renameStorage,
+  libraryRoot,
+  threadId: "rename-me",
+  title: "Manual title",
+});
+assert.equal(renamed.title, "Manual title");
+assert.equal(renamed.id, "rename-me");
+assert.equal(renamed.messages?.[0]?.content, "original title");
+const renamedToml = await renameStorage.readText(
+  join(libraryRoot, "quartz-rename-me", "CONVERSATION.toml"),
+);
+assert.match(renamedToml, /^title = "Manual title"$/m);
+assert.match(renamedToml, /^updated_at = "[^"]+"$/m);
+assert.equal(
+  (await readConversation({
+    storage: renameStorage,
+    libraryRoot,
+    folderName: "quartz-rename-me",
+    includeMessages: false,
+  })).title,
+  "Manual title",
+);
+
+const singleDeleteStorage = new MemoryStorage();
+await singleDeleteStorage.makeDirectory(libraryRoot);
+await seedConversation({
+  storage: singleDeleteStorage,
+  folderName: "quartz-keep",
+});
+await seedConversation({
+  storage: singleDeleteStorage,
+  folderName: "quartz-delete-me",
+});
+await deleteConversation({
+  storage: singleDeleteStorage,
+  libraryRoot,
+  threadId: "delete-me",
+});
+assert.deepEqual(
+  (await listConversations({ storage: singleDeleteStorage, libraryRoot }))
+    .map((item) => item.id),
+  ["keep"],
+);
 
 const deleted = await deleteConversations({ storage, libraryRoot });
 assert.equal(deleted, 4);

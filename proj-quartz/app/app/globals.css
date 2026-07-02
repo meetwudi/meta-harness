@@ -94,7 +94,8 @@ textarea {
 }
 
 .quartz-sidebar-icon-button:hover,
-.quartz-sidebar-row:hover {
+.quartz-sidebar-row:hover,
+.quartz-thread-row:focus-within {
   background: var(--quartz-sidebar-hover);
 }
 
@@ -217,11 +218,92 @@ textarea {
   flex-direction: column;
 }
 
-.quartz-thread-row span {
+.quartz-thread-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px;
+  padding: 0 4px 0 10px;
+}
+
+.quartz-thread-select {
+  min-width: 0;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.quartz-thread-select.is-editing {
+  cursor: default;
+}
+
+.quartz-thread-select svg {
+  flex: 0 0 auto;
+}
+
+.quartz-thread-select span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.quartz-thread-title-input {
+  min-width: 0;
+  width: 100%;
+  height: 28px;
+  border: 0;
+  outline: 0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--quartz-ink);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.quartz-thread-title-input:focus {
+  box-shadow: 0 0 0 2px rgba(20, 119, 111, 0.25);
+}
+
+.quartz-thread-menu-trigger {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #5f5f5f;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.quartz-thread-row:hover .quartz-thread-menu-trigger,
+.quartz-thread-row:focus-within .quartz-thread-menu-trigger,
+.quartz-thread-menu-trigger[aria-expanded="true"] {
+  opacity: 1;
+}
+
+.quartz-thread-menu-trigger:hover,
+.quartz-thread-menu-trigger[aria-expanded="true"] {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.quartz-thread-menu-trigger:focus-visible,
+.quartz-thread-title-input:focus-visible {
+  outline: 2px solid rgba(20, 119, 111, 0.35);
+  outline-offset: 2px;
 }
 
 .quartz-sidebar-search {
@@ -241,6 +323,67 @@ textarea {
 
 .quartz-sidebar-search input::placeholder {
   color: #8f8f8f;
+}
+
+.quartz-menu-root {
+  position: relative;
+  display: inline-flex;
+}
+
+.quartz-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 40;
+  min-width: 152px;
+  padding: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow:
+    0 20px 44px rgba(22, 32, 28, 0.16),
+    0 1px 2px rgba(22, 32, 28, 0.12);
+}
+
+.quartz-menu-item {
+  width: 100%;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--quartz-ink);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.quartz-menu-item:hover,
+.quartz-menu-item:focus-visible {
+  background: #f0f2ee;
+}
+
+.quartz-menu-item:focus-visible {
+  outline: 2px solid rgba(20, 119, 111, 0.35);
+  outline-offset: 2px;
+}
+
+.quartz-menu-item.is-destructive {
+  color: #b3261e;
+}
+
+.quartz-menu-item-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
 }
 
 .quartz-sidebar-footer {
@@ -887,6 +1030,20 @@ textarea {
   animation: quartz-pending-dot 900ms ease-in-out infinite;
 }
 
+.quartz-response-pending-message {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.quartz-response-pending-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #0d0d0d;
+  animation: quartz-pending-dot 900ms ease-in-out infinite;
+}
+
 @keyframes quartz-pending-dot {
   0%,
   100% {
@@ -1123,6 +1280,8 @@ textarea {
 
 .quartz-library-explorer {
   position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   background: #fcfcfc;
 }
 
@@ -1741,7 +1900,7 @@ textarea {
   min-height: 58px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: end;
   gap: 10px;
   padding: 8px 10px;
   border: 1px solid color-mix(in srgb, var(--quartz-line) 82%, #ffffff);
@@ -1761,12 +1920,16 @@ textarea {
 
 .quartz-composer-input {
   min-width: 0;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
 }
 
 .quartz-composer-input textarea {
   width: 100%;
-  max-height: 160px;
-  min-height: 34px;
+  max-height: 156px;
+  min-height: 36px;
+  padding: 7px 0;
   resize: none;
   border: 0;
   outline: 0;
@@ -1774,6 +1937,7 @@ textarea {
   color: var(--quartz-ink);
   font-size: 0.97rem;
   line-height: 1.4;
+  overflow-y: hidden;
 }
 
 .quartz-composer-input textarea::placeholder {

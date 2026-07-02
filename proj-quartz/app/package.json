@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "npm --prefix ../../meta-harness/librarian/impl run build",
+    "predev": "npm --prefix ../../meta-harness/knowledge-agent/impl run build",
     "dev": "next dev",
-    "prebuild": "npm --prefix ../../meta-harness/librarian/impl run build",
+    "prebuild": "npm --prefix ../../meta-harness/knowledge-agent/impl run build",
     "build": "next build",
     "migrate:library-manifest-actors": "node scripts/migrate-library-manifest-actors-to-owner.mjs",
     "migrate:legacy-conversations": "node scripts/migrate-legacy-conversations-to-owner.mjs",

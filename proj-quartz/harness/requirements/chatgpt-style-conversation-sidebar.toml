@@ -1,6 +1,6 @@
 id = "proj-quartz.chatgpt-style-conversation-sidebar"
 title = "ChatGPT-style conversation sidebar"
-source = "Human requests and clarifications on 2026-06-27 and 2026-06-28: Quartz should provide a ChatGPT-style conversation sidebar; load past conversations from governed Knowledge Agent conversation Library storage; keep New chat as an unsaved blank home state until the first message; preserve multi-turn transcript history across new chat, return, and follow-up flows; give saved chats `/c/{threadId}` URLs; surface governed storage failures clearly; allow authorized clearing of existing governed conversation records; keep conversation scrolling stable during follow-up streaming; and map explicit chat thread IDs to Knowledge Agent conversation Library records for the SSE route."
+source = "Human requests and clarifications on 2026-06-27, 2026-06-28, and 2026-07-02: Quartz should provide a ChatGPT-style conversation sidebar; load past conversations from governed Knowledge Agent conversation Library storage; keep New chat as an unsaved blank home state until the first message; preserve multi-turn transcript history across new chat, return, and follow-up flows; give saved chats `/c/{threadId}` URLs; surface governed storage failures clearly; allow authorized clearing of existing governed conversation records; keep conversation scrolling stable during follow-up streaming; map explicit chat thread IDs to Knowledge Agent conversation Library records for the SSE route; and support ChatGPT-style saved-chat row controls for inline rename and delete."
 text = "Quartz presents a ChatGPT-style left conversation sidebar that lets users start a new conversation, search past conversations loaded from the governed Knowledge Agent conversations Library, and switch back to prior Quartz conversations."
 
 criteria = [
@@ -20,4 +20,9 @@ criteria = [
   "Sending a message in a conversation keeps the transcript position stable; Quartz scrolls to the new message once, follows streaming while the transcript remains pinned to bottom, and stops auto-following when the user scrolls away.",
   "Persisted conversation reconstruction includes reasoning messages between the triggering user message and assistant answer when model-origin reasoning was stored for that turn.",
   "The sidebar includes a compact local search control for filtering visible saved conversations.",
+  "Saved chat rows expose a compact context menu with Rename and Delete actions.",
+  "Choosing Rename makes the saved chat title editable inline in the sidebar; Enter or blur confirms the new title, and Escape cancels editing.",
+  "Renamed chat titles persist in governed Knowledge Agent conversation storage and remain visible after reload.",
+  "Choosing Delete removes that saved chat from governed Knowledge Agent conversation storage and from the sidebar without clearing unrelated conversations.",
+  "When the active saved chat is deleted, Quartz returns to the blank unsaved New chat state.",
 ]

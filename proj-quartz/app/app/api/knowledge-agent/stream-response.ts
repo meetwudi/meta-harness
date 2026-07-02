@@ -47,6 +47,7 @@ export type KnowledgeAgentRunner = (input: {
   runId: string;
   model: string;
   reasoningEffort: ReasoningEffort;
+  signal?: AbortSignal;
   onProgress?: (message: string, source: KnowledgeAgentStreamSource) => void;
   onReasoningDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
   onTextDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
@@ -88,8 +89,12 @@ export function createKnowledgeAgentSseStream(input: {
     input: RunAgentInput,
     config: KnowledgeAgentChatConfig,
   ) => string;
+  abortSignal?: AbortSignal;
   runKnowledgeAgent: KnowledgeAgentRunner;
 }): ReadableStream<Uint8Array> {
+  const runAbortController = new AbortController();
+  const abortRun = () => runAbortController.abort();
+  let streamCancelled = false;
   return new ReadableStream<Uint8Array>({
     async start(controller) {
       const messageId = `quartz-message-${crypto.randomUUID()}`;
@@ -98,7 +103,11 @@ export function createKnowledgeAgentSseStream(input: {
       let assistantStarted = false;
       let streamedAssistantText = "";
       let lastReasoningSource: KnowledgeAgentStreamSource | null = null;
-      const send = (event: AgUiEvent) => controller.enqueue(eventBytes(event));
+      const send = (event: AgUiEvent) => {
+        if (!streamCancelled) {
+          controller.enqueue(eventBytes(event));
+        }
+      };
       const startAssistant = () => {
         if (assistantStarted) {
           return;
@@ -224,6 +233,14 @@ export function createKnowledgeAgentSseStream(input: {
         input: input.runInput,
       });
 
+      if (input.abortSignal) {
+        if (input.abortSignal.aborted) {
+          abortRun();
+        } else {
+          input.abortSignal.addEventListener("abort", abortRun, { once: true });
+        }
+      }
+
       try {
         const latestUserMessage = input.latestUserGoal(input.runInput);
         const goal = input.contextualUserGoal(input.runInput);
@@ -241,6 +258,7 @@ export function createKnowledgeAgentSseStream(input: {
           runId: input.runId,
           model,
           reasoningEffort,
+          signal: runAbortController.signal,
           onReasoningDelta: appendReasoningDelta,
           onTextDelta: appendAssistantText,
         });
@@ -254,6 +272,22 @@ export function createKnowledgeAgentSseStream(input: {
           outcome: { type: "success" },
         });
       } catch (error) {
+        if (runAbortController.signal.aborted) {
+          finishReasoning();
+          if (assistantStarted) {
+            send({
+              type: "TEXT_MESSAGE_END",
+              messageId,
+            });
+          }
+          send({
+            type: "RUN_FINISHED",
+            threadId: input.threadId,
+            runId: input.runId,
+            outcome: { type: "stopped" },
+          });
+          return;
+        }
         const message =
           error instanceof Error ? error.message : "Knowledge Agent run failed.";
         finishReasoning();
@@ -275,8 +309,15 @@ export function createKnowledgeAgentSseStream(input: {
           code: "knowledge_agent_error",
         });
       } finally {
-        controller.close();
+        input.abortSignal?.removeEventListener("abort", abortRun);
+        if (!streamCancelled) {
+          controller.close();
+        }
       }
+    },
+    cancel() {
+      streamCancelled = true;
+      abortRun();
     },
   });
 }

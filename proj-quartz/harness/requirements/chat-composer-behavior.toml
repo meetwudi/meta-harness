@@ -1,0 +1,15 @@
+id = "proj-quartz.chat-composer-behavior"
+title = "Chat composer behavior"
+source = "Human request on 2026-07-02: Quartz should keep the existing Quartz thinking row unchanged, show the original-style blinking black dot below it while no answer content exists, stream final output without duplication, make the in-progress pause control work, align typed message text with the rest of the chat box, let the composer grow for multiple lines before scrolling, and not instantly fail first chat runs in a fresh worktree because the Knowledge Agent CLI artifact was not built."
+text = "Quartz chat input and run controls behave like the production chat surface the user expects: the composer aligns cleanly, multi-line input grows before scrolling, answer waiting is visibly indicated, final answer text streams, and an in-progress run can be paused."
+
+criteria = [
+  "The composer text entry aligns with the rest of the chat box and does not sit visibly off-center from the surrounding controls.",
+  "The composer grows with multi-line text up to a bounded multi-line height before the textarea begins internal scrolling.",
+  "The in-progress send control remains available as the pause/stop control instead of becoming disabled.",
+  "Pausing an in-progress run uses the supported chat agent stop or abort path and does not submit a duplicate message.",
+  "The local app development/build startup path builds the Knowledge Agent CLI artifact required by chat runs before the app accepts a Knowledge Agent message.",
+  "While reasoning is visible but assistant answer text has not started, Quartz shows a compact blinking black pending dot below the existing Quartz thinking row.",
+  "The pending answer dot is removed when real assistant answer text starts and is not persisted as governed conversation content.",
+  "Quartz custom menu/dialog/control UI is implemented through shared app UI components when Quartz owns the control.",
+]

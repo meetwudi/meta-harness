@@ -105,6 +105,35 @@ assert.equal(
   false,
 );
 
+const duplicateSafeStream = createKnowledgeAgentSseStream({
+  runInput: {
+    threadId: "thread-duplicate",
+    runId: "run-duplicate",
+    messages: [{ role: "user", content: "Avoid duplicate final output." }],
+  },
+  threadId: "thread-duplicate",
+  runId: "run-duplicate",
+  loadChatConfig: () => ({
+    defaultModel: "gpt-test",
+    modelOptions: [{ id: "gpt-test", label: "GPT Test" }],
+  }),
+  latestUserGoal: () => "Avoid duplicate final output.",
+  contextualUserGoal: () => "Avoid duplicate final output.",
+  reasoningEffortFromInput: () => "medium",
+  modelFromInput: () => "gpt-test",
+  runKnowledgeAgent: async (input) => {
+    input.onTextDelta?.("Already streamed.", "main");
+    return "Already streamed.";
+  },
+});
+const duplicateSafeEvents = await readSseEvents(duplicateSafeStream);
+assert.deepEqual(
+  duplicateSafeEvents
+    .filter((event) => event.type === "TEXT_MESSAGE_CONTENT")
+    .map((event) => event.delta),
+  ["Already streamed."],
+);
+
 const firstTextContentIndex = events.findIndex(
   (event) =>
     event.type === "TEXT_MESSAGE_CONTENT" && event.delta === "Main answer ",

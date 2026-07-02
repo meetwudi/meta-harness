@@ -3,16 +3,19 @@ title = "Chat conversation history and reasoning persistence integration"
 requirements = [
   "proj-quartz.chatgpt-style-conversation-sidebar",
   "proj-quartz.conversation-user-actor-ownership",
+  "proj-quartz.chat-composer-behavior",
   "proj-quartz.reasoning-event-rendering",
   "proj-quartz.knowledge-agent-chat-service",
 ]
 procedure = [
+  "Run `npm --prefix proj-quartz/app run predev`.",
   "Run `npm --prefix proj-quartz/app run typecheck`.",
   "Run `npm --prefix proj-quartz/app run test:conversations`.",
   "Run `npm --prefix proj-quartz/app run test:streaming`.",
 ]
 expected = [
+  "The app predev build creates the Knowledge Agent CLI artifact required by chat runs.",
   "TypeScript typechecking completes successfully.",
-  "The conversation route test verifies user-scoped governed conversation reconstruction, persisted reasoning message order, and authorized recursive conversation deletion.",
-  "The streaming test verifies model-origin reasoning events, source markers for main Knowledge Agent and Memory Curator streams, assistant text streaming, and absence of host lifecycle progress as visible chat content.",
+  "The conversation route test verifies user-scoped governed conversation reconstruction, persisted reasoning message order, single-conversation rename, single-conversation deletion, and authorized recursive conversation deletion.",
+  "The streaming test verifies model-origin reasoning events, source markers for main Knowledge Agent and Memory Curator streams, assistant text streaming, duplicate-free final text, and absence of host lifecycle progress as visible chat content.",
 ]

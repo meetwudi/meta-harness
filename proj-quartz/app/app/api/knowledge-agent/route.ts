@@ -414,6 +414,7 @@ async function runKnowledgeAgent(input: {
   model: string;
   reasoningEffort: ReasoningEffort;
   actorContext: QuartzResourceActorContext;
+  signal?: AbortSignal;
   onProgress?: (message: string, source: KnowledgeAgentStreamSource) => void;
   onReasoningDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
   onTextDelta?: (delta: string, source: KnowledgeAgentStreamSource) => void;
@@ -474,11 +475,43 @@ async function runKnowledgeAgent(input: {
     let finalOutput = "";
     let streamedMainText = "";
     let failed = false;
-    const timeout = setTimeout(() => {
+    let settled = false;
+    const cleanupAbort = () => {
+      input.signal?.removeEventListener("abort", handleAbort);
+    };
+    const rejectOnce = (error: Error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
       failed = true;
+      cleanupAbort();
+      clearTimeout(timeout);
+      reject(error);
+    };
+    const resolveOnce = (output: string) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      cleanupAbort();
+      clearTimeout(timeout);
+      resolve(output);
+    };
+    const handleAbort = () => {
       child.kill("SIGTERM");
-      reject(new Error("Knowledge Agent run timed out."));
+      rejectOnce(new DOMException("Knowledge Agent run stopped.", "AbortError"));
+    };
+    const timeout = setTimeout(() => {
+      child.kill("SIGTERM");
+      rejectOnce(new Error("Knowledge Agent run timed out."));
     }, timeoutMs);
+
+    if (input.signal?.aborted) {
+      handleAbort();
+    } else {
+      input.signal?.addEventListener("abort", handleAbort, { once: true });
+    }
 
     const handleStdoutLine = (line: string) => {
       const trimmed = line.trim();
@@ -527,22 +560,17 @@ async function runKnowledgeAgent(input: {
           handleStdoutLine(line);
         }
       } catch (error) {
-        failed = true;
-        clearTimeout(timeout);
         child.kill("SIGTERM");
-        reject(error);
+        rejectOnce(error instanceof Error ? error : new Error(String(error)));
       }
     });
     child.stderr.on("data", (chunk) => {
       stderr += chunk;
     });
     child.on("error", (error) => {
-      failed = true;
-      clearTimeout(timeout);
-      reject(error);
+      rejectOnce(error);
     });
     child.on("close", async (code) => {
-      clearTimeout(timeout);
       if (failed) {
         return;
       }
@@ -551,7 +579,7 @@ async function runKnowledgeAgent(input: {
           handleStdoutLine(stdoutLineBuffer);
           stdoutLineBuffer = "";
         } catch (error) {
-          reject(error);
+          rejectOnce(error instanceof Error ? error : new Error(String(error)));
           return;
         }
       }
@@ -563,18 +591,18 @@ async function runKnowledgeAgent(input: {
             records: reasoningRecords,
             actorContext: input.actorContext,
           });
-          resolve(resolveKnowledgeAgentOutput({
+          resolveOnce(resolveKnowledgeAgentOutput({
             finalOutput,
             streamedMainText,
             rawStdout: stdout,
           }));
         } catch (error) {
-          reject(error);
+          rejectOnce(error instanceof Error ? error : new Error(String(error)));
         }
         return;
       }
 
-      reject(
+      rejectOnce(
         new Error(
           (stderr.trim() || stdout.trim() || `Knowledge Agent exited ${code}`)
             .split("\n")
@@ -628,6 +656,7 @@ export async function POST(request: NextRequest) {
       ...runnerInput,
       actorContext,
     }),
+    abortSignal: request.signal,
   });
 
   return new Response(stream, {
