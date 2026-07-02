@@ -5,6 +5,7 @@ provider = "docker-compose"
 source = "Human request on 2026-06-26 for local Docker-oriented Postgres deployment and 2026-07-01 request for deployment environment separation."
 requirements = [
   "proj-quartz.deployment-primitive",
+  "proj-quartz.local-database-slots",
   "proj-quartz.local-env-file-main-checkout",
   "proj-quartz.local-hostname-consistency",
   "proj-quartz.local-oauth-callback-slots",
@@ -50,6 +51,25 @@ local_oauth_policy = [
   "Each local app instance passes the exact callback URI for its assigned slot.",
   "A local run that tests Google sign-in records the selected callback slot in its run record.",
   "Agents must consult the human before using a local callback URI outside the ten-slot pool.",
+]
+local_database_slots = [
+  { app_port = 3000, database = "quartz_slot_3000", dbeaver_connection_name = "Quartz local 3000" },
+  { app_port = 3001, database = "quartz_slot_3001", dbeaver_connection_name = "Quartz local 3001" },
+  { app_port = 3002, database = "quartz_slot_3002", dbeaver_connection_name = "Quartz local 3002" },
+  { app_port = 3003, database = "quartz_slot_3003", dbeaver_connection_name = "Quartz local 3003" },
+  { app_port = 3004, database = "quartz_slot_3004", dbeaver_connection_name = "Quartz local 3004" },
+  { app_port = 3005, database = "quartz_slot_3005", dbeaver_connection_name = "Quartz local 3005" },
+  { app_port = 3006, database = "quartz_slot_3006", dbeaver_connection_name = "Quartz local 3006" },
+  { app_port = 3007, database = "quartz_slot_3007", dbeaver_connection_name = "Quartz local 3007" },
+  { app_port = 3008, database = "quartz_slot_3008", dbeaver_connection_name = "Quartz local 3008" },
+  { app_port = 3009, database = "quartz_slot_3009", dbeaver_connection_name = "Quartz local 3009" },
+]
+local_database_policy = [
+  "Use local Postgres host `localhost`, port `5433`, and the database name assigned to the selected app port.",
+  "Set `QUARTZ_POSTGRES_URL` from `.env` so only the database name changes for the selected slot.",
+  "Use DBeaver saved connection names from `local_database_slots` when local database inspection is needed.",
+  "Do not record or expose local database passwords from `.env` in deployment knowledge, run records, screenshots, or chat.",
+  "Do not create, drop, reset, or clone slot databases unless an approved local runbook step or explicit human approval covers that database action.",
 ]
 local_env_file_policy = [
   "`proj-quartz/.env` is a required gitignored local deployment file.",

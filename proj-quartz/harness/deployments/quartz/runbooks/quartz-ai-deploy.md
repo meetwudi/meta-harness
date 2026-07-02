@@ -24,15 +24,18 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 4. Start the local Postgres service with `docker compose -f proj-quartz/compose.yaml up -d postgres`.
 5. Confirm the local environment provides the values described by `proj-quartz/app/.env.example`.
 6. Use `localhost` consistently for local app origins, local OAuth callback URIs, and local example connection strings.
-7. When the local run includes Google sign-in, select one of the ten local OAuth callback slots from `environments/local.toml`, set `QUARTZ_PUBLIC_BASE_URL` to the matching `localhost` origin, and set `QUARTZ_GOOGLE_REDIRECT_URI` to the exact selected callback URI.
-8. Do not test Google sign-in against a local callback URI outside the ten-slot pool unless a human approves and records the OAuth client change first.
-9. Run `npm --prefix proj-quartz/app run typecheck`.
-10. Run `npm --prefix proj-quartz/app run test:conversations`.
-11. Run `npm --prefix proj-quartz/app run test:streaming`.
-12. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
-13. Run `npm --prefix proj-quartz/app run build`.
-14. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
-15. Capture a run record under `runs/` using `runs/run-template.toml`, including the selected local OAuth callback slot when Google sign-in is tested.
+7. Select one local slot from `environments/local.toml` and keep the app port, OAuth callback URI, and database name aligned for that slot.
+8. Set `QUARTZ_POSTGRES_URL` from `.env` so it points at `localhost:5433` and the selected database slot, for example `quartz_slot_3000` for app port 3000. Do not record the password value.
+9. When the local run includes Google sign-in, set `QUARTZ_PUBLIC_BASE_URL` to the matching `localhost` origin and set `QUARTZ_GOOGLE_REDIRECT_URI` to the exact selected callback URI.
+10. Do not test Google sign-in against a local callback URI outside the ten-slot pool unless a human approves and records the OAuth client change first.
+11. Do not create, drop, reset, or clone a local database slot unless that database action is covered by an approved local runbook step or explicit human approval.
+12. Run `npm --prefix proj-quartz/app run typecheck`.
+13. Run `npm --prefix proj-quartz/app run test:conversations`.
+14. Run `npm --prefix proj-quartz/app run test:streaming`.
+15. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
+16. Run `npm --prefix proj-quartz/app run build`.
+17. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
+18. Capture a run record under `runs/` using `runs/run-template.toml`, including the selected local slot, database name, and OAuth callback URI when Google sign-in is tested.
 
 ## Production Deployment
 

@@ -4,6 +4,7 @@ source = "Human request on 2026-07-01 for deployment checklists and checklist at
 requirements = [
   "proj-quartz.deployment-primitive",
   "proj-quartz.deployment-resource-changes",
+  "proj-quartz.local-database-slots",
   "proj-quartz.local-env-file-main-checkout",
   "proj-quartz.local-hostname-consistency",
   "proj-quartz.local-oauth-callback-slots",
@@ -43,6 +44,11 @@ evidence = "Run record lists local URLs or connection strings by key and uses `l
 id = "local-oauth-callback-slot"
 text = "When local Google sign-in is tested, the run uses one of the ten local OAuth callback slots and passes the exact callback URI assigned to that local instance."
 evidence = "Run record lists the selected local callback URI and confirms it came from `environments/local.toml`."
+
+[[items]]
+id = "local-database-slot"
+text = "For local runs, the selected app port, OAuth callback slot, and local Postgres database slot are aligned."
+evidence = "Run record lists the selected app port and database name from `environments/local.toml` without recording database passwords."
 
 [[items]]
 id = "build-and-tests"

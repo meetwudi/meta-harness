@@ -1,0 +1,12 @@
+id = "proj-quartz.local-database-slots"
+title = "Local database slots"
+source = "Human request on 2026-07-02: local Quartz instances should have their own disposable local database slots, and DBeaver can keep saved connections for those slots."
+text = "Quartz local deployment reserves ten local Postgres database slots that line up with the ten local app and OAuth callback slots."
+
+criteria = [
+  "The local database slots are exact database names `quartz_slot_3000` through `quartz_slot_3009` on the local Postgres service.",
+  "Each parallel local Quartz instance uses the database slot matching its selected app port and OAuth callback slot.",
+  "Local database tooling, including DBeaver, uses `localhost` as the host spelling for these slots.",
+  "Agents must not create, drop, reset, or clone slot databases without a human-approved local runbook step or explicit human approval.",
+  "Agents must not record local database passwords from `.env` in deployment knowledge, run records, screenshots, or chat.",
+]
