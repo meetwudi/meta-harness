@@ -149,6 +149,7 @@ it as Routine, Goal, Memory, Compliance, Spec, or another primitive kind.
 - Memory: [primitives/MEMORY.md](primitives/MEMORY.md)
 - Compliance: [primitives/COMPLIANCE.md](primitives/COMPLIANCE.md)
 - Spec: [primitives/SPEC.md](primitives/SPEC.md)
+- Secret: [primitives/SECRET.md](primitives/SECRET.md)
 
 Use [primitives/LIBRARY.md](primitives/LIBRARY.md) when a human asks to configure where project knowledge lives or how agents may access a knowledge source.
 

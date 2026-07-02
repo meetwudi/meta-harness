@@ -21,6 +21,8 @@ Some knowledge is a primitive:
   invocation governance, schemas, implementation reference, and test cases.
 - Deployment: an environment-scoped deployment map with runbooks, checklists,
   run records, resource snapshots, and approved resource changes.
+- Secret: governed secret metadata, scope, use/reveal policy, encrypted value
+  reference, and audit expectations.
 - Tags: independent retrieval metadata for scoped knowledge.
 
 The primitives compose:
@@ -46,6 +48,8 @@ The primitives compose:
   knowledge and whose invocation is governed by actor URI patterns.
 - Deployments define how a service is deployed and how environment resources,
   run evidence, and resource changes are governed.
+- Secrets separate metadata access, use authority, reveal authority, rotation,
+  and audit from the encrypted secret payload.
 - Tags help agents query by tags without requiring every primitive schema to
   include tag fields.
 - Libraries organize all primitives.

@@ -12,6 +12,7 @@ requirements = [
   "proj-quartz.local-oauth-callback-slots",
   "proj-quartz.local-postgres-deployment",
   "proj-quartz.project-owned-config",
+  "proj-quartz.secret-encrypted-library-storage",
 ]
 config_files = [
   "proj-quartz/compose.yaml",
@@ -32,6 +33,8 @@ environment_values = [
   "`QUARTZ_POSTGRES_URL` points at the local Docker-oriented Postgres deployment.",
   "`QUARTZ_PUBLIC_BASE_URL` identifies the local Quartz origin.",
   "`QUARTZ_GOOGLE_REDIRECT_URI` identifies the exact local OAuth callback URI assigned to this instance when Google sign-in is tested.",
+  "`QUARTZ_USER_SECRET_ENCRYPTION_KEY` is a local operator secret for encrypting user Secret values and is encoded as a 32-byte base64url, base64, or hex key.",
+  "`QUARTZ_USER_SECRET_ENCRYPTION_KEY_ID` may identify the active local user Secret encryption key version without exposing key material.",
   "`OPENAI_API_KEY` is available to the OpenAI-backed Knowledge Agent.",
 ]
 canonical_local_hostname = "localhost"
@@ -84,7 +87,9 @@ local_chat_smoke_policy = [
 local_env_file_policy = [
   "`proj-quartz/.env` is a required gitignored local deployment file.",
   "When a worktree lacks `proj-quartz/.env`, use the main checkout's `proj-quartz/.env` as the preferred copy source.",
+  "The main checkout's `proj-quartz/.env` should include `QUARTZ_USER_SECRET_ENCRYPTION_KEY` before local Secret creation or rotation is tested, so worktrees inherit the same local encryption key when copied.",
   "Consult the human when the main checkout env file is missing, inaccessible, ambiguous, or when copying would expose or overwrite secret values.",
+  "Do not synthesize or silently substitute `QUARTZ_USER_SECRET_ENCRYPTION_KEY`; ask the human to provide it when local Secret acceptance is in scope and the selected `.env` lacks it.",
   "Never record secret values from `.env` in deployment knowledge, run records, command output, screenshots, or chat.",
 ]
 separation = [

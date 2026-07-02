@@ -21,6 +21,7 @@ import { createKnowledgeAgentOpenAITools } from "./create-knowledge-agent-openai
 import { createToolSpecOpenAITools } from "./create-toolspec-openai-tools.js";
 import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
 import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream-events.js";
+import { LocalJsonlSession } from "./local-jsonl-session.js";
 import { executeToolSpecImplementation } from "./resolve-toolspec-implementation.js";
 
 const fakeConversationState = {
@@ -30,6 +31,7 @@ const fakeConversationState = {
 const storage = createLocalFileSystemStorage();
 const storageRoot = await mkdtemp(join(tmpdir(), "knowledge-agent-toolspec-"));
 const resourceStorageRoot = await mkdtemp(join(tmpdir(), "knowledge-agent-resource-toolspec-"));
+const redactionStorageRoot = await mkdtemp(join(tmpdir(), "knowledge-agent-redaction-"));
 const toolsRoot = join(storageRoot, "fixture-tool-library");
 const resourceToolsRoot = join(resourceStorageRoot, "resource-tool-library");
 await storage.makeDirectory(toolsRoot);
@@ -258,6 +260,44 @@ const directToolSpecTools = await createToolSpecOpenAITools({
 });
 assert.ok(directToolSpecTools.some((tool) => tool.name === "resource_number"));
 assert.equal(directToolSpecTools.some((tool) => tool.name === "missing_number"), false);
+
+const redactionSessionPath = join(redactionStorageRoot, "session.jsonl");
+const redactionSession = new LocalJsonlSession("redaction", storage, redactionSessionPath);
+await redactionSession.addItems([
+  {
+    type: "message",
+    role: "user",
+    content: "Here is my Acme API key: qz_acceptance_secret_12345",
+  } as never,
+]);
+await redactionSession.addItems([
+  {
+    type: "function_call",
+    name: "quartz_secret",
+    arguments: JSON.stringify({
+      operation: "store",
+      label: "Acme API key",
+      value: "qz_acceptance_secret_12345",
+    }),
+  } as never,
+  {
+    type: "function_call_output",
+    name: "quartz_secret",
+    output: JSON.stringify({
+      ok: true,
+      operation: "reveal",
+      secret_value: "qz_acceptance_secret_12345",
+      sensitivity: "secret_reveal",
+    }),
+  } as never,
+]);
+const redactedSessionJsonl = await storage.readText(redactionSessionPath);
+assert.doesNotMatch(redactedSessionJsonl, /qz_acceptance_secret_12345/);
+assert.match(redactedSessionJsonl, /\[redacted secret\]/);
+assert.equal(
+  redactionSession.redactText("Prompt mentions qz_acceptance_secret_12345."),
+  "Prompt mentions [redacted secret].",
+);
 
 const stateRoot = join(storageRoot, "conversation-state");
 await storage.makeDirectory(stateRoot);

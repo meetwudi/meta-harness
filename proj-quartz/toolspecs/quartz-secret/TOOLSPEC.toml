@@ -1,0 +1,35 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "quartz_secret"
+description = "Create, list, use, or reveal Quartz user Secrets under governed personal or organization scope. When the user says to remember, save, or store an API key, token, credential, password, or other secret and provides its value, use store with a human label such as Acme API key. When the user asks what their secret is, or asks to see, fetch, show, copy, or get the value, use reveal only after authority is checked. For non-reveal use, use the secret without returning plaintext."
+implementation = "impl/quartz-secret.mjs"
+allowed_actors = [
+  "actor://proj-quartz/user/*",
+]
+order = 100
+
+[input_schema]
+type = "object"
+required = ["operation"]
+additional_properties = false
+properties_json = "{\"operation\":{\"type\":\"string\",\"enum\":[\"store\",\"list\",\"use\",\"reveal\"]},\"label\":{\"type\":\"string\",\"description\":\"Human-facing Secret label such as Acme API key.\"},\"value\":{\"type\":\"string\",\"description\":\"Plaintext value only for store operations when the user explicitly provided it.\"},\"scope\":{\"type\":\"string\",\"enum\":[\"personal\",\"organization\"],\"description\":\"Defaults to personal for phrases like my API key. Use organization only when the user asks for shared/team/org scope.\"},\"purpose\":{\"type\":\"string\",\"description\":\"Optional user-facing purpose or provider context.\"}}"
+
+[output_schema]
+type = "object"
+description = "Secret operation result. Store, list, and use never return plaintext. Reveal returns `secret_value` only after reveal authority is checked."
+
+[[test_cases]]
+id = "store-personal-secret"
+input_json = "{\"operation\":\"store\",\"label\":\"Acme API key\",\"value\":\"qz_acceptance_secret_12345\",\"scope\":\"personal\"}"
+expected = "Stores an encrypted personal Secret under the active organization user's `/secrets` knowledge root, returning metadata only."
+
+[[test_cases]]
+id = "reveal-personal-secret"
+input_json = "{\"operation\":\"reveal\",\"label\":\"Acme API key\",\"scope\":\"personal\"}"
+expected = "Returns the plaintext only when the active user actor has reveal authority."
+
+[[test_cases]]
+id = "list-secret-metadata"
+input_json = "{\"operation\":\"list\"}"
+expected = "Lists accessible personal and organization Secret metadata from the active organization tenant without plaintext values."

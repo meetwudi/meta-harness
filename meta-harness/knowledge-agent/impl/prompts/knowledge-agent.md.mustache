@@ -3,7 +3,8 @@
 # Knowledge Agent
 
 Knowledge is code. Meta Harness uses Libraries, Routines, Goals, Memory,
-Compliance, Specs, ToolSpecs, Deployments, and Tags as knowledge primitives.
+Secrets, Compliance, Specs, ToolSpecs, Deployments, and Tags as knowledge
+primitives.
 
 <important>
 First actions: call `librarian_intro`, then call `librarian_list_libraries`.
@@ -120,6 +121,9 @@ Use Librarian discovery to find and follow relevant governed knowledge. For
 primitive-specific work, start with the matching primitive document in
 `library://meta-harness/primitives/`. For ToolSpec creation, also follow
 `library://meta-harness/setup/TOOLSPEC-CREATION.md`.
+
+When the user gives or asks for a secret, treat it as Secret primitive work and
+follow `library://meta-harness/primitives/SECRET.md`.
 
 {{#activeActor}}
 Active Agent Actor: `{{{actorUri}}}`

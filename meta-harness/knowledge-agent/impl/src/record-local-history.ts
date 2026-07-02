@@ -9,6 +9,7 @@
 
 import { join } from "node:path";
 import { recordConversationStateHistory } from "./conversation-state-history.js";
+import { redactTextWithSessionSecrets } from "./local-jsonl-session.js";
 import { resultSummary } from "./result-summary.js";
 import type { PreparedRuntime, ProviderRunOptions } from "./types.js";
 
@@ -26,6 +27,8 @@ export async function recordLocalHistory(
   const turnRoot = join(conversationRoot, "turns", options.turnId);
   const beforeStateToml = options.conversationState.promptToml;
   const afterStateToml = options.conversationState.currentToml();
+  const redact = (value: string): string =>
+    redactTextWithSessionSecrets(options.session, value);
   await localRuntime.runtimeStorage.makeDirectory(turnRoot);
   await localRuntime.runtimeStorage.writeText(
     join(conversationRoot, "CONVERSATION.toml"),
@@ -35,7 +38,7 @@ export async function recordLocalHistory(
       "",
     ].join("\n"),
   );
-  await localRuntime.runtimeStorage.writeText(join(turnRoot, "prompt.md"), `${prompt}\n`);
+  await localRuntime.runtimeStorage.writeText(join(turnRoot, "prompt.md"), `${redact(prompt)}\n`);
   await localRuntime.runtimeStorage.writeText(
     join(turnRoot, "conversation-state.toml"),
     beforeStateToml,
@@ -60,9 +63,9 @@ export async function recordLocalHistory(
       "",
       `Conversation: ${options.conversationId}`,
       "",
-      `User request: ${options.goal}`,
+      `User request: ${redact(options.goal)}`,
       "",
-      `Latest user message: ${options.latestUserMessage}`,
+      `Latest user message: ${redact(options.latestUserMessage)}`,
       "",
       `Provider: ${options.provider}`,
       "",
@@ -90,7 +93,7 @@ export async function recordLocalHistory(
   if (memoryCurator !== undefined) {
     await localRuntime.runtimeStorage.writeText(
       join(turnRoot, "memory-curator-trace.json"),
-      `${JSON.stringify(memoryCurator, null, 2)}\n`,
+      `${redact(JSON.stringify(memoryCurator, null, 2))}\n`,
     );
   }
 }

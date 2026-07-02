@@ -10,6 +10,7 @@ requirements = [
   "proj-quartz.project-owned-config",
   "proj-quartz.postgres-backed-libraries",
   "proj-quartz.production-cloud-run-deployment",
+  "proj-quartz.secret-encrypted-library-storage",
 ]
 project_id = "future-of-work-497100"
 project_number = "839963098585"
@@ -43,6 +44,8 @@ environment_values = [
   "`QUARTZ_PUBLIC_BASE_URL` identifies the production Quartz origin.",
   "`QUARTZ_GOOGLE_CLIENT_ID` and `QUARTZ_GOOGLE_CLIENT_SECRET` are supplied by production secret management.",
   "`QUARTZ_RESEND_API_KEY` and `QUARTZ_RESEND_FROM` or an approved invite email webhook are supplied by production secret management.",
+  "`QUARTZ_USER_SECRET_ENCRYPTION_KEY` is supplied by production secret management as a 32-byte base64url, base64, or hex key for encrypting user Secret values.",
+  "`QUARTZ_USER_SECRET_ENCRYPTION_KEY_ID` may identify the active user Secret encryption key version without exposing key material.",
   "`OPENAI_API_KEY` is available to the production Knowledge Agent runtime.",
 ]
 local_testing_values = [
@@ -56,6 +59,7 @@ secret_manager_secrets = [
   "quartz-google-client-secret",
   "quartz-resend-api-key",
   "quartz-resend-from",
+  "quartz-user-secret-encryption-key",
 ]
 expected_system_libraries = [
   "library://meta-harness",

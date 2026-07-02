@@ -1,0 +1,9 @@
+id = "proj-quartz.toolspec.quartz-secret.unit"
+tool = "quartz_secret"
+source = "Human request on 2026-07-02 for Secret primitive creation, use/reveal separation, organization/user scope, clear missing-secret behavior, and safe acceptance replay."
+cases = [
+  "store-personal-secret",
+  "reveal-personal-secret",
+  "list-secret-metadata",
+]
+expected = "The ToolSpec stores encrypted Secret values, returns metadata for non-reveal operations, checks actor policy, and returns plaintext only through reveal."

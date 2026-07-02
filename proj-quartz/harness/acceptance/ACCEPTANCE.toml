@@ -3,11 +3,53 @@
 
 name = "proj-quartz-acceptance"
 version = "v0.0.0"
-source = "Migrated on 2026-06-28 from Spec-owned Quartz acceptance-test files after human direction to make Acceptance a separate primitive; Google sign-in/sign-out acceptance scenario captured from human request on 2026-06-30 and wording clarification on 2026-06-30; organization creation, invite email, invite acceptance, organization switching, and organization actor resource boundaries captured from human request on 2026-07-01; organization settings dialog clarification captured from human request on 2026-07-01; role-based two-Chrome-profile replay clarification for organization invite acceptance captured from human request on 2026-07-01; Libraries tab browse, lock, proposed-change, and apply workflow captured from human request on 2026-07-01; production Cloud Run Google sign-in and Library listing captured from human-run deployment acceptance on 2026-07-01."
+source = "Migrated on 2026-06-28 from Spec-owned Quartz acceptance-test files after human direction to make Acceptance a separate primitive; Google sign-in/sign-out acceptance scenario captured from human request on 2026-06-30 and wording clarification on 2026-06-30; organization creation, invite email, invite acceptance, organization switching, and organization actor resource boundaries captured from human request on 2026-07-01; organization settings dialog clarification captured from human request on 2026-07-01; role-based two-Chrome-profile replay clarification for organization invite acceptance captured from human request on 2026-07-01; Libraries tab browse, lock, proposed-change, and apply workflow captured from human request on 2026-07-01; production Cloud Run Google sign-in and Library listing captured from human-run deployment acceptance on 2026-07-01; Secret creation and reveal acceptance captured from human request on 2026-07-02."
 scope = [
   "proj-quartz/**",
 ]
 trigger = "Run the applicable Quartz acceptance scenarios when scoped Quartz files change or when a human asks to run Quartz acceptance."
+
+[[tests]]
+id = "proj-quartz.acceptance.secret-create-and-reveal"
+title = "Secret creation and reveal across conversations"
+requirements = [
+  "proj-quartz.secret-primitive-onboarding",
+  "proj-quartz.secret-scope",
+  "proj-quartz.secret-use-reveal-policy",
+  "proj-quartz.secret-encrypted-library-storage",
+  "proj-quartz.knowledge-agent-chat-service",
+]
+circumstances = [
+  "Quartz is running at the tested origin.",
+  "`QUARTZ_POSTGRES_URL` is configured.",
+  "`QUARTZ_USER_SECRET_ENCRYPTION_KEY` is configured as an operator runtime secret for encrypting user Secret values.",
+  "The browser can complete Google sign-in for the test user.",
+  "The signed-in account has an active organization.",
+  "Use two separate Quartz conversations so the second request cannot rely on React component state from the first conversation.",
+  "Use an acceptance-only fake API key value such as `qz_acceptance_secret_12345`; do not use a real production credential.",
+]
+execution = "ai-browser"
+procedure = [
+  "Open the Quartz app and sign in through Google.",
+  "Start a first Quartz conversation.",
+  "In ordinary user language, say: `Here is my Acme API key: qz_acceptance_secret_12345. Please remember it as my Acme API key.`",
+  "Wait for the assistant response to finish.",
+  "Start a second Quartz conversation by opening a fresh chat.",
+  "In ordinary user language, ask: `What is my Acme API key?`",
+  "Wait for the assistant response to finish.",
+  "Inspect backend Secret Library evidence for the active organization and user.",
+  "Inspect persisted conversation evidence for the two turns.",
+  "When a browser run is not available and a human explicitly approves external provider use, `QUARTZ_SECRET_AGENT_ACCEPTANCE_APPROVED=true node proj-quartz/toolspecs/quartz-secret/tests/agent-acceptance.test.mjs` may replay the same two ordinary messages through the OpenAI-backed Knowledge Agent CLI against temporary Postgres.",
+]
+expected = [
+  "The first conversation stores a personal Secret in the active organization tenant without asking the user to choose a storage location or write TOML.",
+  "The second conversation finds the Secret from durable Quartz storage rather than relying on first-conversation UI state.",
+  "The assistant reveals `qz_acceptance_secret_12345` only in response to the user's direct fetch request.",
+  "The Secret Library metadata records personal scope inside the active organization tenant.",
+  "The Secret value resource is encrypted and excluded from ordinary Librarian reads.",
+  "Secret audit records include create and reveal operations without plaintext values.",
+  "Persisted prompt, session, trace, and audit evidence do not contain the plaintext acceptance key except for the browser-visible reveal response when it is actively shown to the user.",
+]
 
 [[tests]]
 id = "proj-quartz.acceptance.production-cloud-run-library-list"
