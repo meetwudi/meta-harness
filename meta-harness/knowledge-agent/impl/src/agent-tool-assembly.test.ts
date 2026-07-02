@@ -392,9 +392,26 @@ const mainRunSource = readFileSync(
   resolve("src/execute-openai-sandbox-run.ts"),
   "utf8",
 );
+const runLimitsSource = readFileSync(
+  resolve("src/run-limits.ts"),
+  "utf8",
+);
+const mainSource = readFileSync(
+  resolve("src/main.ts"),
+  "utf8",
+);
+const recordHistorySource = readFileSync(
+  resolve("src/record-local-history.ts"),
+  "utf8",
+);
 assert.match(mainRunSource, /source: "main"/);
 assert.match(mainRunSource, /result\.finalOutput/);
 assert.match(mainRunSource, /type: "text_delta"/);
+assert.match(mainRunSource, /MAIN_RUN_MAX_TURNS/);
+assert.match(runLimitsSource, /MAIN_RUN_MAX_TURNS = null/);
+assert.match(mainSource, /knowledgeAgentRunFailure/);
+assert.match(mainSource, /failureResult/);
+assert.match(recordHistorySource, /failure\.json/);
 
 const openAIConversationSource = readFileSync(
   resolve("src/run-openai-conversation.ts"),

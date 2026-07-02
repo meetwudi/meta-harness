@@ -11,6 +11,8 @@ requirements = [
   "knowledge-agent.library-scoped-memory-curator",
   "knowledge-agent.library-toolspec-openai-tools",
   "knowledge-agent.provider-stream-events",
+  "knowledge-agent.main-run-turn-budget",
+  "knowledge-agent.run-failure-observability",
 ]
 procedure = [
   "Create the hosted web search OpenAI tool through the Knowledge Agent web-search tool helper.",
@@ -23,6 +25,8 @@ procedure = [
   "Inspect Routine handoff assembly and verify it includes the web-search helper.",
   "Inspect Memory Curator and Goal Auditor assembly and verify they do not include the web-search helper.",
   "Inspect main Knowledge Agent and Memory Curator streaming execution and verify stream events carry source context when stream events are enabled.",
+  "Inspect main Knowledge Agent run execution and verify it uses the configured long-turn budget.",
+  "Inspect Knowledge Agent turn recording and verify failed provider runs are recorded with structured failure diagnostics before the CLI rethrows.",
   "Inspect Knowledge Agent and Memory Curator model settings and verify both use the shared OpenAI reasoning settings helper.",
   "Convert fixture provider stream events and verify model reasoning summary deltas, model output text deltas, and tool activity map to distinct public event types.",
 ]
@@ -38,6 +42,8 @@ expected = [
   "Routine handoff agents include hosted web search.",
   "Memory Curator mode does not include hosted web search.",
   "Main Knowledge Agent and Memory Curator mode stream through the same public provider stream-event converter with distinct source context when stream events are enabled.",
+  "The main Knowledge Agent run sets `maxTurns` to `null`.",
+  "Failed Knowledge Agent runs leave a failure diagnostic in the conversation Library when runtime storage is available.",
   "Knowledge Agent and Memory Curator mode request safe OpenAI reasoning summaries through shared reasoning settings.",
   "Goal Auditor mode does not include hosted web search.",
   "Model reasoning summary text maps to `reasoning_delta`, model output text maps to `text_delta`, and tool activity maps to `progress`.",

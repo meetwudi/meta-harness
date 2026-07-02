@@ -15,6 +15,7 @@ import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream
 import { memoryCuratorRecentContext } from "./memory-curator-recent-context.js";
 import { openAIReasoningSettings } from "./openai-reasoning-settings.js";
 import { resultSummary } from "./result-summary.js";
+import { MEMORY_CURATOR_MAX_TURNS } from "./run-limits.js";
 import type { ProviderRunOptions } from "./types.js";
 
 export type MemoryCuratorResult = {
@@ -76,7 +77,7 @@ export async function runMemoryCurator(
     `knowledge-agent-memory-curator:${options.conversationId}:${options.turnId}`,
     async (trace) => {
       const runOptions = {
-        maxTurns: 12,
+        maxTurns: MEMORY_CURATOR_MAX_TURNS,
         sandbox: {
           client: createSandboxClient(options.client),
           snapshot: {

@@ -1,0 +1,10 @@
+id = "knowledge-agent.run-failure-observability"
+title = "Run failures leave inspectable records"
+source = "Human request on 2026-07-02 after Knowledge Agent timeout reports: when Knowledge Agent runs time out or fail, logging should make it possible to inspect local and production runs and understand the failure cause."
+text = "Knowledge Agent conversation runs record structured failure diagnostics when the provider run fails before a final answer."
+
+criteria = [
+  "Failed turns still write the prompt, conversation state, summary, Librarian trace, and failure diagnostic in the conversation Library when runtime storage is available.",
+  "Failure diagnostics identify provider, model, conversation id, turn id, configured run limits, error kind, error name, message, and relevant SDK timeout/tool fields without recording secrets.",
+  "The CLI exits nonzero after recording the failed turn so callers receive a clear failure.",
+]

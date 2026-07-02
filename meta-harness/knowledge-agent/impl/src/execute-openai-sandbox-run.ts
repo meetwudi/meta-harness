@@ -12,6 +12,7 @@ import type { SandboxAgent } from "@openai/agents/sandbox";
 import { buildKnowledgeAgentPrompt } from "./build-knowledge-agent-prompt.js";
 import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream-events.js";
 import { knowledgeAgentSessionInputCallback } from "./knowledge-agent-session-input.js";
+import { MAIN_RUN_MAX_TURNS } from "./run-limits.js";
 import type { OpenAISandboxRunOptions } from "./types.js";
 
 function finalOutputText(value: unknown): string {
@@ -42,7 +43,7 @@ export async function executeOpenAISandboxRun(
 ): Promise<Record<string, unknown>> {
   const prompt = buildKnowledgeAgentPrompt(options);
   const runOptions = {
-    maxTurns: 100,
+    maxTurns: MAIN_RUN_MAX_TURNS,
     session: options.session,
     sessionInputCallback: knowledgeAgentSessionInputCallback,
     sandbox: {

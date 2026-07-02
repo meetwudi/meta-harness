@@ -27,6 +27,12 @@ import { parseArgs } from "./parse-args.js";
 import { providerFromName } from "./provider-from-name.js";
 import { createInterface } from "node:readline/promises";
 import { resultSummary } from "./result-summary.js";
+import {
+  errorMessage,
+  failureMessage,
+  failureResult,
+  knowledgeAgentRunFailure,
+} from "./run-failure.js";
 import { resolveRuntimeActorContext } from "./runtime-actor-context.js";
 import { storageFromConfig } from "./storage-from-config.js";
 import { usage } from "./usage.js";
@@ -232,14 +238,37 @@ async function runKnowledgeAgentTurn(input: {
     onStreamEvent: input.onStreamEvent,
   };
   const prompt = buildKnowledgeAgentPrompt(options);
-  const result = await input.provider.runConversation(options);
-  await conversationState.persistLatest();
-  await input.storage.recordConversation(
-    { ...options, provider: input.provider.name },
-    input.runtime,
-    prompt,
-    result,
-  );
+  let result: unknown;
+  try {
+    result = await input.provider.runConversation(options);
+    await conversationState.persistLatest();
+    await input.storage.recordConversation(
+      { ...options, provider: input.provider.name },
+      input.runtime,
+      prompt,
+      result,
+    );
+  } catch (error) {
+    const failure = knowledgeAgentRunFailure(error, options, {
+      provider: input.provider.name,
+      phase: "provider_run",
+    });
+    try {
+      await conversationState.persistLatest();
+      await input.storage.recordConversation(
+        { ...options, provider: input.provider.name },
+        input.runtime,
+        prompt,
+        failureResult(failure),
+      );
+    } catch (recordingError) {
+      throw new Error(
+        `${failureMessage(failure)}; failure_recording_error=${errorMessage(recordingError)}`,
+        { cause: error },
+      );
+    }
+    throw new Error(failureMessage(failure), { cause: error });
+  }
 
   const summary = resultSummary(result);
   const finalOutput = summary.finalOutput;

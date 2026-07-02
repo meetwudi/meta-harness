@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import {
+  configuredKnowledgeAgentTimeoutMs,
+  diagnosticTail,
   parseKnowledgeAgentSubprocessEvent,
   resolveKnowledgeAgentOutput,
   validateKnowledgeAgentModelOptions,
@@ -192,6 +194,32 @@ assert.throws(
   () => validateKnowledgeAgentModelOptions([{ id: "gpt-test" }]),
   /modelOptions\[0\] must include string id and label fields/,
 );
+const originalTimeout = process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS;
+delete process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS;
+assert.equal(configuredKnowledgeAgentTimeoutMs(), 3_600_000);
+process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS = "1234";
+assert.equal(configuredKnowledgeAgentTimeoutMs(), 1234);
+process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS = "nope";
+assert.throws(
+  () => configuredKnowledgeAgentTimeoutMs(),
+  /must be a positive number/,
+);
+if (originalTimeout === undefined) {
+  delete process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS;
+} else {
+  process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS = originalTimeout;
+}
+const originalOpenAiKey = process.env.OPENAI_API_KEY;
+process.env.OPENAI_API_KEY = "sk-testsecret";
+assert.equal(
+  diagnosticTail("first\nsecond sk-testsecret\nthird", 2),
+  "second [redacted:OPENAI_API_KEY]\nthird",
+);
+if (originalOpenAiKey === undefined) {
+  delete process.env.OPENAI_API_KEY;
+} else {
+  process.env.OPENAI_API_KEY = originalOpenAiKey;
+}
 
 console.log(JSON.stringify({ ok: true, eventTypes: events.map((event) => event.type) }, null, 2));
 

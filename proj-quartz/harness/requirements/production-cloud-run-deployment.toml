@@ -7,5 +7,6 @@ criteria = [
   "The production container is built from the repository root so `library://meta-harness` and `library://proj-quartz` can be discovered through the Quartz project marker.",
   "Production runtime configuration uses Secret Manager for sensitive values and Cloud SQL Postgres for `QUARTZ_POSTGRES_URL`.",
   "The production service sets `QUARTZ_REPO_ROOT`, `QUARTZ_PROJECT_ROOT`, and `QUARTZ_PROJECT_CONFIG` so the Knowledge Agent resolves the Quartz project marker and checked-in Libraries.",
+  "The production Cloud Run service request timeout is 3600 seconds for one-hour Knowledge Agent runs.",
   "The production verification signs in through Google, creates or opens a chat, asks Quartz to list all Libraries, and confirms the response includes the system Libraries `library://meta-harness` and `library://proj-quartz`.",
 ]

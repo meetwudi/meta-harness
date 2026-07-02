@@ -17,6 +17,12 @@ export function resultSummary(result: unknown): Record<string, unknown> {
     return { finalOutput: String(result) };
   }
   const record = result as Record<string, unknown>;
+  if ("failure" in record) {
+    return {
+      finalOutput: record.finalOutput,
+      failure: record.failure,
+    };
+  }
   return {
     finalOutput: record.finalOutput,
     usage: record.usage,

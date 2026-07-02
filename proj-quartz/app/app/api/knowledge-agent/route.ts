@@ -29,7 +29,7 @@ const { loadEnvConfig } = nextEnv;
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-export const maxDuration = 180;
+export const maxDuration = 3600;
 
 // Harness-Requirement: proj-quartz.knowledge-agent-chat-service
 // Harness-Requirement: proj-quartz.postgres-backed-libraries
@@ -62,7 +62,7 @@ type KnowledgeAgentSubprocessEvent =
       output: string;
     };
 
-const defaultTimeoutMs = 180_000;
+const defaultTimeoutMs = 3_600_000;
 const defaultReasoningEffort: ReasoningEffort = "medium";
 let quartzProjectEnvLoaded = false;
 const reasoningEfforts: ReasoningEffort[] = [
@@ -71,6 +71,15 @@ const reasoningEfforts: ReasoningEffort[] = [
   "medium",
   "high",
   "xhigh",
+];
+const secretEnvNames = [
+  "OPENAI_API_KEY",
+  "QUARTZ_POSTGRES_URL",
+  "QUARTZ_GOOGLE_CLIENT_ID",
+  "QUARTZ_GOOGLE_CLIENT_SECRET",
+  "QUARTZ_RESEND_API_KEY",
+  "QUARTZ_RESEND_FROM",
+  "QUARTZ_PRODUCTION_API_KEY",
 ];
 
 function repoRootPath(): string {
@@ -134,6 +143,40 @@ function isReasoningEffort(value: string): value is ReasoningEffort {
 function isModelOption(value: unknown): value is ModelOption {
   const candidate = objectRecord(value);
   return typeof candidate.id === "string" && typeof candidate.label === "string";
+}
+
+export function configuredKnowledgeAgentTimeoutMs(): number {
+  const raw = process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS;
+  if (raw === undefined) {
+    return defaultTimeoutMs;
+  }
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error("QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS must be a positive number of milliseconds.");
+  }
+  return value;
+}
+
+function redactDiagnosticText(value: string): string {
+  let redacted = value;
+  for (const name of secretEnvNames) {
+    const secret = process.env[name];
+    if (secret) {
+      redacted = redacted.split(secret).join(`[redacted:${name}]`);
+    }
+  }
+  return redacted
+    .replace(/(postgres(?:ql)?:\/\/[^:\s/@]+):([^@\s]+)@/gi, "$1:[redacted]@")
+    .replace(/(sk-[A-Za-z0-9_-]{8})[A-Za-z0-9_-]+/g, "$1[redacted]");
+}
+
+export function diagnosticTail(value: string, maxLines = 12, maxChars = 4000): string {
+  return redactDiagnosticText(value)
+    .trim()
+    .split("\n")
+    .slice(-maxLines)
+    .join("\n")
+    .slice(-maxChars);
 }
 
 export function validateKnowledgeAgentModelOptions(value: unknown): ModelOption[] {
@@ -398,8 +441,9 @@ export function resolveKnowledgeAgentOutput(input: {
     return output;
   }
 
-  const diagnostic = input.rawStdout.trim()
-    ? ` Raw stdout tail: ${input.rawStdout.trim().split("\n").slice(-4).join("\n")}`
+  const stdoutTail = diagnosticTail(input.rawStdout, 4);
+  const diagnostic = stdoutTail
+    ? ` Raw stdout tail: ${stdoutTail}`
     : "";
   throw new Error(
     `Knowledge Agent completed without structured final output or text events.${diagnostic}`,
@@ -429,12 +473,11 @@ async function runKnowledgeAgent(input: {
     "dist",
     "cli.js",
   );
-  const timeoutMs = Number(
-    process.env.QUARTZ_KNOWLEDGE_AGENT_TIMEOUT_MS ?? defaultTimeoutMs,
-  );
+  const timeoutMs = configuredKnowledgeAgentTimeoutMs();
   const turnId = `quartz-${safeId(input.runId, "runId")}`;
 
   return new Promise((resolve, reject) => {
+    const startedAt = Date.now();
     const reasoningRecords: ReasoningDeltaRecord[] = [];
     const child = spawn(
       process.execPath,
@@ -476,6 +519,26 @@ async function runKnowledgeAgent(input: {
     let streamedMainText = "";
     let failed = false;
     let settled = false;
+    let timedOut = false;
+    let exitCode: number | null = null;
+    let exitSignal: NodeJS.Signals | null = null;
+    const diagnostic = (reason: string, error: Error) => ({
+      event: "quartz_knowledge_agent_subprocess_failure",
+      reason,
+      error: error.message,
+      threadId: input.threadId,
+      runId: input.runId,
+      turnId,
+      model: input.model,
+      reasoningEffort: input.reasoningEffort,
+      timeoutMs,
+      elapsedMs: Date.now() - startedAt,
+      timedOut,
+      exitCode,
+      exitSignal,
+      stdoutTail: diagnosticTail(stdout),
+      stderrTail: diagnosticTail(stderr),
+    });
     const cleanupAbort = () => {
       input.signal?.removeEventListener("abort", handleAbort);
     };
@@ -488,6 +551,22 @@ async function runKnowledgeAgent(input: {
       cleanupAbort();
       clearTimeout(timeout);
       reject(error);
+    };
+    const rejectWithDiagnostic = (error: Error, reason: string) => {
+      const details = diagnostic(reason, error);
+      console.error(JSON.stringify(details));
+      rejectOnce(
+        new Error(
+          [
+            error.message,
+            `turn=${turnId}`,
+            `elapsedMs=${details.elapsedMs}`,
+            `timeoutMs=${timeoutMs}`,
+            details.stderrTail ? `stderrTail=${details.stderrTail}` : "",
+            details.stdoutTail ? `stdoutTail=${details.stdoutTail}` : "",
+          ].filter(Boolean).join("; "),
+        ),
+      );
     };
     const resolveOnce = (output: string) => {
       if (settled) {
@@ -503,8 +582,12 @@ async function runKnowledgeAgent(input: {
       rejectOnce(new DOMException("Knowledge Agent run stopped.", "AbortError"));
     };
     const timeout = setTimeout(() => {
+      timedOut = true;
       child.kill("SIGTERM");
-      rejectOnce(new Error("Knowledge Agent run timed out."));
+      rejectWithDiagnostic(
+        new Error(`Knowledge Agent run timed out after ${timeoutMs}ms.`),
+        "timeout",
+      );
     }, timeoutMs);
 
     if (input.signal?.aborted) {
@@ -553,6 +636,7 @@ async function runKnowledgeAgent(input: {
     child.stderr.setEncoding("utf8");
     child.stdout.on("data", (chunk) => {
       try {
+        stdout += chunk;
         stdoutLineBuffer += chunk;
         const lines = stdoutLineBuffer.split("\n");
         stdoutLineBuffer = lines.pop() ?? "";
@@ -561,16 +645,21 @@ async function runKnowledgeAgent(input: {
         }
       } catch (error) {
         child.kill("SIGTERM");
-        rejectOnce(error instanceof Error ? error : new Error(String(error)));
+        rejectWithDiagnostic(
+          error instanceof Error ? error : new Error(String(error)),
+          "stdout_parse_error",
+        );
       }
     });
     child.stderr.on("data", (chunk) => {
       stderr += chunk;
     });
     child.on("error", (error) => {
-      rejectOnce(error);
+      rejectWithDiagnostic(error, "spawn_error");
     });
-    child.on("close", async (code) => {
+    child.on("close", async (code, signal) => {
+      exitCode = code;
+      exitSignal = signal;
       if (failed) {
         return;
       }
@@ -579,7 +668,10 @@ async function runKnowledgeAgent(input: {
           handleStdoutLine(stdoutLineBuffer);
           stdoutLineBuffer = "";
         } catch (error) {
-          rejectOnce(error instanceof Error ? error : new Error(String(error)));
+          rejectWithDiagnostic(
+            error instanceof Error ? error : new Error(String(error)),
+            "stdout_parse_error",
+          );
           return;
         }
       }
@@ -602,13 +694,14 @@ async function runKnowledgeAgent(input: {
         return;
       }
 
-      rejectOnce(
+      rejectWithDiagnostic(
         new Error(
-          (stderr.trim() || stdout.trim() || `Knowledge Agent exited ${code}`)
+          (diagnosticTail(stderr, 8) || diagnosticTail(stdout, 8) || `Knowledge Agent exited ${code}`)
             .split("\n")
             .slice(-8)
             .join("\n"),
         ),
+        "exit",
       );
     });
   });

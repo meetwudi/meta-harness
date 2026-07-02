@@ -1,0 +1,41 @@
+id = "proj-quartz.deployment.resource-change.2026-07-02-cloud-run-timeout-one-hour"
+title = "Set Quartz Cloud Run request timeout to one hour"
+environment = "production"
+provider = "google-cloud"
+resource_id = "quartz"
+resource_type = "cloud-run-service"
+resource_name = "quartz"
+action = "update-timeout"
+approval_kind = "human"
+approved_at = "2026-07-02T19:04:36Z"
+approved_by = "human user in Codex thread"
+approval_source = "Codex thread message `that timeout can be like 3600s an hour? that's ok. push to main yea. and run a deployment.`"
+source = "Human request on 2026-07-02 to allow one-hour Quartz Knowledge Agent runs and deploy the change."
+requirements = [
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
+]
+scope = "Update Google Cloud Run service `quartz` in project `future-of-work-497100`, region `us-east1`, so the request timeout is 3600 seconds."
+supersedes = [
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-run-service-quartz",
+]
+
+[provider_pointers]
+project = "future-of-work-497100"
+region_or_location = "us-east1"
+resource_uri = "//run.googleapis.com/projects/future-of-work-497100/locations/us-east1/services/quartz"
+resource_name = "quartz"
+console_url = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+change_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz/revisions?project=future-of-work-497100"
+scale_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz/metrics?project=future-of-work-497100"
+delete_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+
+[[conditions]]
+id = "one-hour-request-timeout"
+text = "Deploy the Quartz Cloud Run service with `--timeout 3600`."
+
+[[history]]
+approved_at = "2026-07-02T19:04:36Z"
+approved_by = "human user in Codex thread"
+action = "update-timeout"
+summary = "Human approved setting the Quartz production Cloud Run request timeout to one hour."

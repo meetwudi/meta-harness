@@ -1,9 +1,9 @@
 id = "knowledge-agent.main-run-turn-budget"
 title = "Main run supports long tool-rich conversations"
-source = "Human request on 2026-06-27: set the Knowledge Agent main run limit to 100 turns so long, tool-rich requests can complete."
-text = "The Knowledge Agent main conversation run uses a 100-turn budget so long, tool-rich requests have enough room to inspect Libraries, use search/tools, and produce an answer."
+source = "Human request on 2026-06-27: set the Knowledge Agent main run limit to 100 turns so long, tool-rich requests can complete. Human follow-up on 2026-07-02 after Knowledge Agent timeout reports: relax the maximum turn budget to 1000 as a starter for long routines such as YouTube analysis. Human follow-up on 2026-07-02: use `null` instead of a numeric main-run turn limit."
+text = "The Knowledge Agent main conversation run sets the OpenAI SDK turn budget to `null` so long, tool-rich requests are not stopped by the SDK maximum-turn counter."
 
 criteria = [
-  "The main Knowledge Agent OpenAI SDK run sets `maxTurns` to 100.",
+  "The main Knowledge Agent OpenAI SDK run sets `maxTurns` to `null`.",
   "This requirement applies to the main conversation run and does not imply changing specialized post-run agents such as the memory curator.",
 ]

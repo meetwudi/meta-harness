@@ -71,6 +71,8 @@ export async function recordLocalHistory(
       "",
       `Model: ${options.model}`,
       "",
+      `Status: ${resultSummary(result).failure ? "failed" : "completed"}`,
+      "",
       "Conversation state: conversation-state.toml",
       "",
       "Next conversation state: conversation-state-after.toml",
@@ -85,11 +87,22 @@ export async function recordLocalHistory(
       "",
     ].join("\n"),
   );
+  const summary = resultSummary(result);
+  await localRuntime.runtimeStorage.writeText(
+    join(turnRoot, "result-summary.json"),
+    `${JSON.stringify(summary, null, 2)}\n`,
+  );
+  if (summary.failure !== undefined) {
+    await localRuntime.runtimeStorage.writeText(
+      join(turnRoot, "failure.json"),
+      `${JSON.stringify(summary.failure, null, 2)}\n`,
+    );
+  }
   await localRuntime.runtimeStorage.writeText(
     join(turnRoot, "librarian-trace.json"),
     `${JSON.stringify(options.librarianContext.toolCallEvents, null, 2)}\n`,
   );
-  const memoryCurator = resultSummary(result).memoryCurator;
+  const memoryCurator = summary.memoryCurator;
   if (memoryCurator !== undefined) {
     await localRuntime.runtimeStorage.writeText(
       join(turnRoot, "memory-curator-trace.json"),
