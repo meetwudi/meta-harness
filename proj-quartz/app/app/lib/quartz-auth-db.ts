@@ -4,6 +4,7 @@
 // Harness-Requirement: proj-quartz.organization-invite-flow
 // Harness-Requirement: proj-quartz.organization-profiles
 // Harness-Requirement: proj-quartz.organization-resource-actors
+// Harness-Requirement: proj-quartz.conversation-user-actor-ownership
 // Harness-Requirement: proj-quartz.api.key-authentication
 // Harness-Requirement: proj-quartz.api.key-actor-scope
 // Harness-Requirement: proj-quartz.api.key-settings-dialog
@@ -77,6 +78,9 @@ export type QuartzResourceActorContext = {
   actorUris: string[];
   defaultReadActors: string[];
   defaultUpdateActors: string[];
+  conversationActorUris: string[];
+  conversationReadActors: string[];
+  conversationUpdateActors: string[];
   conversationLibraryRootPath: string;
 };
 
@@ -1054,6 +1058,7 @@ export function quartzResourceActorContext(
   const organizationActorUri = activeOrganization?.actorUri;
   const ownerActors = organizationActorUri ? [organizationActorUri] : [userActorUri];
   const projectActorUri = quartzProjectActorUri();
+  const conversationActors = [userActorUri];
   return {
     actorUri: userActorUri,
     actorUris: uniqueActors([
@@ -1063,9 +1068,10 @@ export function quartzResourceActorContext(
     ]),
     defaultReadActors: ownerActors,
     defaultUpdateActors: ownerActors,
-    conversationLibraryRootPath: organizationActorUri
-      ? `/libraries/organizations/${safeActorSegment(activeOrganization.id)}/knowledge-agent-conversations`
-      : `/libraries/users/${safeActorSegment(session.user.id)}/knowledge-agent-conversations`,
+    conversationActorUris: uniqueActors([userActorUri, projectActorUri]),
+    conversationReadActors: conversationActors,
+    conversationUpdateActors: conversationActors,
+    conversationLibraryRootPath: `/libraries/users/${safeActorSegment(session.user.id)}/knowledge-agent-conversations`,
   };
 }
 
@@ -1075,8 +1081,8 @@ export function quartzResourceActorEnv(
   return {
     META_HARNESS_ACTIVE_ACTOR_URI: context.actorUri,
     META_HARNESS_ACTIVE_ACTOR_URIS: context.actorUris.join("\n"),
-    META_HARNESS_DEFAULT_READ_ACTORS: context.defaultReadActors.join("\n"),
-    META_HARNESS_DEFAULT_UPDATE_ACTORS: context.defaultUpdateActors.join("\n"),
+    META_HARNESS_DEFAULT_READ_ACTORS: context.conversationReadActors.join("\n"),
+    META_HARNESS_DEFAULT_UPDATE_ACTORS: context.conversationUpdateActors.join("\n"),
     META_HARNESS_CONVERSATION_LIBRARY_ROOT_PATH: context.conversationLibraryRootPath,
   };
 }

@@ -6,6 +6,8 @@ import {
   createOrganizationInvite,
   createOrUpdateGoogleSession,
   revokeSession,
+  quartzResourceActorContext,
+  quartzResourceActorEnv,
   sessionFromToken,
   switchOrganization,
   withQuartzAuthDb,
@@ -18,6 +20,7 @@ import {
 // Harness-Requirement: proj-quartz.organization-invite-flow
 // Harness-Requirement: proj-quartz.organization-profiles
 // Harness-Requirement: proj-quartz.organization-resource-actors
+// Harness-Requirement: proj-quartz.conversation-user-actor-ownership
 // Harness-Requirement: proj-quartz.user-account-organizations
 
 type WebhookPayload = {
@@ -223,6 +226,22 @@ try {
 
         const refreshedOwnerSession = await sessionFromToken(client, ownerToken);
         assert.equal(refreshedOwnerSession?.activeOrganization?.id, ownerOrganization.id);
+        const ownerActorContext = quartzResourceActorContext(refreshedOwnerSession!);
+        assert.deepEqual(ownerActorContext.defaultReadActors, [ownerOrganization.actorUri]);
+        assert.deepEqual(ownerActorContext.conversationReadActors, [
+          `actor://proj-quartz/user/${refreshedOwnerSession!.user.id}`,
+        ]);
+        assert.deepEqual(ownerActorContext.conversationUpdateActors, [
+          `actor://proj-quartz/user/${refreshedOwnerSession!.user.id}`,
+        ]);
+        assert.equal(
+          ownerActorContext.conversationLibraryRootPath,
+          `/libraries/users/${refreshedOwnerSession!.user.id}/knowledge-agent-conversations`,
+        );
+        assert.equal(
+          quartzResourceActorEnv(ownerActorContext).META_HARNESS_DEFAULT_READ_ACTORS,
+          `actor://proj-quartz/user/${refreshedOwnerSession!.user.id}`,
+        );
 
         const delivery = await createOrganizationInvite({
           client,

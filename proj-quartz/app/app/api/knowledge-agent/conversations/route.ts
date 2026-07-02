@@ -1,3 +1,6 @@
+// Harness-Requirement: proj-quartz.chatgpt-style-conversation-sidebar
+// Harness-Requirement: proj-quartz.conversation-user-actor-ownership
+
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -337,9 +340,9 @@ export async function runtimeStorageFromConfig(
     schemaName: runtimeStorage.schemaName,
     tableName: runtimeStorage.tableName,
     autoEnsureSchema: runtimeStorage.autoEnsureSchema,
-    actorUris: actorContext.actorUris,
-    defaultReadActors: actorContext.defaultReadActors,
-    defaultUpdateActors: actorContext.defaultUpdateActors,
+    actorUris: actorContext.conversationActorUris,
+    defaultReadActors: actorContext.conversationReadActors,
+    defaultUpdateActors: actorContext.conversationUpdateActors,
   });
 }
 
@@ -361,8 +364,8 @@ async function loadConversationLibraryForActorContext(
     storage,
     root,
     runtimeLibrary.name,
-    actorContext.defaultReadActors,
-    actorContext.defaultUpdateActors,
+    actorContext.conversationReadActors,
+    actorContext.conversationUpdateActors,
   );
 
   return { storage, root };

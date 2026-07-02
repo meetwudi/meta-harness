@@ -1,19 +1,19 @@
 id = "proj-quartz.migration-intent.legacy-conversations-to-owner"
 title = "Legacy conversations to owner account"
-source = "Human request on 2026-07-01 to migrate existing userless conversations to meetwudi@gmail.com."
+source = "Human request on 2026-07-01 to migrate existing userless conversations to meetwudi@gmail.com, plus human clarification on 2026-07-02 that Quartz conversations must belong to the creating user actor rather than an organization actor."
 requirements = [
   "proj-quartz.legacy-conversation-owner-migration",
-  "proj-quartz.organization-resource-actors",
+  "proj-quartz.conversation-user-actor-ownership",
   "storage.resource-actor-governance",
 ]
-text = "Move pre-auth Quartz conversation resources from the legacy shared conversation Library root into the selected owner account's organization-scoped conversation Library."
+text = "Move pre-auth Quartz conversation resources from the legacy shared conversation Library root into the selected owner account's user-scoped conversation Library."
 implementation_artifacts = [
   "proj-quartz/app/scripts/migrate-legacy-conversations-to-owner.mjs",
 ]
 statements = [
-  "The migration targets an explicitly selected owner account and organization.",
+  "The migration targets an explicitly selected owner account.",
   "The migration preserves existing conversation folders and their resource contents.",
-  "The migrated rows use the target organization actor in read and update actor allow-lists.",
+  "The migrated rows use the target user actor in read and update actor allow-lists.",
   "The migration fails instead of overwriting conflicting target resources.",
   "After successful migration, the legacy userless conversation root is removed when it contains only migrated conversation rows and its Library manifests.",
 ]

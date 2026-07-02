@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Harness-Requirement: proj-quartz.legacy-conversation-owner-migration
-// Harness-Requirement: proj-quartz.organization-resource-actors
+// Harness-Requirement: proj-quartz.conversation-user-actor-ownership
 // Harness-Migration-Intent: proj-quartz.migration-intent.legacy-conversations-to-owner
 
 import { dirname, resolve } from "node:path";
@@ -17,11 +17,10 @@ const sourceRoot = "/libraries/knowledge-agent-conversations";
 const resourceTable = "quartz_core.resources";
 const usage = [
   "Usage:",
-  "  npm --prefix proj-quartz/app run migrate:legacy-conversations -- --email meetwudi@gmail.com --organization-id <uuid>",
+  "  npm --prefix proj-quartz/app run migrate:legacy-conversations -- --email meetwudi@gmail.com",
   "",
   "Options:",
   "  --email <email>             Required owner account email.",
-  "  --organization-id <uuid>    Required when the owner belongs to multiple organizations.",
   "  --dry-run                   Inspect without moving rows.",
 ].join("\n");
 
@@ -52,7 +51,6 @@ const pool = librarianStorage.createPostgresQueryClientFromConnectionString({
 try {
   const result = await migrateLegacyConversations(pool, {
     email: args.email,
-    organizationId: args.organizationId,
     dryRun: args.dryRun,
   });
   console.log(JSON.stringify(result, null, 2));
@@ -68,11 +66,11 @@ async function migrateLegacyConversations(pool, input) {
   const client = await pool.connect();
   await client.query("BEGIN");
   try {
-    const owner = await loadOwner(client, input.email, input.organizationId);
-    const targetRoot = `/libraries/organizations/${owner.organizationId}/knowledge-agent-conversations`;
-    const actorUris = [owner.organizationActorUri];
+    const owner = await loadOwner(client, input.email);
+    const targetRoot = `/libraries/users/${owner.userId}/knowledge-agent-conversations`;
+    const actorUris = [owner.userActorUri];
     const migrationActorUris = [
-      owner.organizationActorUri,
+      owner.userActorUri,
       "actor://knowledge-agent",
       "actor://proj-quartz/agent",
     ];
@@ -118,10 +116,9 @@ async function migrateLegacyConversations(pool, input) {
     return {
       dryRun: input.dryRun,
       ownerEmail: owner.email,
-      organizationName: owner.organizationName,
       sourceRoot,
       targetRoot,
-      organizationActorUri: owner.organizationActorUri,
+      userActorUri: owner.userActorUri,
       conversationCount,
       sourceRowCount,
       insertedRows,
@@ -137,35 +134,24 @@ async function migrateLegacyConversations(pool, input) {
   }
 }
 
-async function loadOwner(client, email, organizationId) {
+async function loadOwner(client, email) {
   const result = await client.query(
     `SELECT
        u.email,
-       o.id::text AS organization_id,
-       o.name AS organization_name,
-       o.actor_uri AS organization_actor_uri
-     FROM quartz_app.organization_profiles p
-     JOIN quartz_app.users u ON u.id = p.user_id
-     JOIN quartz_app.organizations o ON o.id = p.organization_id
+       u.id::text AS user_id
+     FROM quartz_app.users u
      WHERE lower(u.email) = lower($1)
-       AND ($2::uuid IS NULL OR o.id = $2::uuid)
-     ORDER BY p.created_at`,
-    [email, organizationId ?? null],
+     ORDER BY u.created_at`,
+    [email],
   );
   if (result.rows.length === 0) {
-    throw new Error(`No Quartz organization profile found for ${email}.`);
-  }
-  if (result.rows.length > 1) {
-    throw new Error(
-      `${email} belongs to multiple organizations; pass --organization-id explicitly.`,
-    );
+    throw new Error(`No Quartz user account found for ${email}.`);
   }
   const row = result.rows[0];
   return {
     email: row.email,
-    organizationId: row.organization_id,
-    organizationName: row.organization_name,
-    organizationActorUri: row.organization_actor_uri,
+    userId: row.user_id,
+    userActorUri: `actor://proj-quartz/user/${row.user_id}`,
   };
 }
 
@@ -179,7 +165,7 @@ async function assertTargetRootExists(client, targetRoot) {
   );
   if (result.rowCount === 0) {
     throw new Error(
-      `Target organization conversation Library does not exist: ${targetRoot}`,
+      `Target user conversation Library does not exist: ${targetRoot}`,
     );
   }
 }
@@ -313,7 +299,6 @@ function parseArgs(argv) {
   const parsed = {
     dryRun: false,
     email: "",
-    organizationId: undefined,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
@@ -330,21 +315,9 @@ function parseArgs(argv) {
       parsed.email = value.slice("--email=".length);
       continue;
     }
-    if (value === "--organization-id") {
-      parsed.organizationId = requiredNext(argv, index, value);
-      index += 1;
-      continue;
-    }
-    if (value.startsWith("--organization-id=")) {
-      parsed.organizationId = value.slice("--organization-id=".length);
-      continue;
-    }
     throw new Error(`${usage}\n\nUnknown option: ${value}`);
   }
   parsed.email = parsed.email.trim().toLowerCase();
-  if (parsed.organizationId !== undefined) {
-    parsed.organizationId = parsed.organizationId.trim();
-  }
   return parsed;
 }
 

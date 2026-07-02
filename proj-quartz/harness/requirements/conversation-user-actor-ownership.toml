@@ -1,0 +1,11 @@
+id = "proj-quartz.conversation-user-actor-ownership"
+title = "Conversation user actor ownership"
+source = "Human request on 2026-07-02: conversations must belong only to the user who created them; users in the same organization must not see each other's conversations; Quartz should use the user actor to access conversations; sharing is future work and not part of this requirement."
+text = "Quartz conversation history belongs to the creating user actor, not the active organization actor."
+
+criteria = [
+  "Conversation Library access uses the creating user's actor URI for read and update authority.",
+  "Conversation history storage uses a user-scoped conversation Library root.",
+  "Users in the same organization cannot list, read, update, or delete one another's Quartz conversations through organization actor access.",
+  "Organization-scoped conversation sharing is not implemented until a later explicit sharing requirement.",
+]

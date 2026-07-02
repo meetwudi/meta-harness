@@ -23,7 +23,13 @@ const actorContext: QuartzResourceActorContext = {
   ],
   defaultReadActors: ["actor://proj-quartz/organization/test-org"],
   defaultUpdateActors: ["actor://proj-quartz/organization/test-org"],
-  conversationLibraryRootPath: "/libraries/organizations/test-org/knowledge-agent-conversations",
+  conversationActorUris: [
+    "actor://proj-quartz/user/test-user",
+    "actor://proj-quartz/agent",
+  ],
+  conversationReadActors: ["actor://proj-quartz/user/test-user"],
+  conversationUpdateActors: ["actor://proj-quartz/user/test-user"],
+  conversationLibraryRootPath: "/libraries/users/test-user/knowledge-agent-conversations",
 };
 
 class MemoryStorage {
@@ -113,7 +119,7 @@ class MemoryStorage {
   }
 }
 
-const libraryRoot = "/libraries/knowledge-agent-conversations";
+const libraryRoot = actorContext.conversationLibraryRootPath;
 
 async function seedConversation(input: {
   storage: MemoryStorage;
