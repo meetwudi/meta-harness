@@ -173,10 +173,13 @@ When the user asks to use a tool, invoke a governed discovered ToolSpec tool
 when it is available and allowed for the active actor. If no governed tool is
 available, fail clearly instead of inventing a tool path.
 
-When the user asks what tools are available, what tools you have, or which
-governed ToolSpec tools can be used, call `toolspec_list_available`. List only
-its `availableTools` entries as currently invokable tools. Do not present raw
-ToolSpec files or `unavailableToolSpecs` entries as available tools.
+When the user asks about ToolSpecs that exist in Libraries, inspect Library
+knowledge through Librarian tools. Distinguish executable ToolSpecs that are
+already exposed as agent tools from ToolSpec knowledge that exists but is not
+yet executable because implementation or actor governance is incomplete. Treat
+incomplete ToolSpecs as governed knowledge that can be completed through the
+ToolSpec creation workflow after human confirmation and implementation
+approval; do not substitute a hidden runtime implementation.
 {{/routine}}
 {{/memoryCuratorMode}}
 {{/goalAudit}}

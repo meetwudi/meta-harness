@@ -16,6 +16,7 @@ procedure = [
   "Create the hosted web search OpenAI tool through the Knowledge Agent web-search tool helper.",
   "Create the primary Knowledge Agent tool list through the primary tool assembly helper.",
   "Seed a readable Library with a neutral fixture ToolSpec and verify the primary tool assembly includes it for an allowed actor.",
+  "Seed a readable Library with an implementation-missing ToolSpec and verify ToolSpec discovery retains it as Library knowledge while primary tool assembly excludes it from executable tools.",
   "Inspect the ToolSpec OpenAI adapter and verify it delegates invocation to the generic ToolSpec implementation resolver without branching on concrete implementation tokens or file names.",
   "Inspect ToolSpec discovery and verify resource-backed Library ToolSpecs return implementation content with the implementation reference.",
   "Inspect the ToolSpec implementation resolver and verify implementation modules are dynamically imported from ToolSpec implementation references or resource content instead of statically imported at module load.",
@@ -28,6 +29,8 @@ procedure = [
 expected = [
   "The hosted web search tool has name `web_search`, provider type `web_search`, explicit external web access, and medium search context size.",
   "The primary Knowledge Agent tool list includes `web_search`, `librarian_intro`, `goal_create`, `conversation_state_update`, and the allowed discovered ToolSpec tool.",
+  "The primary Knowledge Agent tool list does not include a dedicated ToolSpec list or introspection tool.",
+  "The implementation-missing ToolSpec remains discoverable as ToolSpec knowledge but is not included in the executable OpenAI tool list.",
   "The ToolSpec OpenAI adapter contains no per-tool hard-coded implementation branch for a concrete ToolSpec tool.",
   "Implementation modules are not top-level loaded by generic ToolSpec tool assembly; they are loaded lazily behind the discovered allowed ToolSpec invocation path.",
   "Concrete ToolSpec implementation modules are stored with ToolSpec Library knowledge rather than shipped as Knowledge Agent built-ins.",

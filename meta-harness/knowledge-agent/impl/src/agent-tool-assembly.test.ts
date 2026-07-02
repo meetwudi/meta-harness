@@ -18,7 +18,6 @@ import {
 import { ConversationStateRuntime } from "./conversation-state.js";
 import { createConversationStateOpenAITools } from "./create-conversation-state-openai-tools.js";
 import { createKnowledgeAgentOpenAITools } from "./create-knowledge-agent-openai-tools.js";
-import { listAvailableToolSpecs } from "./create-toolspec-availability-openai-tools.js";
 import { createToolSpecOpenAITools } from "./create-toolspec-openai-tools.js";
 import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
 import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream-events.js";
@@ -236,10 +235,10 @@ assert.ok(primaryToolNames.includes("web_search"));
 assert.ok(primaryToolNames.includes("librarian_intro"));
 assert.ok(primaryToolNames.includes("goal_create"));
 assert.ok(primaryToolNames.includes("conversation_state_update"));
-assert.ok(primaryToolNames.includes("toolspec_list_available"));
 assert.ok(primaryToolNames.includes("fixture_text_transform"));
 assert.ok(primaryToolNames.includes("resource_number"));
 assert.equal(primaryToolNames.includes("missing_number"), false);
+assert.equal(primaryToolNames.includes("toolspec_list_available"), false);
 
 const discoveredToolSpecs = await discoverLibraryToolSpecs(fakeLibrarianContext);
 const resourceToolSpec = discoveredToolSpecs.find((toolSpec) => toolSpec.name === "resource_number");
@@ -252,22 +251,6 @@ assert.equal(await executeToolSpecImplementation(resourceToolSpec, {}), 42);
 const missingToolSpec = discoveredToolSpecs.find((toolSpec) => toolSpec.name === "missing_number");
 assert.ok(missingToolSpec);
 assert.equal(missingToolSpec.implementationAvailable, false);
-
-const toolSpecAvailability = await listAvailableToolSpecs({
-  librarianContext: fakeLibrarianContext,
-  reservedToolNames: new Set(["toolspec_list_available"]),
-  includeUnavailable: true,
-});
-assert.deepEqual(
-  toolSpecAvailability.availableTools.map((toolSpec) => toolSpec.name),
-  ["fixture_text_transform", "resource_number"],
-);
-assert.ok(
-  toolSpecAvailability.unavailableToolSpecs?.some((toolSpec) =>
-    toolSpec.name === "missing_number" &&
-    /implementation is missing or unsupported/.test(toolSpec.reason)
-  ),
-);
 
 const directToolSpecTools = await createToolSpecOpenAITools({
   librarianContext: fakeLibrarianContext,

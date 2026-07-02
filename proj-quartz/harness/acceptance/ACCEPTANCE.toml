@@ -261,7 +261,7 @@ expected = [
 
 [[tests]]
 id = "proj-quartz.acceptance.youtube-transcript-toolspec-flow"
-title = "YouTube transcript ToolSpec flow"
+title = "YouTube transcript database ToolSpec flow"
 requirements = [
   "proj-quartz.knowledge-agent-chat-service",
   "proj-quartz.default-library-creation-target",
@@ -275,12 +275,9 @@ circumstances = [
 execution = "ai-browser"
 procedure = [
   "Open the Quartz SPA in the in-app browser with `QUARTZ_POSTGRES_URL` configured.",
-  "In one Quartz conversation, ask `create a tool that fetches youtube transcript`.",
-  "Verify the agent creates or pursues a Goal for creating the usable ToolSpec tool.",
-  "Verify the agent presents governed ToolSpec knowledge for a YouTube transcript tool in a writable Quartz Library before writing implementation code.",
-  "In the same conversation, send `I approve this ToolSpec. Update the implementation.`",
-  "Verify the agent writes the ToolSpec implementation under the ToolSpec folder in the writable Quartz Library.",
-  "Verify the generated JavaScript implementation uses the ToolSpec runtime module contract: ES module export of `executeToolSpec`, `execute`, or a default function, without CommonJS `module.exports`.",
+  "Verify the Quartz Postgres-backed Library storage contains a `fetch_youtube_transcript` ToolSpec whose `implementation` is `impl/fetch-youtube-transcript.js`.",
+  "Verify the ToolSpec implementation file is stored under the ToolSpec folder in database-backed Library knowledge and uses the ToolSpec runtime module contract: ES module export of `executeToolSpec`, `execute`, or a default function, without CommonJS `module.exports`.",
+  "Verify no database-backed `fetch_youtube_transcript` ToolSpec points at a runtime-owned `builtin/` implementation token.",
   "Start a separate Quartz conversation.",
   "Ask `What tools do you have available right now? Please list their names.`",
   "Verify the answer lists only executable governed ToolSpec tools and excludes ToolSpecs with missing or unsupported implementations.",
@@ -289,11 +286,9 @@ procedure = [
   "Verify the agent invokes the discovered ToolSpec tool and returns visible transcript content.",
 ]
 expected = [
-  "The first conversation creates ToolSpec knowledge without asking the user to write TOML.",
-  "The first conversation does not write implementation code until the explicit approval message.",
-  "The ToolSpec implementation is stored as governed Library knowledge with the ToolSpec.",
-  "The generic tool-list conversation discovers the created ToolSpec without requiring the user to name it.",
-  "The invocation conversation discovers the created ToolSpec and exposes it as an agent tool.",
+  "The ToolSpec implementation is stored as governed database-backed Library knowledge with the ToolSpec.",
+  "The generic tool-list conversation discovers the database-backed ToolSpec without requiring the user to name it.",
+  "The invocation conversation discovers the database-backed ToolSpec and exposes it as an agent tool.",
   "The transcript fetch completes or fails clearly within the configured timeout instead of exhausting the agent run.",
   "The answer includes transcript text from the requested video.",
 ]

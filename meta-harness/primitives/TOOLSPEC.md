@@ -138,6 +138,11 @@ names, schemas, implementation code, and usage instructions belong in ToolSpec
 knowledge, project knowledge, or runtime capability knowledge inspected through
 Libraries.
 
+Discovery may surface ToolSpec knowledge that is not yet executable. Missing
+implementation, unsupported implementation format, or actor-governance mismatch
+must keep the ToolSpec out of the executable tool surface without erasing the
+underlying Library knowledge.
+
 Runtime-owned implementation tokens are appropriate only for generic
 interpreters or execution adapters, not for hiding concrete tool behavior outside
 the ToolSpec Library.

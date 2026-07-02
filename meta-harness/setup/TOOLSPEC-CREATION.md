@@ -42,9 +42,11 @@ Only write the generated implementation after the human explicitly approves the
 ToolSpec and asks to update or generate the implementation. The approval may be
 ordinary language, but it must clearly authorize implementation code.
 
-If a discovered ToolSpec has no implementation file, fail clearly or ask for
-approval to generate the ToolSpec-derived implementation. Do not use a runtime
-fallback or hidden built-in.
+If a discovered ToolSpec has no implementation file, treat it as incomplete
+governed ToolSpec knowledge. Explain that the spec exists, inspect it when
+needed, and ask for approval to generate the ToolSpec-derived implementation
+when the human wants the tool to become usable. Do not use a runtime substitute
+or hidden built-in.
 
 ## Creation Flow
 

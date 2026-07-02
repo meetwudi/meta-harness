@@ -2,7 +2,6 @@
 // Supports knowledge-agent.agent-tool-assembly: assembles the primary Knowledge Agent tool surface.
 // Supports knowledge-agent.web-search-tool: includes hosted web search in the primary Knowledge Agent session.
 // Supports knowledge-agent.library-toolspec-openai-tools: includes allowed tools discovered from Library ToolSpecs.
-// Supports knowledge-agent.library-toolspec-openai-tools: exposes an executable ToolSpec availability report for tool-list questions.
 
 import type { Tool } from "@openai/agents";
 import type { LibrarianContext } from "../../../librarian/impl/dist/index.js";
@@ -10,7 +9,6 @@ import type { ConversationStateRuntime } from "./conversation-state.js";
 import { createConversationStateOpenAITools } from "./create-conversation-state-openai-tools.js";
 import { createGoalOpenAITools } from "./create-goal-openai-tools.js";
 import { createLibrarianOpenAITools } from "./create-librarian-openai-tools.js";
-import { createToolSpecAvailabilityOpenAITools } from "./create-toolspec-availability-openai-tools.js";
 import { createToolSpecOpenAITools } from "./create-toolspec-openai-tools.js";
 import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
 
@@ -28,16 +26,8 @@ export async function createKnowledgeAgentOpenAITools(input: {
     ...createWebSearchOpenAITools(),
   ];
   const reservedToolNames = new Set(builtInTools.map((tool) => tool.name));
-  const availabilityTools = createToolSpecAvailabilityOpenAITools({
-    librarianContext: input.librarianContext,
-    reservedToolNames,
-  });
-  for (const tool of availabilityTools) {
-    reservedToolNames.add(tool.name);
-  }
   return [
     ...builtInTools,
-    ...availabilityTools,
     ...await createToolSpecOpenAITools({
       librarianContext: input.librarianContext,
       reservedToolNames,
