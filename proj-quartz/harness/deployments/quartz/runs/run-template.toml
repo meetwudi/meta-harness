@@ -7,10 +7,28 @@ actor = ""
 source = "Template created on 2026-07-01 from the human request for deployment run artifacts, logs, history, and checklist attestation."
 requirements = [
   "proj-quartz.deployment-primitive",
+  "proj-quartz.local-chat-smoke-verification",
+  "proj-quartz.local-database-slots",
 ]
 deployment_revision = ""
 resource_snapshot = ""
 resource_changes = []
+
+[local_slot]
+app_port = ""
+database = ""
+public_base_url = ""
+oauth_callback_uri = ""
+database_provisioning_approval = ""
+database_provisioning_result = ""
+
+[local_chat_smoke]
+tested = false
+sign_in_state = ""
+active_organization_state = ""
+submitted_message = ""
+assistant_response = ""
+result = ""
 
 [[commands]]
 command = ""

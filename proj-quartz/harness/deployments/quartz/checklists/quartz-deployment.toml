@@ -4,6 +4,7 @@ source = "Human request on 2026-07-01 for deployment checklists and checklist at
 requirements = [
   "proj-quartz.deployment-primitive",
   "proj-quartz.deployment-resource-changes",
+  "proj-quartz.local-chat-smoke-verification",
   "proj-quartz.local-database-slots",
   "proj-quartz.local-env-file-main-checkout",
   "proj-quartz.local-hostname-consistency",
@@ -49,6 +50,16 @@ evidence = "Run record lists the selected local callback URI and confirms it cam
 id = "local-database-slot"
 text = "For local runs, the selected app port, OAuth callback slot, and local Postgres database slot are aligned."
 evidence = "Run record lists the selected app port and database name from `environments/local.toml` without recording database passwords."
+
+[[items]]
+id = "local-database-provisioning"
+text = "For local runs, missing slot databases are provisioned only after explicit human approval and without dropping, resetting, or cloning existing slot databases."
+evidence = "Run record lists the provisioning approval and database names created or confirms the selected slot database already existed."
+
+[[items]]
+id = "local-chat-smoke"
+text = "For local chat smoke verification, the selected local slot can create or open a chat, submit `hi`, and receive an assistant response from a signed-in session with an active organization."
+evidence = "Run record captures the selected origin, sign-in state, active organization state, submitted message, and received assistant response without recording secret values."
 
 [[items]]
 id = "build-and-tests"

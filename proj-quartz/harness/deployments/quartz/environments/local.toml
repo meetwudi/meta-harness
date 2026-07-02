@@ -5,6 +5,7 @@ provider = "docker-compose"
 source = "Human request on 2026-06-26 for local Docker-oriented Postgres deployment and 2026-07-01 request for deployment environment separation."
 requirements = [
   "proj-quartz.deployment-primitive",
+  "proj-quartz.local-chat-smoke-verification",
   "proj-quartz.local-database-slots",
   "proj-quartz.local-env-file-main-checkout",
   "proj-quartz.local-hostname-consistency",
@@ -67,9 +68,16 @@ local_database_slots = [
 local_database_policy = [
   "Use local Postgres host `localhost`, port `5433`, and the database name assigned to the selected app port.",
   "Set `QUARTZ_POSTGRES_URL` from `.env` so only the database name changes for the selected slot.",
+  "After explicit human approval, provision missing local slot databases idempotently for `quartz_slot_3000` through `quartz_slot_3009`.",
   "Use DBeaver saved connection names from `local_database_slots` when local database inspection is needed.",
   "Do not record or expose local database passwords from `.env` in deployment knowledge, run records, screenshots, or chat.",
   "Do not create, drop, reset, or clone slot databases unless an approved local runbook step or explicit human approval covers that database action.",
+]
+local_chat_smoke_policy = [
+  "A local slot is usable for chat only when the selected local origin can create or open a chat, submit `hi`, and receive an assistant response.",
+  "A rendered sign-in screen, HTTP 200 response, or running Next.js process is not enough to mark the local slot usable for chat.",
+  "Local chat smoke verification requires a signed-in Quartz session with an active organization.",
+  "Agents must obtain required browser-use confirmation before using a human's Google account for local OAuth sign-in.",
 ]
 local_env_file_policy = [
   "`proj-quartz/.env` is a required gitignored local deployment file.",

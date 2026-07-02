@@ -8,6 +8,7 @@ service = "Quartz"
 requirements = [
   "proj-quartz.deployment-primitive",
   "proj-quartz.deployment-resource-changes",
+  "proj-quartz.local-chat-smoke-verification",
   "proj-quartz.local-database-slots",
   "proj-quartz.local-env-file-main-checkout",
   "proj-quartz.local-hostname-consistency",

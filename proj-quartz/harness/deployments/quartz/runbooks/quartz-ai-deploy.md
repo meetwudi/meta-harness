@@ -28,14 +28,16 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 8. Set `QUARTZ_POSTGRES_URL` from `.env` so it points at `localhost:5433` and the selected database slot, for example `quartz_slot_3000` for app port 3000. Do not record the password value.
 9. When the local run includes Google sign-in, set `QUARTZ_PUBLIC_BASE_URL` to the matching `localhost` origin and set `QUARTZ_GOOGLE_REDIRECT_URI` to the exact selected callback URI.
 10. Do not test Google sign-in against a local callback URI outside the ten-slot pool unless a human approves and records the OAuth client change first.
-11. Do not create, drop, reset, or clone a local database slot unless that database action is covered by an approved local runbook step or explicit human approval.
-12. Run `npm --prefix proj-quartz/app run typecheck`.
-13. Run `npm --prefix proj-quartz/app run test:conversations`.
-14. Run `npm --prefix proj-quartz/app run test:streaming`.
-15. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
-16. Run `npm --prefix proj-quartz/app run build`.
-17. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
-18. Capture a run record under `runs/` using `runs/run-template.toml`, including the selected local slot, database name, and OAuth callback URI when Google sign-in is tested.
+11. Confirm the selected local database slot exists before starting Quartz.
+12. When a human explicitly approves provisioning all local slot databases, create missing databases for `quartz_slot_3000` through `quartz_slot_3009` idempotently. Do not drop, reset, or clone existing slot databases unless the human separately approves that database action.
+13. Run `npm --prefix proj-quartz/app run typecheck`.
+14. Run `npm --prefix proj-quartz/app run test:conversations`.
+15. Run `npm --prefix proj-quartz/app run test:streaming`.
+16. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
+17. Run `npm --prefix proj-quartz/app run build`.
+18. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
+19. For a local chat smoke verification, open the selected local origin, sign in through Google OAuth when needed, confirm the session has an active organization, create or open a chat, submit `hi`, and verify an assistant response is received. Get required browser-use confirmation before using a human's Google account for OAuth sign-in.
+20. Capture a run record under `runs/` using `runs/run-template.toml`, including the selected local slot, database name, OAuth callback URI, database provisioning approval when used, sign-in state, active organization state, submitted `hi` message, and received assistant response when chat smoke verification is tested.
 
 ## Production Deployment
 

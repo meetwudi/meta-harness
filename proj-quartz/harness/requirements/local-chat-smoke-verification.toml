@@ -1,0 +1,12 @@
+id = "proj-quartz.local-chat-smoke-verification"
+title = "Local chat smoke verification"
+source = "Active thread goal on 2026-07-02: slot 9 is usable and can create a chat, say `hi`, and get a response; if new local deployment facts appear, add them to deployment knowledge."
+text = "A Quartz local slot is usable for interactive chat only when a signed-in browser session with an active organization can create or open a chat, send `hi`, and receive an assistant response."
+
+criteria = [
+  "HTTP 200, a rendered sign-in screen, or a running Next.js process is not enough to mark a local slot usable for chat.",
+  "The local chat smoke check uses the selected slot's app port, OAuth callback URI, and database name from the local environment record.",
+  "The browser session must be signed in through Google OAuth and must have an active Quartz organization before the chat can be exercised.",
+  "Agents must obtain required browser-use confirmation before using a human's Google account to sign in through OAuth.",
+  "The run record captures the selected slot, sign-in state, active organization state, submitted `hi` message, and received assistant response without recording secret values.",
+]
