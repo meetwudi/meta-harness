@@ -78,6 +78,8 @@ local_chat_smoke_policy = [
   "A rendered sign-in screen, HTTP 200 response, or running Next.js process is not enough to mark the local slot usable for chat.",
   "Local chat smoke verification requires a signed-in Quartz session with an active organization.",
   "Agents must obtain required browser-use confirmation before using a human's Google account for local OAuth sign-in.",
+  "If browser automation is blocked from using Google OAuth, keep the selected local tab as a human handoff and continue only after the human completes sign-in and the browser returns to the selected `localhost` origin.",
+  "Do not mark chat smoke verification passing while OAuth sign-in is waiting on human handoff.",
 ]
 local_env_file_policy = [
   "`proj-quartz/.env` is a required gitignored local deployment file.",

@@ -8,5 +8,7 @@ criteria = [
   "The local chat smoke check uses the selected slot's app port, OAuth callback URI, and database name from the local environment record.",
   "The browser session must be signed in through Google OAuth and must have an active Quartz organization before the chat can be exercised.",
   "Agents must obtain required browser-use confirmation before using a human's Google account to sign in through OAuth.",
+  "When browser automation cannot use Google OAuth because of browser security policy or account-access limits, the agent hands the open local tab to the human for sign-in and continues only after the callback returns to the selected local origin.",
+  "A waiting OAuth handoff is a blocker for chat smoke verification, not a passing result.",
   "The run record captures the selected slot, sign-in state, active organization state, submitted `hi` message, and received assistant response without recording secret values.",
 ]
