@@ -19,15 +19,20 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 ## Local Deployment
 
 1. Use `environments/local.toml` as the environment record.
-2. Start the local Postgres service with `docker compose -f proj-quartz/compose.yaml up -d postgres`.
-3. Confirm the local environment provides the values described by `proj-quartz/app/.env.example`.
-4. Run `npm --prefix proj-quartz/app run typecheck`.
-5. Run `npm --prefix proj-quartz/app run test:conversations`.
-6. Run `npm --prefix proj-quartz/app run test:streaming`.
-7. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
-8. Run `npm --prefix proj-quartz/app run build`.
-9. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
-10. Capture a run record under `runs/` using `runs/run-template.toml`.
+2. Confirm `proj-quartz/.env` exists in the selected checkout before starting Quartz.
+3. When running from a worktree and `proj-quartz/.env` is missing, use the main checkout's `proj-quartz/.env` as the preferred copy source; consult the human if the main checkout env file is missing, inaccessible, ambiguous, or copying would expose or overwrite secret values.
+4. Start the local Postgres service with `docker compose -f proj-quartz/compose.yaml up -d postgres`.
+5. Confirm the local environment provides the values described by `proj-quartz/app/.env.example`.
+6. Use `localhost` consistently for local app origins, local OAuth callback URIs, and local example connection strings.
+7. When the local run includes Google sign-in, select one of the ten local OAuth callback slots from `environments/local.toml`, set `QUARTZ_PUBLIC_BASE_URL` to the matching `localhost` origin, and set `QUARTZ_GOOGLE_REDIRECT_URI` to the exact selected callback URI.
+8. Do not test Google sign-in against a local callback URI outside the ten-slot pool unless a human approves and records the OAuth client change first.
+9. Run `npm --prefix proj-quartz/app run typecheck`.
+10. Run `npm --prefix proj-quartz/app run test:conversations`.
+11. Run `npm --prefix proj-quartz/app run test:streaming`.
+12. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
+13. Run `npm --prefix proj-quartz/app run build`.
+14. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
+15. Capture a run record under `runs/` using `runs/run-template.toml`, including the selected local OAuth callback slot when Google sign-in is tested.
 
 ## Production Deployment
 

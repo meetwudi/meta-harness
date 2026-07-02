@@ -68,14 +68,14 @@ async function withInviteWebhook<T>(
 
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", () => resolve());
+    server.listen(0, "localhost", () => resolve());
   });
 
   const address = server.address();
   assert(address && typeof address === "object");
   try {
     return await run({
-      url: `http://127.0.0.1:${address.port}/invite-email`,
+      url: `http://localhost:${address.port}/invite-email`,
       deliveries,
     });
   } finally {

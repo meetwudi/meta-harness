@@ -8,6 +8,9 @@ service = "Quartz"
 requirements = [
   "proj-quartz.deployment-primitive",
   "proj-quartz.deployment-resource-changes",
+  "proj-quartz.local-env-file-main-checkout",
+  "proj-quartz.local-hostname-consistency",
+  "proj-quartz.local-oauth-callback-slots",
   "proj-quartz.production-cloud-run-deployment",
 ]
 referenced_specs = [
