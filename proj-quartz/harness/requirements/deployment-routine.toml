@@ -1,0 +1,10 @@
+id = "proj-quartz.deployment-routine"
+title = "Deployment routine"
+source = "Human request on 2026-07-02: deployment should be a Routine, colocated with the Deployment primitive or specified by the Deployment primitive, and consolidated with the deployment runbook/checklist."
+text = "Quartz deployment is represented as a governed Routine that points to the Deployment primitive, runbook, checklist, environment records, resource-change records, resource snapshots, and run records."
+
+criteria = [
+  "Quartz Deployment knowledge identifies the deployment Routine collection.",
+  "The deployment Routine is colocated with the Quartz Deployment primitive and directly referenced by that primitive.",
+  "The Routine procedure consolidates the existing deployment runbook, checklist, resource-change approval, resource snapshot, run-record, verification, and attestation flow.",
+]

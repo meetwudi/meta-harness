@@ -7,7 +7,9 @@ source = "Human request on 2026-07-01 for deployment as a Quartz primitive cover
 service = "Quartz"
 requirements = [
   "proj-quartz.deployment-primitive",
+  "proj-quartz.deployment-routine",
   "proj-quartz.deployment-resource-changes",
+  "proj-quartz.destructive-migration-plan-approval",
   "proj-quartz.local-chat-smoke-verification",
   "proj-quartz.local-database-slots",
   "proj-quartz.local-env-file-main-checkout",
@@ -26,6 +28,15 @@ location = "environments"
 [[runbook_collections]]
 name = "runbooks"
 location = "runbooks"
+
+[[routine_collections]]
+name = "routines"
+location = "routines"
+
+[deployment_routine]
+name = "quartz-deployment"
+source_library = "library://proj-quartz"
+location = "routines/quartz-deployment"
 
 [[checklist_collections]]
 name = "checklists"
@@ -52,3 +63,4 @@ completion_requires_resource_changes_for_production = true
 unknown_provider_detail_policy = "consult-human"
 run_record_storage_policy = "human-decision-required"
 resource_change_policy = "one-human-approval-per-resource-change"
+migration_plan_policy = "human-approved-plan-required-before-destructive-or-data-loss-risk-database-migrations"

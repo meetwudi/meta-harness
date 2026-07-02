@@ -14,7 +14,9 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 4. Read `checklists/quartz-deployment.toml`.
 5. Read the resource change records for every cloud resource the run will create, change, scale, delete, or use.
 6. If a resource change record, approval time, or provider pointer is missing, consult the human before deploying.
-7. If the selected environment has blockers or unresolved provider details, consult the human before deploying.
+7. Inventory every database schema migration, data migration, repair script, reset, deletion, copy, backfill, or storage rewrite that the deployment may run.
+8. For any database migration that can delete data, lose data, drop or rename schemas, tables, or columns, reset data, rewrite durable rows, or make rollback materially harder, prepare a concrete migration plan and get explicit human approval before running it.
+9. If the selected environment has blockers or unresolved provider details, consult the human before deploying.
 
 ## Local Deployment
 
@@ -30,14 +32,15 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 10. Do not test Google sign-in against a local callback URI outside the ten-slot pool unless a human approves and records the OAuth client change first.
 11. Confirm the selected local database slot exists before starting Quartz.
 12. When a human explicitly approves provisioning all local slot databases, create missing databases for `quartz_slot_3000` through `quartz_slot_3009` idempotently. Do not drop, reset, or clone existing slot databases unless the human separately approves that database action.
-13. Run `npm --prefix proj-quartz/app run typecheck`.
-14. Run `npm --prefix proj-quartz/app run test:conversations`.
-15. Run `npm --prefix proj-quartz/app run test:streaming`.
-16. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
-17. Run `npm --prefix proj-quartz/app run build`.
-18. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
-19. For a local chat smoke verification, open the selected local origin, sign in through Google OAuth when needed, confirm the session has an active organization, create or open a chat, submit `hi`, and verify an assistant response is received. Get required browser-use confirmation before using a human's Google account for OAuth sign-in. If browser automation cannot use Google OAuth because of browser security policy or account-access limits, keep the selected local tab as a human handoff and continue only after the human completes sign-in and the callback returns to the selected `localhost` origin; do not mark the smoke check passing while the handoff is waiting.
-20. Capture a run record under `runs/` using `runs/run-template.toml`, including the selected local slot, database name, OAuth callback URI, database provisioning approval when used, sign-in state, active organization state, submitted `hi` message, and received assistant response when chat smoke verification is tested.
+13. Before running a risky local database migration or repair, record the migration plan and explicit human approval in the run record.
+14. Run `npm --prefix proj-quartz/app run typecheck`.
+15. Run `npm --prefix proj-quartz/app run test:conversations`.
+16. Run `npm --prefix proj-quartz/app run test:streaming`.
+17. Run `npm --prefix proj-quartz/app run test:auth-org` when the deployment includes auth and organization behavior.
+18. Run `npm --prefix proj-quartz/app run build`.
+19. Start Quartz with `npm --prefix proj-quartz/app run dev` for local interactive deployment, or `npm --prefix proj-quartz/app run start` after a production-mode build when that is the local replay target.
+20. For a local chat smoke verification, open the selected local origin, sign in through Google OAuth when needed, confirm the session has an active organization, create or open a chat, submit `hi`, and verify an assistant response is received. Get required browser-use confirmation before using a human's Google account for OAuth sign-in. If browser automation cannot use Google OAuth because of browser security policy or account-access limits, keep the selected local tab as a human handoff and continue only after the human completes sign-in and the callback returns to the selected `localhost` origin; do not mark the smoke check passing while the handoff is waiting.
+21. Capture a run record under `runs/` using `runs/run-template.toml`, including the selected local slot, database name, OAuth callback URI, database provisioning approval when used, migration-plan approvals or blockers when applicable, sign-in state, active organization state, submitted `hi` message, and received assistant response when chat smoke verification is tested.
 
 ## Production Deployment
 
@@ -49,7 +52,8 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
 6. Use Artifact Registry repository `quartz` and image prefix `us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz`.
 7. Use Cloud SQL Postgres instance `quartz-postgres`, database `quartz`, and database user `quartz`.
 8. Store production runtime secrets in Secret Manager secrets named by `environments/production.toml`; do not record secret values in deployment knowledge.
-9. Build the production image from the repository root with:
+9. Before running a production database migration or repair that can delete data, lose data, drop or rename schemas, tables, or columns, reset data, rewrite durable rows, or make rollback materially harder, record a concrete migration plan and get explicit human approval for that plan.
+10. Build the production image from the repository root with:
 
    ```sh
    gcloud builds submit . \
@@ -58,10 +62,10 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
      --substitutions _IMAGE=us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:{revision}
    ```
 
-10. Deploy the approved image to Cloud Run service `quartz` in `us-east1`, setting `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL` to the final Cloud Run origin, and binding the approved Secret Manager secrets to their matching runtime environment variables.
-11. Attach the approved Cloud SQL instance to the Cloud Run service.
-12. Verify the Google OAuth client authorizes `{QUARTZ_PUBLIC_BASE_URL}/api/auth/google/callback` before running Google sign-in acceptance.
-13. Capture provider command output, build output, URLs, revisions, resource change records, and verification evidence in a run record.
+11. Deploy the approved image to Cloud Run service `quartz` in `us-east1`, setting `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL` to the final Cloud Run origin, and binding the approved Secret Manager secrets to their matching runtime environment variables.
+12. Attach the approved Cloud SQL instance to the Cloud Run service.
+13. Verify the Google OAuth client authorizes `{QUARTZ_PUBLIC_BASE_URL}/api/auth/google/callback` before running Google sign-in acceptance.
+14. Capture provider command output, build output, URLs, revisions, resource change records, migration-plan approvals or blockers when applicable, and verification evidence in a run record.
 
 ## Production Acceptance
 
@@ -93,4 +97,5 @@ A deployment is finished only when:
 2. The run record includes command evidence, deployed revision or local build identifier, environment name, actor, started and finished timestamps, and remaining blockers.
 3. Production runs include one-by-one human approval in resource change records for cloud resources and changes.
 4. Production runs include a current Google Cloud resource snapshot.
-5. The run record includes checklist attestation.
+5. Risky database migrations include approved migration plans in the run record, or are marked blocked before execution.
+6. The run record includes checklist attestation.

@@ -1,0 +1,21 @@
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+[[items]]
+id = "knowledge-agent-prompt-minimal-seed"
+text = "Verify shared Knowledge Agent prompt files remain minimal discovery seeds: they may contain Librarian bootstrap instructions, mode identity, actor identity, runtime-injected payload placement, and pointers to governed primitive/Routine/setup knowledge, but must not accumulate detailed workflow procedures."
+examples = [
+  "Bad: embedding the ToolSpec creation flow, JavaScript module contract, CommonJS prohibition, or implementation approval workflow directly in `knowledge-agent.md.mustache`.",
+  "Good: point ToolSpec work to `library://meta-harness/primitives/TOOLSPEC.md` and `library://meta-harness/setup/TOOLSPEC-CREATION.md`.",
+  "Bad: embedding Memory Curator duplicate rules, latest-message capture rules, writable-Library filtering, or no-invention guardrails directly in `knowledge-agent.md.mustache`.",
+  "Good: point Memory Curator mode to `library://meta-harness/knowledge-agent/routines/memory-curation/ROUTINE.toml` and pass only runtime payloads such as routed Library URIs, latest user message, and recent context.",
+]
+
+[[items]]
+id = "knowledge-agent-prompt-no-project-or-tool-detail"
+text = "Verify shared Knowledge Agent prompt files do not embed project-specific, domain-specific, concrete-tool-specific, identifier-specific, Memory-layout-specific, or implementation-token-specific guidance."
+examples = [
+  "Bad: adding a concrete project name, organization, Library path, ToolSpec recipe, tool name, storage row shape, or Memory identifier policy to the shared prompt.",
+  "Good: place concrete project and tool behavior in the relevant project Library, ToolSpec, Routine, Memory, or setup knowledge.",
+]

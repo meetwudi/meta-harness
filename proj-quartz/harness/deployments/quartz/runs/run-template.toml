@@ -7,12 +7,16 @@ actor = ""
 source = "Template created on 2026-07-01 from the human request for deployment run artifacts, logs, history, and checklist attestation."
 requirements = [
   "proj-quartz.deployment-primitive",
+  "proj-quartz.deployment-routine",
+  "proj-quartz.destructive-migration-plan-approval",
   "proj-quartz.local-chat-smoke-verification",
   "proj-quartz.local-database-slots",
 ]
 deployment_revision = ""
 resource_snapshot = ""
 resource_changes = []
+migration_inventory = []
+migration_plan_approvals = []
 
 [local_slot]
 app_port = ""
@@ -41,6 +45,11 @@ description = ""
 
 [[checklist]]
 item = ""
+status = ""
+evidence = ""
+
+[[checklist]]
+item = "migration-plan-approval"
 status = ""
 evidence = ""
 

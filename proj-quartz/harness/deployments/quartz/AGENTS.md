@@ -5,6 +5,7 @@ This folder is the Deployment primitive for Quartz.
 Before deploying Quartz or changing deployment knowledge, read:
 
 - [DEPLOYMENT.toml](DEPLOYMENT.toml)
+- [routines/quartz-deployment/ROUTINE.toml](routines/quartz-deployment/ROUTINE.toml)
 - [runbooks/quartz-ai-deploy.md](runbooks/quartz-ai-deploy.md)
 - [checklists/quartz-deployment.toml](checklists/quartz-deployment.toml)
 - The selected environment file in [environments/](environments/)

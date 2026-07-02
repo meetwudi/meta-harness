@@ -3,7 +3,9 @@ title = "Quartz deployment checklist"
 source = "Human request on 2026-07-01 for deployment checklists and checklist attestation before a deployment is called finished."
 requirements = [
   "proj-quartz.deployment-primitive",
+  "proj-quartz.deployment-routine",
   "proj-quartz.deployment-resource-changes",
+  "proj-quartz.destructive-migration-plan-approval",
   "proj-quartz.local-chat-smoke-verification",
   "proj-quartz.local-database-slots",
   "proj-quartz.local-env-file-main-checkout",
@@ -75,6 +77,11 @@ evidence = "Run record links to the resource snapshot record, or marks the item 
 id = "resource-changes"
 text = "Every cloud resource created, changed, scaled, deleted, or used by the run has a resource change record with human approval and provider pointers."
 evidence = "Run record links to resource change records for each changed or used cloud resource."
+
+[[items]]
+id = "migration-plan-approval"
+text = "Every database migration with destructive or data-loss risk has a concrete migration plan approved by a human before execution."
+evidence = "Run record lists risky database migrations, approved migration plans, approval evidence, or a blocker recorded before execution."
 
 [[items]]
 id = "deployment-executed"

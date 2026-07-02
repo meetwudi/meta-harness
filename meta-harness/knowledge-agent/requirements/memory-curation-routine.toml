@@ -1,0 +1,10 @@
+id = "knowledge-agent.memory-curation-routine"
+title = "Memory curation routine"
+source = "Human request on 2026-07-02: Memory Curator mode should follow a Routine, and detailed curation guardrails should live outside the shared Knowledge Agent prompt."
+text = "Knowledge Agent Memory Curator mode points to governed Memory curation Routine knowledge instead of embedding detailed curation procedure in the shared prompt."
+
+criteria = [
+  "Memory Curator mode identifies the Memory curation Routine and source Library.",
+  "The Memory curation Routine records routed-Library, writability, latest-message, duplicate-avoidance, no-invention, and `MEMORY.toml` governance rules.",
+  "The shared Knowledge Agent prompt passes runtime payloads to Memory Curator mode without duplicating the detailed curation procedure.",
+]

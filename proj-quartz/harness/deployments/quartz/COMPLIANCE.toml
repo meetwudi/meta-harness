@@ -9,3 +9,12 @@ examples = [
   "A production Google Cloud application target, database, secret store, OAuth client, email service configuration, VM, Kubernetes workload, Cloud Run service, bucket, or network rule must have a resource change record before deployment action.",
   "A resource snapshot is incomplete for production if its cloud-managed resources do not point to the approved resource changes that justify using them.",
 ]
+
+[[items]]
+id = "quartz-deployment-destructive-migration-plan-approval"
+text = "Verify Quartz Deployment runs do not execute database migrations or repairs with destructive or data-loss risk unless a concrete migration plan is recorded and explicitly approved by a human before execution."
+examples = [
+  "A migration that drops, renames, truncates, resets, overwrites, or deletes production tables or rows requires an approved migration plan before execution.",
+  "A migration that rewrites durable Library resources, tenant-scoped rows, API keys, conversations, or application identity records requires an approved migration plan before execution.",
+  "If the migration plan or approval is missing, the deployment run must stop before the migration and record a blocker rather than attempting a workaround.",
+]

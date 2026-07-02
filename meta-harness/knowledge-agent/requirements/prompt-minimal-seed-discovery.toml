@@ -1,0 +1,11 @@
+id = "knowledge-agent.prompt-minimal-seed-discovery"
+title = "Prompt minimal seed discovery"
+source = "Human request on 2026-07-02: the single shared Knowledge Agent prompt should be a minimal starter seed for discovery, not a place where detailed ToolSpec, Memory Curator, or workflow procedures accumulate."
+text = "The shared Knowledge Agent prompt stays a compact bootstrap prompt that points to governed primitive, setup, Routine, and Library knowledge for detailed behavior."
+
+criteria = [
+  "The prompt keeps first-action Librarian discovery, Library grounding, mode identity, actor identity, runtime-injected state, and user request payloads.",
+  "Detailed ToolSpec creation, implementation, and invocation procedure lives in ToolSpec primitive or setup knowledge rather than the prompt.",
+  "Detailed Memory Curator behavior lives in the Memory curation Routine and routed `MEMORY.toml` knowledge rather than the prompt.",
+  "Future workflow detail is added to governed primitive, Routine, setup, Spec, Compliance, or Library knowledge instead of the shared prompt unless the detail is required to bootstrap discovery.",
+]

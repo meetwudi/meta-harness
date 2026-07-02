@@ -1,0 +1,11 @@
+id = "proj-quartz.destructive-migration-plan-approval"
+title = "Destructive migration plan approval"
+source = "Human request on 2026-07-02: deployment routines should ask for confirmation when running database migrations that can potentially delete data or lose data, and the migration plan needs to be approved."
+text = "Quartz deployment must stop for explicit human approval before running a database migration plan that can delete data, lose data, reset data, rewrite durable rows, or make rollback materially harder."
+
+criteria = [
+  "Before a deployment runs a risky database migration, the run records the concrete migration plan.",
+  "The concrete migration plan identifies intended source state, target state, affected schemas or tables, data preservation expectations, rollback or recovery posture, and verification checks.",
+  "The risky migration does not run until a human explicitly approves that migration plan for the run.",
+  "If the migration plan is missing or unapproved, deployment records the blocker instead of working around the gate.",
+]

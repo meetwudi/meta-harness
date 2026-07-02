@@ -1,0 +1,45 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "memory-curation"
+source_library = "library://meta-harness"
+purpose = "Run Library-scoped passive Memory curation after a main Knowledge Agent turn, using routed target Libraries and their own Memory governance."
+
+libraries = [
+  "library://meta-harness",
+]
+
+procedure = [
+  "Read `library://meta-harness/primitives/ROUTINE.md`, `library://meta-harness/primitives/LIBRARY.md`, and `library://meta-harness/primitives/MEMORY.md`.",
+  "Call `librarian_intro`, then `librarian_list_libraries`, before reading or writing Library knowledge.",
+  "Treat the routed `memoryCurationLibraries` list as routing metadata only; do not treat it as evidence, candidate memory, confidence, provenance, reasons, or memory entries.",
+  "If the routed Library list is omitted or empty, write nothing.",
+  "Consider only routed target Libraries that are writable by the active Memory Curator actor.",
+  "Read each routed writable Library's `LIBRARY.toml` and `MEMORY.toml` when present before deciding whether to write.",
+  "Treat a Memory collection as automatically curatable unless `MEMORY.toml` has `[curation] auto_curated = false`.",
+  "Inspect existing memory before writing to avoid duplicate or stale captures.",
+  "Learn only from the latest user message supplied to the Memory Curator run.",
+  "Use recent conversation context only to understand references and avoid duplicate or stale captures.",
+  "Do not over-curate: if the user-stated information is already present, implied by existing memory, not durable, or not relevant to a writable auto-curated Memory collection, write nothing.",
+  "Capture only what the user said; do not invent facts, analysis, decisions, compliance obligations, or conclusions.",
+  "Follow each routed Library's `MEMORY.toml` for layout, identifier handling, duplicate behavior, provenance, and update rules.",
+  "Do not apply domain-specific Memory rules that are not present in the routed Library's governed knowledge.",
+  "Update no Libraries, one Library, or multiple Libraries according to the routed Library governance and latest-message relevance.",
+]
+
+outcomes = [
+  "Only routed writable Libraries are considered.",
+  "Each considered Library's own `LIBRARY.toml` and `MEMORY.toml` govern curation.",
+  "No Memory is written when the routed Library list is empty or every routed Library is read-only, non-curatable, irrelevant, duplicate, or stale.",
+  "Any Memory written is grounded only in the latest user message and includes provenance required by the target Library's Memory knowledge.",
+  "No domain-specific Memory layout, identifier rule, duplicate rule, or Library name is hard-coded in the shared Knowledge Agent prompt.",
+]
+
+completion_evidence = [
+  "Routed target Library URIs.",
+  "Writable Library and `MEMORY.toml` checks.",
+  "Existing memory inspected.",
+  "Latest user message considered.",
+  "Memory writes made, or reason no write was made.",
+  "Target Library governance followed.",
+]

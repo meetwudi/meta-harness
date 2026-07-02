@@ -1,0 +1,50 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "quartz-deployment"
+source_library = "library://proj-quartz"
+purpose = "Deploy Quartz through the governed Deployment primitive, including environment selection, resource-change approval checks, migration-plan approval gates, build/test execution, deployment, verification, and run evidence."
+
+libraries = [
+  "library://meta-harness",
+  "library://proj-quartz",
+]
+
+procedure = [
+  "Read `library://meta-harness/primitives/ROUTINE.md` and `library://meta-harness/primitives/DEPLOYMENT.md`.",
+  "Read the Quartz Deployment primitive at `proj-quartz/harness/deployments/quartz/DEPLOYMENT.toml`.",
+  "Read deployment-local instructions, `COMPLIANCE.toml`, `runbooks/quartz-ai-deploy.md`, and `checklists/quartz-deployment.toml`.",
+  "Select exactly one deployment environment and read its environment record.",
+  "Read `library://proj-quartz/harness/SPEC.toml` and the cited requirements, storage models, migration intents, and integration tests that apply to the change being deployed.",
+  "Identify every cloud resource the run will create, change, scale, migrate, continue using, or delete; verify each resource has an approved resource-change record with approval time and provider pointers before acting.",
+  "Identify every database schema migration, data migration, repair script, reset, deletion, copy, backfill, or storage rewrite that the deployment may run.",
+  "For each database operation that can delete data, lose data, drop or rename schemas/tables/columns, reset data, rewrite durable rows, or make rollback materially harder, prepare a concrete migration plan before execution.",
+  "Get explicit human approval for each risky migration plan before running it; if approval is absent, stop before the migration and record the blocker instead of deploying around it.",
+  "Run the build, tests, local setup, production build, provider commands, and smoke checks required by the selected environment and runbook.",
+  "For production, capture or refresh the resource snapshot from the provider after deployment and keep secret values out of repository knowledge, command output, screenshots, and chat.",
+  "Record the deployment run under `runs/`, including environment, actor, timestamps, source revision, commands, migration-plan approvals or blockers, resource changes, resource snapshot, artifacts, verification evidence, checklist statuses, and attestation state.",
+  "Use an independent compliance reviewer before final attestation when the available agent surface supports it; if independent review is unavailable or requires approval that is not granted, record the blocker instead of attesting pass.",
+]
+
+outcomes = [
+  "The deployment is executed only from the selected environment record, runbook, checklist, and approved provider/resource knowledge.",
+  "No production cloud resource is created, changed, scaled, migrated, deleted, or treated as approved for continued use without a matching approved resource-change record.",
+  "No database migration with destructive or data-loss risk runs without an explicit human-approved migration plan for that run.",
+  "Build, test, deployment, smoke verification, resource snapshot, and run-record evidence are captured or explicitly marked blocked with evidence.",
+  "Secret values are not recorded in governed knowledge, run records, screenshots, or chat.",
+  "The deployment is not called complete unless the checklist and governance rules are satisfied or explicitly blocked with evidence.",
+]
+
+completion_evidence = [
+  "Selected environment record.",
+  "Deployment primitive, runbook, checklist, compliance, and applicable Spec knowledge read.",
+  "Resource-change records checked.",
+  "Database migration inventory for the run.",
+  "Human-approved migration plans or explicit migration approval blockers.",
+  "Commands and provider actions executed.",
+  "Build, test, and verification outputs.",
+  "Production resource snapshot when production is selected.",
+  "Run record path.",
+  "Checklist statuses and attestation state.",
+  "Independent compliance review evidence or blocker.",
+]
