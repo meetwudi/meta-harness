@@ -2,14 +2,14 @@ id = "proj-quartz.deployment.resource-snapshot.latest"
 title = "Latest Quartz production resource snapshot"
 environment = "production"
 provider = "google-cloud"
-captured_at = "2026-07-02T04:49:29Z"
+captured_at = "2026-07-02T16:40:18Z"
 captured_by = "codex"
-source = "Captured after the 2026-07-02 Quartz production chat UX redeploy."
+source = "Captured after the 2026-07-02 Quartz production multi-tenancy deploy."
 requirements = [
   "proj-quartz.deployment-primitive",
   "proj-quartz.production-cloud-run-deployment",
 ]
-capture_method = "gcloud resource discovery, Cloud Run deployment output, HTTP check, and browser acceptance output; secret values were not read or recorded."
+capture_method = "gcloud resource discovery, Cloud Run deployment output, HTTP configuration endpoint check, and Artifact Registry digest lookup; secret values were not read or recorded."
 
 [[resources]]
 id = "artifact-registry-repository-quartz"
@@ -28,15 +28,15 @@ dependencies = []
 secrets_or_sensitive_values = "Do not record secret values."
 
 [[resources]]
-id = "container-image-quartz-deploy-20260702t043700z"
+id = "container-image-quartz-deploy-20260702t163144z"
 type = "artifact-registry-container-image"
-name = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t043700z"
+name = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t163144z"
 resource_change = "proj-quartz.deployment.resource-change.2026-07-01-artifact-registry-repository-quartz"
-provider_uri = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:465f3b874fc2e00d775e4757a3deff8099af964bf2909e83be2d861b81b74c57"
+provider_uri = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:cfdfdbd95854bd8ceb4af98837e5239fd0d57ca984996380323381e30171214f"
 provider_console_url = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
 region = "us-east1"
 purpose = "Quartz production image built from the repository root with Meta Harness and Quartz Libraries included."
-configuration_summary = "Cloud Build `a386359a-aade-4f76-b78d-4789c4e29353` pushed digest `sha256:465f3b874fc2e00d775e4757a3deff8099af964bf2909e83be2d861b81b74c57`."
+configuration_summary = "Cloud Build `9b060126-887a-4a92-bbb1-0f42e21a38ee` pushed digest `sha256:cfdfdbd95854bd8ceb4af98837e5239fd0d57ca984996380323381e30171214f`."
 change_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
 scale_pointer = "not applicable: container image is deployed by Cloud Run service revisions"
 delete_pointer = "https://console.cloud.google.com/artifacts/docker/future-of-work-497100/us-east1/quartz/quartz?project=future-of-work-497100"
@@ -252,12 +252,12 @@ provider_uri = "//run.googleapis.com/projects/future-of-work-497100/locations/us
 provider_console_url = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
 region = "us-east1"
 purpose = "Hosts Quartz production web application and Knowledge Agent chat API."
-configuration_summary = "Cloud Run service `quartz` is Ready, revision `quartz-00009-gff` serves 100 percent of traffic, public URL is `https://quartz-839963098585.us-east1.run.app`, status URL is `https://quartz-ohr3gjzfza-ue.a.run.app`, image tag is `deploy-20260702t043700z`, image digest is `sha256:465f3b874fc2e00d775e4757a3deff8099af964bf2909e83be2d861b81b74c57`, service account is `839963098585-compute@developer.gserviceaccount.com`, memory is `512Mi`, Cloud SQL attachment is `future-of-work-497100:us-east1:quartz-postgres`, and runtime config includes `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL=https://quartz-839963098585.us-east1.run.app`, and `QUARTZ_GOOGLE_REDIRECT_URI=https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`."
+configuration_summary = "Cloud Run service `quartz` is Ready, revision `quartz-00010-bdc` serves 100 percent of traffic, public URL is `https://quartz-839963098585.us-east1.run.app`, status URL is `https://quartz-ohr3gjzfza-ue.a.run.app`, image tag is `deploy-20260702t163144z`, image digest is `sha256:cfdfdbd95854bd8ceb4af98837e5239fd0d57ca984996380323381e30171214f`, service account is `839963098585-compute@developer.gserviceaccount.com`, memory is `512Mi`, Cloud SQL attachment is `future-of-work-497100:us-east1:quartz-postgres`, and runtime config includes `QUARTZ_REPO_ROOT=/workspace`, `QUARTZ_PROJECT_ROOT=/workspace/proj-quartz`, `QUARTZ_PROJECT_CONFIG=proj-quartz/.meta-harness.json`, `QUARTZ_PUBLIC_BASE_URL=https://quartz-839963098585.us-east1.run.app`, and `QUARTZ_GOOGLE_REDIRECT_URI=https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`."
 change_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
 scale_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz/revisions?project=future-of-work-497100"
 delete_pointer = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
 dependencies = [
-  "container-image-quartz-deploy-20260702t043700z",
+  "container-image-quartz-deploy-20260702t163144z",
   "cloud-sql-instance-quartz-postgres",
   "secret-quartz-openai-api-key",
   "secret-quartz-postgres-url",
@@ -279,7 +279,7 @@ provider_uri = "google-oauth-client://839963098585-lgj52uo7vudtb78k7161suejoadut
 provider_console_url = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
 region = "global"
 purpose = "Authorizes Google sign-in for Quartz production."
-configuration_summary = "Google OAuth client authorizes `https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`; browser acceptance signed in with Google and returned to Quartz production."
+configuration_summary = "Google OAuth client authorizes `https://quartz-839963098585.us-east1.run.app/api/auth/google/callback`."
 change_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
 scale_pointer = "not applicable: OAuth client is not scaled"
 delete_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
