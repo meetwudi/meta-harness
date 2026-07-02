@@ -1,0 +1,169 @@
+id = "proj-quartz.deployment.run.2026-07-02-production-library-editor-redeploy"
+title = "Quartz production Library Editor redeploy"
+environment = "production"
+started_at = "2026-07-02T03:33:47Z"
+finished_at = "2026-07-02T03:49:16Z"
+actor = "codex"
+source = "Run record for the 2026-07-01 human request to deploy the latest Quartz Library Editor work to production after fixing reverted proposed-change removal and the Docker app lockfile."
+requirements = [
+  "proj-quartz.deployment-primitive",
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.production-cloud-run-deployment",
+  "proj-quartz.library-editor",
+]
+deployment_revision = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t034132z@sha256:7e4422c1c7e04b6fedb70088beaab7959ecf1d734c480fdfa1f3fb76bf178125"
+source_revision = "5d56fb3be296a863713c6248622e7ff23b77c477"
+cloud_run_revision = "quartz-00008-pqc"
+service_url = "https://quartz-839963098585.us-east1.run.app"
+resource_snapshot = "proj-quartz.deployment.resource-snapshot.latest"
+resource_changes = [
+  "proj-quartz.deployment.resource-change.2026-07-01-artifact-registry-repository-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-run-service-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-instance-quartz-postgres",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-database-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-cloud-sql-user-quartz",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-openai-api-key",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-postgres-url",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-id",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-google-client-secret",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-api-key",
+  "proj-quartz.deployment.resource-change.2026-07-01-secret-quartz-resend-from",
+  "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-cloud-sql-client",
+  "proj-quartz.deployment.resource-change.2026-07-01-iam-cloud-run-secret-access",
+  "proj-quartz.deployment.resource-change.2026-07-01-google-oauth-client-quartz-redirect",
+]
+
+[[commands]]
+command = "git fetch origin; git rebase --autostash origin/main"
+status = "pass"
+log = "Deployment branch was rebased onto `origin/main` before validation and deployment. Source revision `5d56fb3be296a863713c6248622e7ff23b77c477` was pushed to `main` before the successful production build."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run typecheck"
+status = "pass"
+log = "TypeScript check passed before the deployment build."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run test:api"
+status = "pass"
+log = "Quartz Library API tests passed before the deployment build."
+
+[[commands]]
+command = "npm --prefix proj-quartz/app run build"
+status = "pass"
+log = "Local Next production build passed and included `/libraries` plus Library change-set API routes."
+
+[[commands]]
+command = "gcloud builds submit . --project future-of-work-497100 --config proj-quartz/harness/deployments/quartz/build/cloudbuild.yaml --substitutions _IMAGE=us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t033347z"
+status = "blocked"
+log = "Cloud Build `27bc1872-94ab-486a-bd24-784eda051168` failed at Docker `npm ci --install-links --prefix proj-quartz/app` because the app lockfile was not in sync for npm 10.9.8 and was missing the nested `zod@3.25.76` package required by vendored CopilotKit dependencies."
+
+[[commands]]
+command = "npx --yes npm@10.9.8 install --package-lock-only --install-links --prefix proj-quartz/app; npx --yes npm@10.9.8 ci --install-links --prefix proj-quartz/app"
+status = "pass"
+log = "Regenerated and validated the Quartz app lockfile with the same npm version used by the Docker base image. The fix was committed as `5d56fb3be296a863713c6248622e7ff23b77c477` and pushed to `main`."
+
+[[commands]]
+command = "gcloud builds submit . --project future-of-work-497100 --config proj-quartz/harness/deployments/quartz/build/cloudbuild.yaml --substitutions _IMAGE=us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t034132z"
+status = "pass"
+log = "Cloud Build `b806f88c-1be1-4f73-ac4e-1901c84c8382` succeeded and pushed digest `sha256:7e4422c1c7e04b6fedb70088beaab7959ecf1d734c480fdfa1f3fb76bf178125`."
+
+[[commands]]
+command = "gcloud run deploy quartz --project future-of-work-497100 --region us-east1 --platform managed --image us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz:deploy-20260702t034132z ..."
+status = "pass"
+log = "Deployed Cloud Run revision `quartz-00008-pqc`; it is Ready and serves 100 percent of traffic at `https://quartz-839963098585.us-east1.run.app`."
+
+[[commands]]
+command = "curl -sS -o /tmp/quartz-production-root.html -w '%{http_code} %{redirect_url}\\n' https://quartz-839963098585.us-east1.run.app/"
+status = "pass"
+log = "Production URL returned HTTP 200 after deploying revision `quartz-00008-pqc`."
+
+[[commands]]
+command = "Chrome browser acceptance: ask `list all libraries` in production chat"
+status = "pass"
+log = "Through the signed-in Quartz UI, sent `list all libraries` in fresh chat `278d7289-d951-4798-8cb1-ea1088a2ce9f`; the assistant answer listed `library://quartz-finance`, `library://meta-harness`, and `library://proj-quartz`."
+
+[[artifacts]]
+path = "https://console.cloud.google.com/cloud-build/builds/27bc1872-94ab-486a-bd24-784eda051168?project=839963098585"
+description = "Failed Cloud Build log for the first deployment image attempt; failure was app lockfile drift under npm 10.9.8."
+
+[[artifacts]]
+path = "https://console.cloud.google.com/cloud-build/builds/b806f88c-1be1-4f73-ac4e-1901c84c8382?project=839963098585"
+description = "Successful Cloud Build log for the deployed Quartz image."
+
+[[artifacts]]
+path = "us-east1-docker.pkg.dev/future-of-work-497100/quartz/quartz@sha256:7e4422c1c7e04b6fedb70088beaab7959ecf1d734c480fdfa1f3fb76bf178125"
+description = "Pushed Quartz production image digest."
+
+[[artifacts]]
+path = "https://console.cloud.google.com/run/detail/us-east1/quartz?project=future-of-work-497100"
+description = "Cloud Run service `quartz`, serving revision `quartz-00008-pqc`."
+
+[[artifacts]]
+path = "https://quartz-839963098585.us-east1.run.app"
+description = "Reachable Quartz production URL; HTTP 200 check passed."
+
+[[artifacts]]
+path = "https://quartz-839963098585.us-east1.run.app/c/278d7289-d951-4798-8cb1-ea1088a2ce9f"
+description = "Browser acceptance chat that answered `list all libraries` with `library://quartz-finance`, `library://meta-harness`, and `library://proj-quartz`."
+
+[[checklist]]
+item = "environment-selected"
+status = "pass"
+evidence = "Production environment `proj-quartz.deployment.environment.production` selected."
+
+[[checklist]]
+item = "specs-read"
+status = "pass"
+evidence = "Read Quartz Spec, Deployment primitive, runbook, checklist, production environment, and deployment resource-change records during this deployment work."
+
+[[checklist]]
+item = "configuration-present"
+status = "pass"
+evidence = "Cloud Run revision `quartz-00008-pqc` has required repo/project env values, approved Secret Manager bindings, and approved Cloud SQL attachment."
+
+[[checklist]]
+item = "build-and-tests"
+status = "pass"
+evidence = "TypeScript check, Library API test, local Next production build, Docker `npm ci`, Cloud Build production build, and whitespace checks passed after the app lockfile correction."
+
+[[checklist]]
+item = "resource-snapshot"
+status = "pass"
+evidence = "Current production snapshot updated in `resource-snapshots/latest.toml`."
+
+[[checklist]]
+item = "resource-changes"
+status = "pass"
+evidence = "This redeploy used existing approved Cloud Run, Artifact Registry, Cloud SQL, Secret Manager, runtime IAM, and OAuth resources. No new cloud-managed resource class was created."
+
+[[checklist]]
+item = "deployment-executed"
+status = "pass"
+evidence = "Cloud Run service `quartz` is deployed and serving revision `quartz-00008-pqc` at `https://quartz-839963098585.us-east1.run.app`."
+
+[[checklist]]
+item = "post-deploy-verification"
+status = "pass"
+evidence = "HTTP 200 check passed; signed-in production chat returned a real assistant answer."
+
+[[checklist]]
+item = "production-library-discovery"
+status = "pass"
+evidence = "Signed-in production chat listed `library://quartz-finance`, `library://meta-harness`, and `library://proj-quartz`."
+
+[[checklist]]
+item = "history-and-artifacts"
+status = "pass"
+evidence = "Run record includes command results, failed and successful build URLs, image digest, Cloud Run URL/revision, current snapshot, and browser acceptance URL."
+
+[[checklist]]
+item = "attestation"
+status = "pass"
+evidence = "Deployment execution, post-deploy verification, and independent compliance subagent review passed. Review agent `019f20f3-c20c-7b90-8718-2cc442951e77` reported no blocking compliance findings."
+
+[attestation]
+status = "pass"
+text = "Quartz production Library Editor redeploy is live and verified. Independent compliance subagent review passed for the deployment run record and latest resource snapshot."
+attested_by = "codex"
+attested_at = "2026-07-02T03:49:16Z"

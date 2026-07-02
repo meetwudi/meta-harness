@@ -5,26 +5,57 @@ provider = "docker-compose"
 source = "Human request on 2026-06-26 for local Docker-oriented Postgres deployment and 2026-07-01 request for deployment environment separation."
 requirements = [
   "proj-quartz.deployment-primitive",
+  "proj-quartz.local-env-file-main-checkout",
+  "proj-quartz.local-hostname-consistency",
+  "proj-quartz.local-oauth-callback-slots",
   "proj-quartz.local-postgres-deployment",
   "proj-quartz.project-owned-config",
 ]
 config_files = [
   "proj-quartz/compose.yaml",
   "proj-quartz/.meta-harness.json",
+  "proj-quartz/.env",
   "proj-quartz/app/.env.example",
 ]
 resources = [
   "Docker Compose Postgres service `postgres` from `proj-quartz/compose.yaml`.",
   "Quartz Next.js app from `proj-quartz/app`.",
   "Postgres-backed Meta Harness resource table configured through `QUARTZ_POSTGRES_URL`.",
-  "Google OAuth client configured for the local Quartz origin when sign-in is tested.",
+  "Google OAuth client configured for the selected local Quartz callback slot when sign-in is tested.",
   "Resend or invite email webhook configuration when invite email delivery is tested.",
 ]
 environment_values = [
   "`QUARTZ_PROJECT_CONFIG` points at `proj-quartz/.meta-harness.json`.",
+  "`proj-quartz/.env` exists in the selected checkout before Quartz is started.",
   "`QUARTZ_POSTGRES_URL` points at the local Docker-oriented Postgres deployment.",
   "`QUARTZ_PUBLIC_BASE_URL` identifies the local Quartz origin.",
+  "`QUARTZ_GOOGLE_REDIRECT_URI` identifies the exact local OAuth callback URI assigned to this instance when Google sign-in is tested.",
   "`OPENAI_API_KEY` is available to the OpenAI-backed Knowledge Agent.",
+]
+canonical_local_hostname = "localhost"
+local_oauth_callback_slots = [
+  "http://localhost:3000/api/auth/google/callback",
+  "http://localhost:3001/api/auth/google/callback",
+  "http://localhost:3002/api/auth/google/callback",
+  "http://localhost:3003/api/auth/google/callback",
+  "http://localhost:3004/api/auth/google/callback",
+  "http://localhost:3005/api/auth/google/callback",
+  "http://localhost:3006/api/auth/google/callback",
+  "http://localhost:3007/api/auth/google/callback",
+  "http://localhost:3008/api/auth/google/callback",
+  "http://localhost:3009/api/auth/google/callback",
+]
+local_oauth_policy = [
+  "Use `localhost` consistently for local app origins and OAuth callback URIs.",
+  "Each local app instance passes the exact callback URI for its assigned slot.",
+  "A local run that tests Google sign-in records the selected callback slot in its run record.",
+  "Agents must consult the human before using a local callback URI outside the ten-slot pool.",
+]
+local_env_file_policy = [
+  "`proj-quartz/.env` is a required gitignored local deployment file.",
+  "When a worktree lacks `proj-quartz/.env`, use the main checkout's `proj-quartz/.env` as the preferred copy source.",
+  "Consult the human when the main checkout env file is missing, inaccessible, ambiguous, or when copying would expose or overwrite secret values.",
+  "Never record secret values from `.env` in deployment knowledge, run records, command output, screenshots, or chat.",
 ]
 separation = [
   "Local secrets live outside checked-in knowledge and app source.",

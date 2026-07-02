@@ -1,0 +1,40 @@
+id = "proj-quartz.deployment.resource-change.2026-07-02-google-oauth-client-local-callback-slots"
+title = "Authorize Quartz local Google OAuth callback slots"
+environment = "local"
+provider = "google-cloud"
+resource_id = "839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+resource_type = "google-oauth-client"
+resource_name = "Quartz Google OAuth client"
+action = "update-authorized-redirect-uris"
+approval_kind = "human"
+approved_at = "2026-07-02T03:54:37Z"
+approved_by = "human user in Codex thread"
+approval_source = "Codex thread message `you can use my Chrome right now to create those callbacks` and follow-up asking whether Chrome had been used to add those OAuth slots."
+source = "Human request on 2026-07-02 to add ten local Google OAuth callback slots for parallel Quartz local instances."
+requirements = [
+  "proj-quartz.deployment-resource-changes",
+  "proj-quartz.local-hostname-consistency",
+  "proj-quartz.local-oauth-callback-slots",
+]
+scope = "Update Google OAuth client `839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com` in project `future-of-work-497100` to authorize Quartz local callback URIs for ports 3000 through 3009 using `localhost`."
+supersedes = []
+
+[provider_pointers]
+project = "future-of-work-497100"
+region_or_location = "global"
+resource_uri = "google-oauth-client://839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+resource_name = "839963098585-lgj52uo7vudtb78k7161suejoadutecq.apps.googleusercontent.com"
+console_url = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+change_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+scale_pointer = "not applicable: OAuth client is not scaled"
+delete_pointer = "https://console.cloud.google.com/apis/credentials?project=future-of-work-497100"
+
+[[conditions]]
+id = "authorized-local-redirect-uris"
+text = "Add only the Quartz local callback URIs `http://localhost:3000/api/auth/google/callback` through `http://localhost:3009/api/auth/google/callback`; do not record or expose OAuth client secrets."
+
+[[history]]
+approved_at = "2026-07-02T03:54:37Z"
+approved_by = "human user in Codex thread"
+action = "update-authorized-redirect-uris"
+summary = "Human approved the AI agent using Chrome to authorize ten Quartz local Google OAuth callback slots."

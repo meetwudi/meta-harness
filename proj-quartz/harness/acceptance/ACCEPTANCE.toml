@@ -83,6 +83,9 @@ procedure = [
   "Verify the pinned proposed-change review shows before and after content while other proposed files remain selectable.",
   "Click `Apply proposed changes`.",
   "Reopen the same file through the Libraries workspace and verify the applied content is visible.",
+  "Make another edit to the same writable file and add it to proposed changes.",
+  "Edit that proposed file back to the visible current file content and click `Remove from proposed changes`.",
+  "Verify the proposed changes count returns to zero and the explorer proposed-change indicator clears.",
 ]
 expected = [
   "The sidebar tab is labeled `Libraries`.",
@@ -91,6 +94,7 @@ expected = [
   "Writable Libraries expose editing controls.",
   "Raw editing is separate from proposed change creation.",
   "Proposed changes persist across refresh and can be reviewed from the changed-file indicator.",
+  "Reverting a proposed file to the current file content removes it from proposed changes.",
   "Applying proposed changes updates the governed Library through Librarian.",
   "Baseline conflict detection routes stale proposed changes to reconciliation behavior before apply.",
 ]

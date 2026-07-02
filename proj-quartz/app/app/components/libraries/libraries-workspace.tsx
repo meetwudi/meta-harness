@@ -126,12 +126,26 @@ export function LibrariesWorkspace() {
     : "";
   const selectedFilePath = selectedFileUri ? resourcePathFromLibraryUri(selectedFileUri) : "";
   const selectedCommittedContent = selectedStagedChange?.content ?? selectedBaseline?.content ?? "";
+  const editorMatchesBaseline = Boolean(
+    selectedFileUri &&
+    selectedBaseline &&
+    editorContent === selectedBaseline.content,
+  );
+  const editorRevertsProposedChange = Boolean(selectedStagedChange && editorMatchesBaseline);
   const editorDirty = Boolean(
     selectedFileUri &&
     selectedBaseline &&
     editorContent !== selectedCommittedContent,
   );
   const canEditSelectedFile = Boolean(selectedLibrary?.writable && selectedFile);
+  const stageActionAvailable = Boolean(
+    canEditSelectedFile &&
+    selectedBaseline &&
+    (editorDirty || editorRevertsProposedChange),
+  );
+  const stageActionLabel = editorRevertsProposedChange
+    ? "Remove from proposed changes"
+    : "Add to proposed changes";
   const stagedChangeList = useMemo<StagedChange[]>(
     () => (Object.values(stagedChanges) as StagedChange[])
       .sort((left, right) => left.uri.localeCompare(right.uri)),
@@ -366,8 +380,55 @@ export function LibrariesWorkspace() {
     }));
   }, [canEditSelectedFile, selectedFileUri]);
 
+  const updateStagedChangeSet = useCallback(async (
+    nextChanges: Record<string, StagedChange>,
+  ): Promise<StagedChange[]> => {
+    const remainingChanges: StagedChange[] = Object.values(nextChanges);
+    const nextStaged = remainingChanges.length > 0
+      ? await stageChangeSet(remainingChanges)
+      : null;
+    if (remainingChanges.length === 0 && activeChangeSet) {
+      await abandonChangeSet(activeChangeSet);
+    }
+    setStagedChanges(nextChanges);
+    setActiveChangeSet(nextStaged?.changeSet ?? null);
+    setActiveChangeSetValidation(nextStaged?.validation ?? null);
+    setSelectedProposedChangeUri((current) => {
+      if (remainingChanges.length === 0) {
+        return "";
+      }
+      if (current && nextChanges[current]) {
+        return current;
+      }
+      return [...remainingChanges]
+        .sort((left, right) => left.uri.localeCompare(right.uri))[0]?.uri ?? "";
+    });
+    return remainingChanges;
+  }, [activeChangeSet]);
+
   const handleStageChange = useCallback(async () => {
-    if (!selectedFileUri || !selectedBaseline || !editorDirty || !canEditSelectedFile) {
+    if (!selectedFileUri || !selectedBaseline || !stageActionAvailable) {
+      return;
+    }
+    if (editorRevertsProposedChange) {
+      const nextChanges = { ...stagedChanges };
+      delete nextChanges[selectedFileUri];
+      setStaging(true);
+      setError("");
+      setStatus("");
+      try {
+        await updateStagedChangeSet(nextChanges);
+        setDraftEdits((current) => {
+          const next = { ...current };
+          delete next[selectedFileUri];
+          return next;
+        });
+        setStatus("Proposed change removed.");
+      } catch (stageError) {
+        setError(stageError instanceof Error ? stageError.message : "Proposed changes update failed.");
+      } finally {
+        setStaging(false);
+      }
       return;
     }
     const nextChanges = {
@@ -402,11 +463,12 @@ export function LibrariesWorkspace() {
     }
   }, [
     editorContent,
-    editorDirty,
-    canEditSelectedFile,
+    editorRevertsProposedChange,
     selectedBaseline,
     selectedFileUri,
+    stageActionAvailable,
     stagedChanges,
+    updateStagedChangeSet,
   ]);
 
   const handleRemoveStagedChange = useCallback(async (uri: string) => {
@@ -415,33 +477,14 @@ export function LibrariesWorkspace() {
     setStaging(true);
     setError("");
     try {
-      const remainingChanges: StagedChange[] = Object.values(nextChanges);
-      const nextStaged = remainingChanges.length > 0
-        ? await stageChangeSet(remainingChanges)
-        : null;
-      if (remainingChanges.length === 0 && activeChangeSet) {
-        await abandonChangeSet(activeChangeSet);
-      }
-      setStagedChanges(nextChanges);
-      setActiveChangeSet(nextStaged?.changeSet ?? null);
-      setActiveChangeSetValidation(nextStaged?.validation ?? null);
-      setSelectedProposedChangeUri((current) => {
-        if (remainingChanges.length === 0) {
-          return "";
-        }
-        if (current && nextChanges[current]) {
-          return current;
-        }
-        return remainingChanges
-          .sort((left, right) => left.uri.localeCompare(right.uri))[0]?.uri ?? "";
-      });
+      await updateStagedChangeSet(nextChanges);
       setStatus("Proposed change removed.");
     } catch (stageError) {
       setError(stageError instanceof Error ? stageError.message : "Proposed changes update failed.");
     } finally {
       setStaging(false);
     }
-  }, [activeChangeSet, stagedChanges]);
+  }, [stagedChanges, updateStagedChangeSet]);
 
   const handleApplyChangeSet = useCallback(async () => {
     if (stagedChangeList.length === 0 || !activeChangeSet || !activeChangeSetValidation?.clean) {
@@ -692,9 +735,9 @@ export function LibrariesWorkspace() {
               type="button"
               className="quartz-library-primary-action"
               onClick={() => void handleStageChange()}
-              disabled={!canEditSelectedFile || !editorDirty || staging}
+              disabled={!stageActionAvailable || staging}
             >
-              Add to proposed changes
+              {stageActionLabel}
             </button>
           </div>
         </div>

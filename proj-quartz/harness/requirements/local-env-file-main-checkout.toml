@@ -1,0 +1,11 @@
+id = "proj-quartz.local-env-file-main-checkout"
+title = "Local env file from main checkout"
+source = "Human request on 2026-07-02: local deployment needs a `.env` file, and for worktrees it lives in the main checkout; if it is missing in the worktree, consult the human or copy it from the main checkout."
+text = "Quartz local deployment requires a gitignored `proj-quartz/.env` file, and local worktrees use the main checkout's `proj-quartz/.env` as the preferred source when the worktree does not already have one."
+
+criteria = [
+  "Local deployment checks for `proj-quartz/.env` before starting Quartz.",
+  "When running from a worktree and `proj-quartz/.env` is missing, agents look for the main checkout's `proj-quartz/.env` as the copy source.",
+  "Agents consult the human when the main checkout env file is missing, inaccessible, ambiguous, or when copying would expose or overwrite secret values.",
+  "Agents do not synthesize local secret values or record secret values in deployment knowledge, run records, command output, screenshots, or chat.",
+]

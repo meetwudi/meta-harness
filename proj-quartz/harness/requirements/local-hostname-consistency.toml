@@ -1,0 +1,11 @@
+id = "proj-quartz.local-hostname-consistency"
+title = "Local hostname consistency"
+source = "Human request on 2026-07-02: use `localhost` consistently for local Quartz deployment knowledge and do not mention the numeric loopback host when local settings already use `localhost`."
+text = "Quartz local deployment knowledge uses `localhost` consistently for local app origins, OAuth callback URIs, and local connection examples."
+
+criteria = [
+  "Local Quartz app origins use `localhost`.",
+  "Local Google OAuth callback slots use `localhost`.",
+  "Local example database connection strings use `localhost`.",
+  "Agents must not introduce the numeric loopback host into Quartz local deployment knowledge unless a human explicitly approves a different local host policy.",
+]

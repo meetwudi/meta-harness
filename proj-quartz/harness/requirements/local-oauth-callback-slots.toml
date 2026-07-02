@@ -1,0 +1,10 @@
+id = "proj-quartz.local-oauth-callback-slots"
+title = "Local OAuth callback slots"
+source = "Human request on 2026-07-02: add ten Google OAuth callbacks for local Quartz instances, each local instance passes in its own callback, and local deployment knowledge consistently uses `localhost`."
+text = "Quartz local deployment has ten local Google OAuth callback slots, and each local app instance passes the exact callback URI assigned to that instance."
+
+criteria = [
+  "The local callback slots are exact `localhost` callback URIs for local ports 3000 through 3009 under `/api/auth/google/callback`.",
+  "Each local app instance uses the callback URI for its own selected slot instead of relying on an unregistered dynamic callback.",
+  "Agents must not run Google sign-in against a local callback URI outside the ten-slot pool unless a human approves and records the OAuth client change.",
+]
