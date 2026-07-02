@@ -1,44 +1,51 @@
 # This is a Harness primitive.
 # See also: library://meta-harness
 
-# Reduce duplication and AI slop while preserving effectiveness.
+# Review top-level repository compliance until clear or blocked.
 
 name = "concise-cleanup"
 source_library = "library://proj-self"
-purpose = "Make harness docs more concise, less duplicated, and less AI-sloppy while preserving operational effectiveness."
+purpose = "Check the repository root compliance primitive and keep reviewing until every top-level compliance issue is resolved or explicitly blocked."
 
 libraries = [
+  "library://repository",
   "library://meta-harness",
   "library://proj-self",
 ]
 
-per_execution_memory_library = "library://routine-memory/concise-cleanup/executions/"
-cross_execution_memory_library = "library://routine-memory/concise-cleanup/common/"
+per_execution_memory_library = "library://routine-memory/top-level-compliance-check/executions/"
+cross_execution_memory_library = "library://routine-memory/top-level-compliance-check/common/"
 
 procedure = [
   "Read the applicable AGENTS.md discovery chain.",
   "Read this ROUTINE.toml.",
-  "Read relevant Libraries and compliance.",
+  "Read the Routine, Library, and Compliance primitive docs from library://meta-harness.",
+  "Read library://repository/COMPLIANCE.toml as the top-level compliance primitive.",
   "Create memory for this execution.",
-  "Find duplicated, defensive, vague, or over-expanded wording.",
-  "Preserve sourced meaning and operational force.",
-  "Prefer deletion, consolidation, and direct wording over new abstraction.",
-  "Record what changed, what was left alone, and why.",
+  "Identify the repository changes or review scope being checked.",
+  "Review every item in the root compliance primitive against the scoped repository evidence.",
+  "Use an independent compliance reviewer before attesting when the available agent surface supports it; if independent review is unavailable or requires approval that is not granted, record the blocker instead of attesting pass.",
+  "Record each issue with the governing compliance item, source evidence, and the concrete file or decision that must change.",
+  "After each fix or human decision, rerun the root compliance review.",
+  "Repeat review until no top-level compliance issues remain or the remaining issue is explicitly blocked.",
+  "Record what passed, what changed, what was left blocked, and why.",
 ]
 
 outcomes = [
-  "Reduced duplication.",
-  "Reduced AI-slop wording.",
-  "Improved conciseness.",
-  "Maintained or improved effectiveness.",
-  "No invented compliance, product content, engineering practice, acceptance test, or open question.",
+  "Root COMPLIANCE.toml was read as the top-level compliance source of truth.",
+  "Every root compliance item was checked against repository evidence.",
+  "Independent compliance review evidence was captured, or the absence of independent review was recorded as blocked.",
+  "Top-level compliance issues were fixed and rechecked until none remained, or remaining issues were explicitly blocked.",
+  "No invented compliance, product content, engineering practice, acceptance test, fallback, or open question.",
 ]
 
 completion_evidence = [
   "Files examined.",
   "Files changed.",
-  "Duplications or slop removed.",
-  "Compliance checked.",
+  "Root compliance items checked.",
+  "Independent review evidence or blocker.",
+  "Compliance issues found, fixes made, and recheck results.",
   "Execution memory created or the blocker recorded.",
   "Validation run.",
+  "Harness-Compliance attestation prepared when the review is not blocked.",
 ]
