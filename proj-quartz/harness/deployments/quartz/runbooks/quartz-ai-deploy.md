@@ -63,6 +63,18 @@ Deploy Quartz by following governed Deployment knowledge. A deployment run may b
    `library://meta-harness` and `library://proj-quartz`.
 6. Record the browser verification evidence in the run record.
 
+## Production API Testing
+
+For local operator or agent smoke tests against the deployed production API,
+look for these shell environment variables:
+
+- `QUARTZ_PRODUCTION_URL`: production Quartz origin.
+- `QUARTZ_PRODUCTION_API_KEY`: Quartz production API key for testing.
+
+The API key is a local secret. Use it only by reference from the shell
+environment, and do not record its value in deployment knowledge, run records,
+command output, screenshots, or chat.
+
 ## Completion
 
 A deployment is finished only when:

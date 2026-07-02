@@ -45,6 +45,10 @@ environment_values = [
   "`QUARTZ_RESEND_API_KEY` and `QUARTZ_RESEND_FROM` or an approved invite email webhook are supplied by production secret management.",
   "`OPENAI_API_KEY` is available to the production Knowledge Agent runtime.",
 ]
+local_testing_values = [
+  "`QUARTZ_PRODUCTION_URL` may be set in the local operator shell and should point at the production Quartz origin for API smoke tests.",
+  "`QUARTZ_PRODUCTION_API_KEY` may be set in the local operator shell as the Quartz production API key for testing. Treat it as a local secret; do not record its value in deployment knowledge, run records, or command output.",
+]
 secret_manager_secrets = [
   "quartz-openai-api-key",
   "quartz-postgres-url",
