@@ -2,6 +2,7 @@
 // Supports knowledge-agent.library-toolspec-openai-tools: resolves discovered ToolSpec implementations without per-tool OpenAI adapter branches.
 // Compliance: keep implementation resolution generic; do not branch on concrete tool names, implementation tokens, or implementation file names.
 
+import { Buffer } from "node:buffer";
 import { pathToFileURL } from "node:url";
 import type { ToolSpecDefinition } from "../../../librarian/impl/dist/index.js";
 
@@ -42,16 +43,29 @@ export async function executeToolSpecImplementation(
 export function resolveToolSpecImplementationModuleUrl(
   toolSpec: ToolSpecDefinition,
 ): URL {
-  if (toolSpec.implementation.startsWith("builtin/")) {
-    const builtinModuleName = toolSpec.implementation.slice("builtin/".length);
-    if (!/^[a-z0-9][a-z0-9-]*$/i.test(builtinModuleName)) {
+  if (!toolSpec.implementationAvailable) {
+    throw new Error(
+      `ToolSpec implementation is missing for ${toolSpec.name}: ${toolSpec.implementation}`,
+    );
+  }
+  if (toolSpec.implementationLoadMode === "source") {
+    if (typeof toolSpec.implementationContent !== "string") {
       throw new Error(
-        `Unsupported ToolSpec builtin implementation for ${toolSpec.name}: ${toolSpec.implementation}`,
+        `ToolSpec implementation content is missing for ${toolSpec.name}: ${toolSpec.implementation}`,
       );
     }
-    return new URL(`./${builtinModuleName}.js`, import.meta.url);
+    return toolSpecImplementationSourceUrl(toolSpec);
   }
   return pathToFileURL(toolSpec.implementationPath);
+}
+
+function toolSpecImplementationSourceUrl(toolSpec: ToolSpecDefinition): URL {
+  const source = `${toolSpec.implementationContent}\n//# sourceURL=${sourceUrlLabel(toolSpec)}`;
+  return new URL(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
+}
+
+function sourceUrlLabel(toolSpec: ToolSpecDefinition): string {
+  return toolSpec.implementationPath.replace(/\s/g, "_");
 }
 
 function toolSpecExecuteFunction(

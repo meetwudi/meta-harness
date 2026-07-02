@@ -289,17 +289,28 @@ await assert.rejects(
     }),
   /quartz-missing-id\/CONVERSATION\.toml is missing required field: conversation_id/,
 );
+await assert.rejects(
+  () =>
+    listConversations({
+      storage: validationStorage,
+      libraryRoot,
+    }),
+  /quartz-missing-id\/CONVERSATION\.toml is missing required field: conversation_id/,
+);
 
 const missingManifestStorage = new MemoryStorage();
 await missingManifestStorage.makeDirectory(join(libraryRoot, "quartz-missing-manifest"));
 await assert.rejects(
   () =>
-    listConversations({
+    readConversation({
       storage: missingManifestStorage,
       libraryRoot,
+      folderName: "quartz-missing-manifest",
+      includeMessages: false,
     }),
   /quartz-missing-manifest\/CONVERSATION\.toml is missing from conversation history/,
 );
+assert.deepEqual(await listConversations({ storage: missingManifestStorage, libraryRoot }), []);
 
 const missingSummaryStorage = new MemoryStorage();
 await seedConversation({
@@ -319,6 +330,7 @@ await assert.rejects(
     }),
   /turns\/turn-1\/summary\.md is missing from conversation history/,
 );
+assert.deepEqual(await listConversations({ storage: missingSummaryStorage, libraryRoot }), []);
 
 await seedConversation({
   storage: validationStorage,

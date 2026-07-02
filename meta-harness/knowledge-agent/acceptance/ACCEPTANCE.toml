@@ -226,20 +226,33 @@ requirements = [
 ]
 circumstances = [
   "Use a writable Library location where the Knowledge Agent can create a Library containing a ToolSpec.",
-  "The ToolSpec implementation should return a deterministic number and should be loadable only from the discovered Library ToolSpec execution path.",
+  "The ToolSpec implementation should return a deterministic number and should be stored with the ToolSpec as governed Library knowledge.",
 ]
 procedure = [
-  "In the first conversation, send this exact user message: `Create a new Library named acceptance-number-tool. In that Library, create a ToolSpec named acceptance_number that takes no input and returns the number 42. Make it available to the current Knowledge Agent actor.`",
-  "Verify that the Library contains governed ToolSpec knowledge for `acceptance_number`, including allowed actors, input schema, output contract, test cases, and an implementation reference.",
+  "In the first conversation, send this exact user message: `Create a usable tool in a new Library named acceptance-number-tool. The tool should be named acceptance_number, take no input, return the number 42, and be available to the current Knowledge Agent actor.`",
+  "Verify that the agent creates or pursues a Goal for creating the usable ToolSpec tool.",
+  "Verify that the agent presents ToolSpec knowledge for `acceptance_number`, including allowed actors, input schema, output contract, test cases, and an implementation reference before writing implementation code.",
+  "In the same conversation, send this exact user message: `I approve this ToolSpec. Update the implementation.`",
+  "Verify that the Library contains governed ToolSpec knowledge and implementation knowledge for `acceptance_number` after approval.",
+  "Verify that the generated JavaScript implementation uses the ToolSpec runtime module contract: ES module export of `executeToolSpec`, `execute`, or a default function, without CommonJS `module.exports`.",
   "Start a second fresh conversation.",
+  "Send this exact user message: `What tools do you have available right now? Please list their names.`",
+  "Verify that the agent lists `acceptance_number` without the user naming that tool in the prompt, and does not list ToolSpecs with missing or unsupported implementations as available.",
+  "Start a third fresh conversation.",
   "Send this exact user message: `Call the acceptance_number tool from the acceptance-number-tool Library and print only the returned number.`",
-  "Inspect the Knowledge Agent tool assembly and invocation trace for the second conversation.",
+  "Inspect the Knowledge Agent tool assembly and invocation trace for the third conversation.",
 ]
 expected = [
   "The first conversation creates `library://acceptance-number-tool` without asking the user to write TOML by hand.",
+  "The first conversation treats creation of the usable tool as Goal-shaped work.",
   "The created Library contains a ToolSpec named `acceptance_number` whose test case expects the output number `42`.",
-  "The second conversation discovers the ToolSpec from the Library before exposing it as an agent tool.",
+  "Implementation code is written only after the explicit approval message.",
+  "The implementation file is stored under the ToolSpec folder in `library://acceptance-number-tool`.",
+  "ToolSpec knowledge, implementation code, and tests are written through Librarian operations.",
+  "The second conversation reports `acceptance_number` through executable ToolSpec availability rather than by requiring the user to name the tool.",
+  "The second conversation excludes incomplete or unsupported ToolSpecs from the available-tool list.",
+  "The third conversation discovers the ToolSpec from the Library before exposing it as an agent tool.",
   "The ToolSpec is exposed only when the active actor identity matches the ToolSpec allowed actor patterns.",
-  "The implementation for `acceptance_number` is dynamically loaded from the discovered Library ToolSpec execution path rather than being statically imported by generic Knowledge Agent startup.",
+  "The implementation for `acceptance_number` is dynamically loaded from the discovered Library ToolSpec knowledge rather than being statically imported by generic Knowledge Agent startup.",
   "The agent invokes the `acceptance_number` tool and prints only `42`.",
 ]

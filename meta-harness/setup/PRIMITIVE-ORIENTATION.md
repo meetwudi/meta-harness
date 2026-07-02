@@ -50,6 +50,8 @@ The primitives compose:
   include tag fields.
 - Libraries organize all primitives.
 - Library creation follows `library://meta-harness/setup/LIBRARY-CREATION.md`.
+- ToolSpec creation follows
+  `library://meta-harness/setup/TOOLSPEC-CREATION.md`.
 - Storage locations follow `library://meta-harness/storage/STORAGE.md`.
 - `library://...` references are Library resource URIs handled through
   Librarian tools.

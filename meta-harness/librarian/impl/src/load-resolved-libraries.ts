@@ -78,6 +78,7 @@ async function loadDiscoveredLibraries(
       storage: location.storage,
       storageLocationName: location.name,
       storageLocationRootPath: location.libraryRootPath,
+      storageDriverName: location.driverName,
     });
   }
 }

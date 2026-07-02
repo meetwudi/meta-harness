@@ -5,6 +5,10 @@
 [[items]]
 id = "knowledge-is-code-source-of-truth"
 text = "Verify repository changes preserve Knowledge is code: durable behavior, policy, project semantics, and source-of-truth rules belong in governed knowledge primitives; implementation code must be generic runtime plumbing or Spec-backed implementation rather than hard-coded unsourced knowledge."
+examples = [
+  "ToolSpec review: a concrete tool such as a YouTube transcript fetcher should store its ToolSpec and generated implementation in governed Library knowledge. Runtime code may provide generic ToolSpec discovery, validation, sandboxing, and execution plumbing, but should not hard-code the concrete tool implementation as a hidden builtin.",
+  "Implementation generation: when a discovered ToolSpec has no implementation file yet, the agent should treat implementation as governed work, create or pursue the appropriate Goal or workflow, generate the implementation from ToolSpec knowledge, store it back under the ToolSpec Library scope, then load it through the ToolSpec execution path.",
+]
 
 [[items]]
 id = "no-silent-fallbacks"

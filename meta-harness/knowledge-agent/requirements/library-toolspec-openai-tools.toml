@@ -1,13 +1,17 @@
 id = "knowledge-agent.library-toolspec-openai-tools"
 title = "Library ToolSpecs become agent tools"
-source = "Human request and clarifications on 2026-06-27 and 2026-06-28: tools are driven by knowledge; agents should discover Library-defined ToolSpecs and dynamically plug in new tools, including tools created in one conversation becoming usable in a separate conversation; implementation code loads after the relevant Library ToolSpec is discovered from conversation Library context; and allowed tools are added to the agent through generic ToolSpec resolution."
+source = "Human request and clarifications on 2026-06-27, 2026-06-28, and 2026-07-01: tools are driven by knowledge; agents should discover Library-defined ToolSpecs and dynamically plug in new tools, including tools created in one conversation becoming usable in a separate conversation; implementation code is stored with the ToolSpec as governed Library knowledge; implementation code loads after the relevant Library ToolSpec is discovered from conversation Library context; and allowed tools are added to the agent through generic ToolSpec resolution."
 text = "Knowledge Agent exposes allowed ToolSpec primitives discovered from readable Libraries as OpenAI agent tools."
 clarifications = [
   "The primary Knowledge Agent session discovers ToolSpecs from readable Libraries before constructing the agent tool list.",
   "Discovered ToolSpecs are exposed only when the active actor identities match the ToolSpec `allowed_actors` glob patterns.",
   "Built-in Librarian, Goal, conversation state, and hosted web search tool names remain reserved when ToolSpecs are discovered.",
-  "When a discovered ToolSpec references an unsupported implementation, invocation fails clearly before any ungoverned code execution.",
-  "Supported ToolSpec implementation modules load through the discovered and allowed ToolSpec execution path.",
+  "Concrete ToolSpec implementation code is stored as governed Library knowledge under the ToolSpec folder.",
+  "ToolSpec discovery returns the implementation reference and, for resource-backed Libraries, the implementation content needed by the generic execution path.",
+  "When a discovered ToolSpec has no implementation file or references an unsupported implementation, invocation fails clearly before any ungoverned code execution.",
+  "Supported generated JavaScript ToolSpec implementation modules are ES modules exporting `executeToolSpec`, `execute`, or a default function.",
+  "Supported ToolSpec implementation modules load through the discovered and allowed ToolSpec execution path without runtime-owned built-in implementation tokens.",
   "The ToolSpec OpenAI adapter delegates invocation to a generic ToolSpec implementation resolver.",
+  "When the user asks which ToolSpec tools are available, Knowledge Agent reports executable ToolSpecs from the generic ToolSpec availability path and does not present discovered ToolSpecs with missing or unsupported implementations as available tools.",
   "The rendered Knowledge Agent prompt includes the exact active actor URI when available so newly authored ToolSpecs can set `allowed_actors` deterministically.",
 ]

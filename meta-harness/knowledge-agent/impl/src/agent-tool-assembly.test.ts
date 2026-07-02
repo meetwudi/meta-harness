@@ -13,12 +13,16 @@ import type { Tool } from "@openai/agents";
 import {
   createLibrarianContext,
   createLocalFileSystemStorage,
+  discoverLibraryToolSpecs,
 } from "../../../librarian/impl/dist/index.js";
 import { ConversationStateRuntime } from "./conversation-state.js";
 import { createConversationStateOpenAITools } from "./create-conversation-state-openai-tools.js";
 import { createKnowledgeAgentOpenAITools } from "./create-knowledge-agent-openai-tools.js";
+import { listAvailableToolSpecs } from "./create-toolspec-availability-openai-tools.js";
+import { createToolSpecOpenAITools } from "./create-toolspec-openai-tools.js";
 import { createWebSearchOpenAITools } from "./create-web-search-openai-tools.js";
 import { knowledgeAgentStreamEventsFromRunEvent } from "./knowledge-agent-stream-events.js";
+import { executeToolSpecImplementation } from "./resolve-toolspec-implementation.js";
 
 const fakeConversationState = {
   update: async () => ({}),
@@ -26,9 +30,16 @@ const fakeConversationState = {
 
 const storage = createLocalFileSystemStorage();
 const storageRoot = await mkdtemp(join(tmpdir(), "knowledge-agent-toolspec-"));
+const resourceStorageRoot = await mkdtemp(join(tmpdir(), "knowledge-agent-resource-toolspec-"));
 const toolsRoot = join(storageRoot, "fixture-tool-library");
+const resourceToolsRoot = join(resourceStorageRoot, "resource-tool-library");
 await storage.makeDirectory(toolsRoot);
+await storage.makeDirectory(join(toolsRoot, "impl"));
 await storage.makeDirectory(join(toolsRoot, "tests"));
+await storage.makeDirectory(resourceToolsRoot);
+await storage.makeDirectory(join(resourceToolsRoot, "impl"));
+await storage.makeDirectory(join(resourceToolsRoot, "tests"));
+await storage.makeDirectory(join(resourceToolsRoot, "toolspecs", "missing-number"));
 await writeFile(
   join(toolsRoot, "LIBRARY.toml"),
   [
@@ -70,12 +81,104 @@ await writeFile(
   ].join("\n"),
 );
 await writeFile(
+  join(toolsRoot, "impl", "fixture-text-transform.js"),
+  [
+    "// Generated file. Do not edit directly; update the ToolSpec first.",
+    "export function executeToolSpec(input) {",
+    "  return { text: String(input.text ?? '').trim().toUpperCase() };",
+    "}",
+    "",
+  ].join("\n"),
+);
+await writeFile(
   join(toolsRoot, "tests", "unit.test.toml"),
   [
     'id = "fixture-text-transform.unit.fixture"',
     'tool = "fixture_text_transform"',
     'input_json = "{\\"text\\":\\"example\\"}"',
     'expected = "The tool returns transformed text."',
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(resourceToolsRoot, "LIBRARY.toml"),
+  [
+    'name = "resource-tool-library"',
+    'description = "Resource-backed ToolSpec Library."',
+    "isSystemLibrary = false",
+    'read_actors = ["actor://knowledge-agent"]',
+    'update_actors = ["actor://knowledge-agent"]',
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(resourceToolsRoot, "TOOLSPEC.toml"),
+  [
+    "# This is a Harness primitive.",
+    "# See also: library://meta-harness",
+    "",
+    'name = "resource_number"',
+    'description = "Return a deterministic number from a resource-backed ToolSpec fixture."',
+    'implementation = "impl/resource-number.js"',
+    'allowed_actors = ["actor://knowledge-agent"]',
+    "order = 20",
+    "",
+    "[input_schema]",
+    'type = "object"',
+    "additional_properties = false",
+    'properties_json = "{}"',
+    "",
+    "[output_schema]",
+    'type = "number"',
+    'description = "The deterministic fixture number."',
+    "",
+    "[[test_cases]]",
+    'id = "returns-number"',
+    'input_json = "{}"',
+    'expected_output_json = "42"',
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(resourceToolsRoot, "impl", "resource-number.js"),
+  [
+    "// Generated file. Do not edit directly; update the ToolSpec first.",
+    "export function executeToolSpec() {",
+    "  return 42;",
+    "}",
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(resourceToolsRoot, "tests", "unit.test.toml"),
+  [
+    'id = "resource-number.unit.fixture"',
+    'tool = "resource_number"',
+    'input_json = "{}"',
+    'expected_output_json = "42"',
+    "",
+  ].join("\n"),
+);
+await writeFile(
+  join(resourceToolsRoot, "toolspecs", "missing-number", "TOOLSPEC.toml"),
+  [
+    "# This is a Harness primitive.",
+    "# See also: library://meta-harness",
+    "",
+    'name = "missing_number"',
+    'description = "Fixture ToolSpec with no implementation file."',
+    'implementation = "impl/missing-number.js"',
+    'allowed_actors = ["actor://knowledge-agent"]',
+    "order = 30",
+    "",
+    "[input_schema]",
+    'type = "object"',
+    "additional_properties = false",
+    'properties_json = "{}"',
+    "",
+    "[output_schema]",
+    'type = "number"',
+    'description = "A fixture number."',
     "",
   ].join("\n"),
 );
@@ -99,6 +202,22 @@ const fakeLibrarianContext = createLibrarianContext({
       discoveryMode: "filesystem-root-and-direct-children",
       discoveryExcludes: [],
     },
+    {
+      name: "toolspec-resource-fixture",
+      description: "Resource-backed ToolSpec storage.",
+      driverName: "postgres",
+      storage,
+      capabilities: {
+        readable: true,
+        writable: true,
+        deletable: true,
+        queryable: true,
+        blob: true,
+      },
+      libraryRootPath: resourceStorageRoot,
+      discoveryMode: "resource-root-and-direct-children",
+      discoveryExcludes: [],
+    },
   ],
   actorUri: "actor://knowledge-agent",
   actorUris: ["actor://knowledge-agent"],
@@ -117,7 +236,45 @@ assert.ok(primaryToolNames.includes("web_search"));
 assert.ok(primaryToolNames.includes("librarian_intro"));
 assert.ok(primaryToolNames.includes("goal_create"));
 assert.ok(primaryToolNames.includes("conversation_state_update"));
+assert.ok(primaryToolNames.includes("toolspec_list_available"));
 assert.ok(primaryToolNames.includes("fixture_text_transform"));
+assert.ok(primaryToolNames.includes("resource_number"));
+assert.equal(primaryToolNames.includes("missing_number"), false);
+
+const discoveredToolSpecs = await discoverLibraryToolSpecs(fakeLibrarianContext);
+const resourceToolSpec = discoveredToolSpecs.find((toolSpec) => toolSpec.name === "resource_number");
+assert.ok(resourceToolSpec);
+assert.equal(resourceToolSpec.implementationAvailable, true);
+assert.equal(resourceToolSpec.implementationLoadMode, "source");
+assert.equal(resourceToolSpec.implementation, "impl/resource-number.js");
+assert.match(resourceToolSpec.implementationContent ?? "", /executeToolSpec/);
+assert.equal(await executeToolSpecImplementation(resourceToolSpec, {}), 42);
+const missingToolSpec = discoveredToolSpecs.find((toolSpec) => toolSpec.name === "missing_number");
+assert.ok(missingToolSpec);
+assert.equal(missingToolSpec.implementationAvailable, false);
+
+const toolSpecAvailability = await listAvailableToolSpecs({
+  librarianContext: fakeLibrarianContext,
+  reservedToolNames: new Set(["toolspec_list_available"]),
+  includeUnavailable: true,
+});
+assert.deepEqual(
+  toolSpecAvailability.availableTools.map((toolSpec) => toolSpec.name),
+  ["fixture_text_transform", "resource_number"],
+);
+assert.ok(
+  toolSpecAvailability.unavailableToolSpecs?.some((toolSpec) =>
+    toolSpec.name === "missing_number" &&
+    /implementation is missing or unsupported/.test(toolSpec.reason)
+  ),
+);
+
+const directToolSpecTools = await createToolSpecOpenAITools({
+  librarianContext: fakeLibrarianContext,
+  reservedToolNames: new Set(),
+});
+assert.ok(directToolSpecTools.some((tool) => tool.name === "resource_number"));
+assert.equal(directToolSpecTools.some((tool) => tool.name === "missing_number"), false);
 
 const stateRoot = join(storageRoot, "conversation-state");
 await storage.makeDirectory(stateRoot);
@@ -184,8 +341,10 @@ assert.doesNotMatch(
   /implementationPath\.endsWith/,
 );
 assert.match(toolSpecImplementationResolverSource, /pathToFileURL/);
+assert.match(toolSpecImplementationResolverSource, /data:text\/javascript;base64/);
 assert.match(toolSpecImplementationResolverSource, /await import\(moduleUrl\.href\)/);
 assert.match(toolSpecImplementationResolverSource, /executeToolSpec/);
+assert.match(toolSpecImplementationResolverSource, /implementationAvailable/);
 assert.doesNotMatch(toolSpecImplementationResolverSource, /fixture_text_transform/);
 assert.doesNotMatch(toolSpecImplementationResolverSource, /fixture-text-transform/);
 

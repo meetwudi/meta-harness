@@ -669,25 +669,44 @@ export async function readConversation(input: {
   return summary;
 }
 
+function isIncompleteConversationHistoryError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return (
+    /\/CONVERSATION\.toml is missing from conversation history\.$/.test(error.message) ||
+    /^turns\/[^/]+\/summary\.md is missing from conversation history\.$/.test(error.message)
+  );
+}
+
 export async function listConversations(input: {
   storage: LibrarianStorage;
   libraryRoot: string;
 }): Promise<QuartzConversationSummary[]> {
   const entries = await input.storage.listDirectory(input.libraryRoot);
-  const conversations = (
-    await Promise.all(
-      entries
-        .filter((entry) => entry.isDirectory)
-        .map((entry) =>
-          readConversation({
-            storage: input.storage,
-            libraryRoot: input.libraryRoot,
-            folderName: entry.name,
-            includeMessages: false,
-          }),
-        ),
-    )
-  );
+  const conversations: QuartzConversationSummary[] = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory) {
+      continue;
+    }
+
+    try {
+      conversations.push(
+        await readConversation({
+          storage: input.storage,
+          libraryRoot: input.libraryRoot,
+          folderName: entry.name,
+          includeMessages: false,
+        }),
+      );
+    } catch (error) {
+      if (isIncompleteConversationHistoryError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
 
   return conversations.sort((left, right) => {
     if (left.updatedAt && right.updatedAt) {

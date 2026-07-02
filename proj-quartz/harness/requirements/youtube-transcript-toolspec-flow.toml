@@ -1,9 +1,12 @@
 id = "proj-quartz.youtube-transcript-toolspec-flow"
 title = "YouTube transcript tool creation flow"
-source = "Human acceptance request on 2026-06-27: use the app via browser to ask the agent `create a tool that fetches youtube transcript`; in a separate conversation, ask `fetch youtube transcript https://www.youtube.com/watch?v=J9AOaINKy0E` and see the transcript come back."
+source = "Human acceptance request on 2026-06-27 and clarification on 2026-07-01: use the app via browser to ask the agent `create a tool that fetches youtube transcript`; the agent drafts governed ToolSpec knowledge first; implementation code is generated only after explicit approval and stored with the ToolSpec as Library knowledge; in a separate conversation, ask `fetch youtube transcript https://www.youtube.com/watch?v=J9AOaINKy0E` and see the transcript come back."
 text = "Quartz can create a governed YouTube transcript ToolSpec through chat and use it as a tool in a later chat conversation."
 clarifications = [
   "The created tool is represented as ToolSpec knowledge in a writable Quartz Library.",
+  "The transcript fetch implementation is stored with the ToolSpec as governed Library knowledge rather than shipped as a Knowledge Agent built-in.",
+  "Generated JavaScript ToolSpec implementations for Quartz use the Knowledge Agent ToolSpec runtime module contract: ES module export of `executeToolSpec`, `execute`, or a default function.",
+  "Quartz asks for human approval before writing the generated implementation code for the ToolSpec.",
   "A separate Quartz conversation discovers the ToolSpec and exposes the transcript fetcher as an agent tool.",
   "The transcript fetch returns visible transcript content for the requested YouTube URL.",
 ]

@@ -1,12 +1,14 @@
 id = "proj-quartz.reasoning-event-rendering"
 title = "Reasoning event rendering"
-source = "Human request and clarifications on 2026-06-27 and 2026-06-28: Quartz streams model-origin reasoning and answer content live, keeps host lifecycle text out of the visible chat stream, distinguishes main Knowledge Agent and Memory Curator reasoning sources, and persists model-origin reasoning history with conversations."
+source = "Human request and clarifications on 2026-06-27, 2026-06-28, and 2026-07-02: Quartz streams model-origin reasoning and answer content live, keeps host lifecycle text out of the visible chat stream, distinguishes main Knowledge Agent and Memory Curator reasoning sources, persists model-origin reasoning history with conversations, and shows only a compact matching animated dot immediately after send while waiting for model-origin reasoning or answer content."
 text = "Quartz renders model-origin reasoning and answer content in the visible chat stream: the chat surface renders model reasoning in AG-UI reasoning messages and streams the main assistant answer as text deltas arrive, while host progress remains outside visible chat transcript content."
 
 criteria = [
   "The Quartz chat route emits `REASONING_START`, `REASONING_MESSAGE_START`, `REASONING_MESSAGE_CONTENT`, `REASONING_MESSAGE_END`, and `REASONING_END` events only when the Knowledge Agent stream provides model-origin reasoning content.",
   "Reasoning content is updated from live model-origin Knowledge Agent stream events.",
   "The visible reasoning row stays compact during streaming and after completion; model-origin detail history is shown only when the user opens the row.",
+  "Immediately after the user sends a message, before model-origin reasoning or assistant text arrives, Quartz shows a compact non-text animated pending dot using the same dot styling as the reasoning row.",
+  "The pending dot is not persisted as conversation content and is replaced by the first model-origin reasoning row or assistant response content.",
   "Operational host progress is not emitted as visible AG-UI activity messages; visible streaming is limited to model-origin reasoning and assistant text.",
   "The default pending cursor/loading dot is not rendered while Quartz is waiting for model-origin reasoning or answer content.",
   "Low-level model, tool, and host lifecycle markers such as `Preparing run with ...`, `Model response started`, `Model response completed`, `Tool called`, and `Tool output received` are not rendered as visible progress.",

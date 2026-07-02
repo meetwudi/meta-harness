@@ -85,11 +85,16 @@ function defaultToolSpecsRoot(): string {
 function loadToolSpec(rootPath: string): ToolSpecDefinition {
   const toolSpecPath = resolve(rootPath, "TOOLSPEC.toml");
   const data = parseToml(readFileSync(toolSpecPath, "utf8"));
-  return toolSpecFromRecord(data, {
+  const toolSpec = toolSpecFromRecord(data, {
     rootPath,
     toolSpecPath,
     implementationBasePath: rootPath,
   });
+  return {
+    ...toolSpec,
+    implementationAvailable: existsSync(toolSpec.implementationPath),
+    implementationLoadMode: "file",
+  };
 }
 
 async function discoverLibraryToolSpecsUnder(
@@ -119,11 +124,34 @@ async function readToolSpecIfPresent(
     return;
   }
   const content = await library.storage.readText(toolSpecPath);
-  discovered.push(toolSpecFromRecord(parseToml(content), {
+  const toolSpec = toolSpecFromRecord(parseToml(content), {
     rootPath: dirname(toolSpecPath),
     toolSpecPath,
     implementationBasePath: dirname(toolSpecPath),
-  }));
+  });
+  discovered.push(await toolSpecWithDiscoveredImplementation(library, toolSpec));
+}
+
+async function toolSpecWithDiscoveredImplementation(
+  library: ResolvedLibrary,
+  toolSpec: ToolSpecDefinition,
+): Promise<ToolSpecDefinition> {
+  if (!(await library.storage.exists(toolSpec.implementationPath))) {
+    return toolSpec;
+  }
+  if (library.storageDriverName === "filesystem") {
+    return {
+      ...toolSpec,
+      implementationAvailable: true,
+      implementationLoadMode: "file",
+    };
+  }
+  return {
+    ...toolSpec,
+    implementationAvailable: true,
+    implementationLoadMode: "source",
+    implementationContent: await library.storage.readText(toolSpec.implementationPath),
+  };
 }
 
 function toolSpecFromRecord(
@@ -142,9 +170,9 @@ function toolSpecFromRecord(
     name,
     description,
     implementation,
-    implementationPath: implementation.startsWith("builtin/")
-      ? implementation
-      : resolve(input.implementationBasePath, implementation),
+    implementationPath: resolve(input.implementationBasePath, implementation),
+    implementationAvailable: false,
+    implementationLoadMode: "file",
     allowedActors,
     order: numberField(data, "order", 0),
     inputSchema: parseSchema(data.input_schema, "input_schema", input.toolSpecPath),

@@ -876,6 +876,29 @@ textarea {
   background: var(--quartz-teal);
 }
 
+.quartz-reasoning-pending {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.quartz-reasoning-pending .quartz-reasoning-dot {
+  animation: quartz-pending-dot 900ms ease-in-out infinite;
+}
+
+@keyframes quartz-pending-dot {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.76);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .quartz-reasoning-icon {
   transition: transform 160ms ease;
 }

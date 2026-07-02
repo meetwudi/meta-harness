@@ -12,6 +12,7 @@ criteria = [
   "When the user sends the first message in a new draft, Quartz creates a chat entry, navigates to that chat's `/c/{threadId}` URL, and uses that explicit thread ID for the Knowledge Agent run so the resulting conversation is persisted through the governed conversation Library path and appears in history.",
   "Every saved or running Quartz chat has an identifying `/c/{threadId}` URL, and opening that URL directly loads the matching governed conversation when it exists.",
   "Quartz loads conversation summaries and visible transcript reconstruction from the governed `knowledge-agent-conversations` Library.",
+  "Quartz excludes incomplete in-flight conversation folders from the sidebar list when required manifest or turn summary files are not yet present; opening a specific incomplete conversation still surfaces a clear history error.",
   "Quartz can clear existing governed conversation records when explicitly authorized, and the sidebar reflects the cleared Library.",
   "When governed conversation storage is unavailable, Quartz surfaces the storage failure clearly.",
   "Selecting a previous conversation loads that conversation's visible chat messages from the conversation Library and uses the matching explicit thread ID for the next Knowledge Agent run.",

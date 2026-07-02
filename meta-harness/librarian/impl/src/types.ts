@@ -158,6 +158,7 @@ export type ResolvedLibrary = {
   storage: LibrarianStorage;
   storageLocationName: string;
   storageLocationRootPath: string;
+  storageDriverName: string;
 };
 
 export type LibraryListing = {
@@ -201,6 +202,9 @@ export type ToolSpecDefinition = {
   description: string;
   implementation: string;
   implementationPath: string;
+  implementationAvailable: boolean;
+  implementationLoadMode: "file" | "source";
+  implementationContent?: string;
   allowedActors: string[];
   order: number;
   inputSchema: ToolSpecSchema;

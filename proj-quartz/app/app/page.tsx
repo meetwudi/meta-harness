@@ -114,6 +114,7 @@ const chatRoutePrefix = "/c/";
 const maxConversationRefreshAttempts = 48;
 const maxConversationRefreshDelayMs = 5_000;
 const chatScrollBottomThresholdPx = 80;
+const quartzPendingReasoningMarker = "[[quartz-pending]]";
 const QuartzComposerDisabledContext = createContext(false);
 const QuartzThreadChatContext = createContext<QuartzThreadChatContextValue | null>(null);
 const librariesRoutePath = "/libraries";
@@ -363,6 +364,36 @@ function withReasoningAfterLatestUser(
     }
   }
   nextMessages.splice(insertAt, 0, ...cloneMessages(reasoning));
+  return nextMessages;
+}
+
+function withPendingAfterLatestUser(
+  messages: Message[],
+  pending: boolean,
+  threadId: string,
+) {
+  if (!pending || messages.some((message) => message.role === "reasoning")) {
+    return messages;
+  }
+
+  const latestUserKey = latestUserMessageKey(messages);
+  if (!latestUserKey) {
+    return messages;
+  }
+
+  const nextMessages = cloneMessages(messages);
+  let insertAt = nextMessages.length;
+  for (let index = nextMessages.length - 1; index >= 0; index -= 1) {
+    if (nextMessages[index]?.role === "user") {
+      insertAt = index + 1;
+      break;
+    }
+  }
+  nextMessages.splice(insertAt, 0, {
+    id: `quartz-pending-${threadId}-${latestUserKey}`,
+    role: "reasoning",
+    content: quartzPendingReasoningMarker,
+  } as Message);
   return nextMessages;
 }
 
@@ -743,7 +774,9 @@ function streamSourceLabel(source: string) {
 }
 
 function visibleReasoningContent(content: string) {
-  return content.replace(/\n*\[\[quartz-complete]]\n*/g, "");
+  return content
+    .replace(/\n*\[\[quartz-complete]]\n*/g, "")
+    .replace(quartzPendingReasoningMarker, "");
 }
 
 function reasoningSections(content: string) {
@@ -980,6 +1013,7 @@ function QuartzReasoningMessage({
   const [elapsed, setElapsed] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const detailsId = useId();
+  const isPending = message.content.includes(quartzPendingReasoningMarker);
   const displayContent = visibleReasoningContent(message.content);
   const isComplete = message.content.includes("[[quartz-complete]]");
   const isStreaming = isRunning && !isComplete;
@@ -1014,6 +1048,20 @@ function QuartzReasoningMessage({
   const label = isStreaming
     ? "Quartz thinking"
     : `Thought for ${formatReasoningDuration(elapsed)}`;
+
+  if (isPending) {
+    return (
+      <div
+        className="quartz-reasoning-message quartz-reasoning-pending"
+        data-message-id={message.id}
+        data-state="pending"
+        role="status"
+        aria-label="Waiting for response"
+      >
+        <span className="quartz-reasoning-dot" aria-hidden="true" />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -1132,11 +1180,16 @@ function QuartzPersistentChatView({
     !agent.isRunning && hydratingThread
       ? storedMessages
       : mergedMessages;
-  const displayedMessages = withReasoningAfterLatestUser(
+  const displayedMessagesWithReasoning = withReasoningAfterLatestUser(
     baseDisplayedMessages,
     reasoningThreadRef.current === activeThreadId
       ? latestReasoningRef.current
       : [],
+  );
+  const displayedMessages = withPendingAfterLatestUser(
+    displayedMessagesWithReasoning,
+    agent.isRunning && !hasAssistantAfterLatestUser(displayedMessagesWithReasoning),
+    activeThreadId,
   );
   const displayedFingerprint = useMemo(
     () => messageFingerprint(displayedMessages),

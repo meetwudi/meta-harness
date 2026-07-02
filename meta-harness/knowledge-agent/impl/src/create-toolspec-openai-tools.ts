@@ -26,6 +26,9 @@ export async function createToolSpecOpenAITools(input: {
     if (!toolSpecAllowsActor(toolSpec, input.librarianContext.actorUris)) {
       continue;
     }
+    if (!toolSpec.implementationAvailable) {
+      continue;
+    }
     input.reservedToolNames.add(toolSpec.name);
     tools.push(tool({
       name: toolSpec.name,

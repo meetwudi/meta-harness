@@ -4,5 +4,6 @@ source = "Human request on 2026-06-27: in the intro and related onboarding, incl
 text = "Librarian intro includes ToolSpec primitive guidance so agents can discover how to define new tools as governed knowledge."
 clarifications = [
   "Intro onboarding includes the ToolSpec primitive document from `library://meta-harness/primitives/TOOLSPEC.md`.",
-  "ToolSpec onboarding is returned with primitive orientation, Library creation protocol, and storage guidance.",
+  "Intro onboarding includes the ToolSpec creation playbook from `library://meta-harness/setup/TOOLSPEC-CREATION.md`.",
+  "ToolSpec onboarding is returned with primitive orientation, Library creation protocol, ToolSpec creation protocol, and storage guidance.",
 ]

@@ -201,6 +201,9 @@ def validate_tests_folder(path, failures):
 def validate_implementation(path, implementation, failures):
     if not implementation:
         return
+    if implementation.startswith("builtin/"):
+        fail(failures, f"{path}: implementation must reference Library-stored code, not a runtime builtin token: {implementation}")
+        return
     implementation_path = (path.parent / implementation).resolve()
     if not implementation_path.is_file():
         fail(failures, f"{path}: implementation does not resolve to a file: {implementation}")
