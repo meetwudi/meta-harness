@@ -5,6 +5,9 @@ text = "Library Editor represents proposed changes as explicit governed change s
 
 criteria = [
   "The editor can show the files and resources included in the active proposed changes.",
+  "File explorer rows indicate when a file is included in active proposed changes.",
+  "Selecting a proposed-change indicator opens the optional proposed changes view pinned to that file.",
+  "The proposed changes view shows before and after content for the pinned file while still allowing selection of other proposed files.",
   "Check, sync, deploy, and apply actions operate on the active proposed changes backed by the governed change set.",
   "The user can distinguish unchanged Library state from draft changes held in proposed changes.",
 ]

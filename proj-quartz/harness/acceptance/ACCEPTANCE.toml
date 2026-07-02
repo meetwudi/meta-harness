@@ -77,6 +77,10 @@ procedure = [
   "Verify the edit remains local until the user adds it to proposed changes.",
   "Click `Add to proposed changes` and verify the proposed changes affordance shows the changed file count.",
   "Open `Proposed changes` and verify the governed change set appears in the proposed changes panel.",
+  "Refresh the page and verify the active proposed changes are still visible.",
+  "Verify the changed file has a subtle proposed-change indicator in the explorer.",
+  "Click the changed file from the explorer and verify `Proposed changes` opens pinned to that file.",
+  "Verify the pinned proposed-change review shows before and after content while other proposed files remain selectable.",
   "Click `Apply proposed changes`.",
   "Reopen the same file through the Libraries workspace and verify the applied content is visible.",
 ]
@@ -86,6 +90,7 @@ expected = [
   "Read-only Libraries show a light lock indicator and expose read-appropriate controls.",
   "Writable Libraries expose editing controls.",
   "Raw editing is separate from proposed change creation.",
+  "Proposed changes persist across refresh and can be reviewed from the changed-file indicator.",
   "Applying proposed changes updates the governed Library through Librarian.",
   "Baseline conflict detection routes stale proposed changes to reconciliation behavior before apply.",
 ]

@@ -329,6 +329,7 @@ textarea {
 .quartz-library-row:focus-visible,
 .quartz-library-file-row:focus-visible,
 .quartz-library-editor-actions button:focus-visible,
+.quartz-proposed-changes-select:focus-visible,
 .quartz-proposed-changes-row button:focus-visible,
 .quartz-proposed-changes-apply:focus-visible,
 .quartz-library-editor:focus-visible {
@@ -1165,7 +1166,7 @@ textarea {
 }
 
 .quartz-library-row-main span,
-.quartz-library-file-row span,
+.quartz-library-file-path,
 .quartz-proposed-changes-row span {
   min-width: 0;
   overflow: hidden;
@@ -1222,7 +1223,8 @@ textarea {
   width: 100%;
   min-width: 0;
   min-height: 34px;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 6px 9px;
@@ -1238,6 +1240,26 @@ textarea {
 .quartz-library-file-row svg {
   flex: 0 0 auto;
   color: #6f6f6f;
+}
+
+.quartz-library-file-meta {
+  min-width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.quartz-library-file-change-marker {
+  color: var(--quartz-teal);
+}
+
+.quartz-library-file-lock {
+  color: #8f8f8f;
+}
+
+.quartz-library-file-row.has-proposed-change .quartz-library-file-path {
+  color: #145f59;
 }
 
 .quartz-library-resize-handle {
@@ -1437,7 +1459,7 @@ textarea {
 .quartz-proposed-changes-row {
   min-height: 36px;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 7px;
   padding: 6px 8px;
@@ -1450,11 +1472,30 @@ textarea {
   background: var(--quartz-sidebar-hover);
 }
 
-.quartz-proposed-changes-row svg {
+.quartz-proposed-changes-row.is-selected {
+  background: #eef7f5;
+}
+
+.quartz-proposed-changes-select {
+  min-width: 0;
+  min-height: 26px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.quartz-proposed-changes-select svg {
   color: var(--quartz-teal);
 }
 
-.quartz-proposed-changes-row button {
+.quartz-proposed-changes-remove {
   min-height: 26px;
   padding: 0 8px;
   border: 1px solid var(--quartz-line);
@@ -1463,6 +1504,72 @@ textarea {
   color: var(--quartz-muted);
   cursor: pointer;
   font-size: 0.75rem;
+}
+
+.quartz-proposed-change-review {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+}
+
+.quartz-proposed-change-review-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.quartz-proposed-change-review-header h3 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #2d2d2d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quartz-proposed-change-review-header span {
+  flex: 0 0 auto;
+  color: var(--quartz-muted);
+  font-size: 0.72rem;
+}
+
+.quartz-proposed-change-review-grid {
+  display: grid;
+  gap: 7px;
+}
+
+.quartz-proposed-change-review-grid section {
+  min-width: 0;
+  border: 1px solid var(--quartz-line);
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.quartz-proposed-change-review-grid h4 {
+  margin: 0;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--quartz-line);
+  color: #656565;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.quartz-proposed-change-review-grid pre {
+  max-height: 154px;
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  color: #2f2f2f;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: pre;
 }
 
 .quartz-proposed-changes-checks {

@@ -154,6 +154,30 @@ for (const migration of postgresStorageMigrations) {
   );
 }
 
+const persistentChangeSetMigration = postgresStorageMigrations.find(
+  (migration) => migration.id === "202607010004_persistent_change_sets",
+);
+assert.ok(persistentChangeSetMigration, "persistent change-set migration should exist");
+const persistentChangeSetStatements = persistentChangeSetMigration.statements({
+  schemaName: "quartz_core",
+  resourceTable: '"quartz_core"."resources"',
+  changeSetTable: '"quartz_core"."resources_change_sets"',
+  proposedResourceChangeTable: '"quartz_core"."resources_proposed_resource_changes"',
+  indexPrefix: "resources",
+});
+assert.ok(
+  persistentChangeSetStatements.some((statement) =>
+    statement.includes('CREATE TABLE IF NOT EXISTS "quartz_core"."resources_change_sets"')
+  ),
+  "change sets should be created next to the configured resources table in the same schema",
+);
+assert.ok(
+  persistentChangeSetStatements.some((statement) =>
+    statement.includes('CREATE TABLE IF NOT EXISTS "quartz_core"."resources_proposed_resource_changes"')
+  ),
+  "proposed resource changes should be created next to the configured resources table in the same schema",
+);
+
 async function readToml(path: string): Promise<Record<string, unknown>> {
   return parseToml(await readFile(resolve(storageRoot, path), "utf8"));
 }

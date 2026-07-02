@@ -10,7 +10,7 @@ requirements = [
 ]
 text = "Extend persistent resource storage with durable change-set records and proposed resource-change records that drivers can use to restore active proposed changes and mark applied proposals."
 statements = [
-  "Generated migration artifacts add a change-set table scoped next to the configured resources table.",
+  "Generated migration artifacts add a change-set table scoped next to the configured resources table in the same storage schema, using the configured resource table name as the table prefix.",
   "Generated migration artifacts add a proposed resource-change table where each row belongs to a change set through an application-owned change_set_id identifier.",
   "Generated migration artifacts store actor allow-lists on change-set and proposed resource-change rows.",
   "Generated Postgres artifacts enforce row-level security for persisted change-set rows using active actor URI patterns.",

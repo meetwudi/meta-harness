@@ -58,6 +58,7 @@ type FileBaseline = {
 type StagedChange = {
   uri: string;
   baselineContent?: string;
+  reviewBaselineContent?: string;
   content: string;
 };
 
@@ -103,6 +104,7 @@ export function LibrariesWorkspace() {
   const [staging, setStaging] = useState(false);
   const [applying, setApplying] = useState(false);
   const [proposedChangesOpen, setProposedChangesOpen] = useState(false);
+  const [selectedProposedChangeUri, setSelectedProposedChangeUri] = useState("");
   const [explorerWidth, setExplorerWidth] = useState(explorerWidthDefault);
   const [resizingExplorer, setResizingExplorer] = useState(false);
   const [status, setStatus] = useState("");
@@ -122,9 +124,7 @@ export function LibrariesWorkspace() {
       selectedBaseline?.content ??
       ""
     : "";
-  const selectedFilePath = selectedFileUri
-    ? selectedFileUri.replace(/^library:\/\/[^/]+\//, "")
-    : "";
+  const selectedFilePath = selectedFileUri ? resourcePathFromLibraryUri(selectedFileUri) : "";
   const selectedCommittedContent = selectedStagedChange?.content ?? selectedBaseline?.content ?? "";
   const editorDirty = Boolean(
     selectedFileUri &&
@@ -137,6 +137,20 @@ export function LibrariesWorkspace() {
       .sort((left, right) => left.uri.localeCompare(right.uri)),
     [stagedChanges],
   );
+  const selectedProposedChange = selectedProposedChangeUri
+    ? stagedChanges[selectedProposedChangeUri]
+    : undefined;
+  const activeReviewChange = selectedProposedChange ?? stagedChangeList[0];
+  const activeReviewFilePath = activeReviewChange
+    ? resourcePathFromLibraryUri(activeReviewChange.uri)
+    : "";
+  const activeReviewBefore = activeReviewChange
+    ? activeReviewChange.reviewBaselineContent ??
+      activeReviewChange.baselineContent ??
+      fileBaselines[activeReviewChange.uri]?.content ??
+      ""
+    : "";
+  const activeReviewAfter = activeReviewChange?.content ?? "";
   const displayedChecks = useMemo(
     () => activeChangeSetValidation
       ? [...activeChangeSetValidation.checks].sort(compareChecksForDisplay)
@@ -202,6 +216,7 @@ export function LibrariesWorkspace() {
         setStagedChanges(indexStagedChanges(changes));
         setActiveChangeSet(latest.changeSet);
         setActiveChangeSetValidation(validation);
+        setSelectedProposedChangeUri(changes[0]?.uri ?? "");
         setProposedChangesOpen(true);
         setStatus(validation.clean
           ? "Proposed changes restored."
@@ -319,6 +334,28 @@ export function LibrariesWorkspace() {
     setError("");
   }, []);
 
+  const handleSelectFile = useCallback((uri: string) => {
+    setSelectedFileUri(uri);
+    if (stagedChanges[uri]) {
+      setSelectedProposedChangeUri(uri);
+      setProposedChangesOpen(true);
+    }
+    setStatus("");
+    setError("");
+  }, [stagedChanges]);
+
+  const handleSelectProposedChange = useCallback((uri: string) => {
+    const libraryUri = libraryUriFromResourceUri(uri);
+    if (libraryUri && libraries.some((library) => library.uri === libraryUri)) {
+      setSelectedLibraryUri(libraryUri);
+    }
+    setSelectedFileUri(uri);
+    setSelectedProposedChangeUri(uri);
+    setProposedChangesOpen(true);
+    setStatus("");
+    setError("");
+  }, [libraries]);
+
   const handleEditorChange = useCallback((content: string) => {
     if (!selectedFileUri || !canEditSelectedFile) {
       return;
@@ -338,6 +375,7 @@ export function LibrariesWorkspace() {
       [selectedFileUri]: {
         uri: selectedFileUri,
         baselineContent: selectedBaseline.content,
+        reviewBaselineContent: selectedBaseline.content,
         content: editorContent,
       },
     };
@@ -349,6 +387,7 @@ export function LibrariesWorkspace() {
       setActiveChangeSet(staged.changeSet);
       setActiveChangeSetValidation(staged.validation);
       setStagedChanges(nextChanges);
+      setSelectedProposedChangeUri(selectedFileUri);
       setProposedChangesOpen(true);
       setDraftEdits((current) => {
         const next = { ...current };
@@ -386,6 +425,16 @@ export function LibrariesWorkspace() {
       setStagedChanges(nextChanges);
       setActiveChangeSet(nextStaged?.changeSet ?? null);
       setActiveChangeSetValidation(nextStaged?.validation ?? null);
+      setSelectedProposedChangeUri((current) => {
+        if (remainingChanges.length === 0) {
+          return "";
+        }
+        if (current && nextChanges[current]) {
+          return current;
+        }
+        return remainingChanges
+          .sort((left, right) => left.uri.localeCompare(right.uri))[0]?.uri ?? "";
+      });
       setStatus("Proposed change removed.");
     } catch (stageError) {
       setError(stageError instanceof Error ? stageError.message : "Proposed changes update failed.");
@@ -426,6 +475,7 @@ export function LibrariesWorkspace() {
       setStagedChanges({});
       setActiveChangeSet(null);
       setActiveChangeSetValidation(null);
+      setSelectedProposedChangeUri("");
       setStatus("Proposed changes applied.");
     } catch (applyError) {
       setError(applyError instanceof Error ? applyError.message : "Proposed changes apply failed.");
@@ -536,17 +586,41 @@ export function LibrariesWorkspace() {
                   <div className="quartz-library-file-branch" aria-label={`${library.name} files`}>
                     {files.map((file) => {
                       const fileSelected = file.uri === selectedFileUri;
-                      const pathLabel = file.uri.replace(/^library:\/\/[^/]+\//, "");
+                      const hasProposedChange = Boolean(stagedChanges[file.uri]);
+                      const pathLabel = resourcePathFromLibraryUri(file.uri);
+                      const fileRowClassName = [
+                        "quartz-library-file-row",
+                        fileSelected ? "is-selected" : "",
+                        hasProposedChange ? "has-proposed-change" : "",
+                      ].filter(Boolean).join(" ");
                       return (
                         <button
                           key={file.uri}
                           type="button"
-                          className={fileSelected ? "quartz-library-file-row is-selected" : "quartz-library-file-row"}
+                          className={fileRowClassName}
                           aria-current={fileSelected ? "page" : undefined}
-                          onClick={() => setSelectedFileUri(file.uri)}
+                          onClick={() => handleSelectFile(file.uri)}
                         >
                           <FileText aria-hidden="true" size={14} strokeWidth={1.8} />
-                          <span>{pathLabel}</span>
+                          <span className="quartz-library-file-path">{pathLabel}</span>
+                          <span className="quartz-library-file-meta">
+                            {hasProposedChange ? (
+                              <GitPullRequestArrow
+                                className="quartz-library-file-change-marker"
+                                aria-label="Has proposed change"
+                                size={13}
+                                strokeWidth={1.8}
+                              />
+                            ) : null}
+                            {library.writable ? null : (
+                              <LockKeyhole
+                                className="quartz-library-file-lock"
+                                aria-label="Read only"
+                                size={12}
+                                strokeWidth={1.8}
+                              />
+                            )}
+                          </span>
                         </button>
                       );
                     })}
@@ -647,22 +721,55 @@ export function LibrariesWorkspace() {
             <span>{stagedChangeList.length}</span>
           </div>
           <div className="quartz-proposed-changes-list">
-            {stagedChangeList.map((change) => (
-              <div key={change.uri} className="quartz-proposed-changes-row">
-                <GitPullRequestArrow aria-hidden="true" size={14} strokeWidth={1.8} />
-                <span>{change.uri.replace(/^library:\/\/[^/]+\//, "")}</span>
-                <button
-                  type="button"
-                  onClick={() => void handleRemoveStagedChange(change.uri)}
-                  disabled={staging || applying}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+            {stagedChangeList.map((change) => {
+              const changeSelected = activeReviewChange?.uri === change.uri;
+              const changeRowClassName = [
+                "quartz-proposed-changes-row",
+                changeSelected ? "is-selected" : "",
+              ].filter(Boolean).join(" ");
+              return (
+                <div key={change.uri} className={changeRowClassName}>
+                  <button
+                    type="button"
+                    className="quartz-proposed-changes-select"
+                    aria-pressed={changeSelected}
+                    onClick={() => handleSelectProposedChange(change.uri)}
+                  >
+                    <GitPullRequestArrow aria-hidden="true" size={14} strokeWidth={1.8} />
+                    <span>{resourcePathFromLibraryUri(change.uri)}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="quartz-proposed-changes-remove"
+                    onClick={() => void handleRemoveStagedChange(change.uri)}
+                    disabled={staging || applying}
+                  >
+                    Remove
+                  </button>
+                </div>
+              );
+            })}
             {stagedChangeList.length === 0 ? (
               <div className="quartz-libraries-muted">
                 Add edits before applying.
+              </div>
+            ) : null}
+            {activeReviewChange ? (
+              <div className="quartz-proposed-change-review" aria-label="Proposed change review">
+                <div className="quartz-proposed-change-review-header">
+                  <h3>{activeReviewFilePath}</h3>
+                  <span>Before / after</span>
+                </div>
+                <div className="quartz-proposed-change-review-grid">
+                  <section>
+                    <h4>Before</h4>
+                    <pre>{activeReviewBefore || " "}</pre>
+                  </section>
+                  <section>
+                    <h4>After</h4>
+                    <pre>{activeReviewAfter || " "}</pre>
+                  </section>
+                </div>
               </div>
             ) : null}
             {activeChangeSetValidation ? (
@@ -716,6 +823,14 @@ export function LibrariesWorkspace() {
 
 function clampNumber(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+function libraryUriFromResourceUri(uri: string): string {
+  return uri.match(/^library:\/\/[^/]+/)?.[0] ?? "";
+}
+
+function resourcePathFromLibraryUri(uri: string): string {
+  return uri.replace(/^library:\/\/[^/]+\//, "");
 }
 
 async function stageChangeSet(changes: StagedChange[]): Promise<ChangeSetStageResult> {
@@ -894,6 +1009,7 @@ function parseChangeSetChanges(changeSet: ProducedChangeSet): StagedChange[] {
     const proposed = record.proposed;
     if (
       typeof record.uri !== "string" ||
+      typeof record.diff !== "string" ||
       !proposed ||
       typeof proposed !== "object" ||
       Array.isArray(proposed) ||
@@ -903,9 +1019,27 @@ function parseChangeSetChanges(changeSet: ProducedChangeSet): StagedChange[] {
     }
     return {
       uri: record.uri,
+      reviewBaselineContent: baselineContentFromFullFileDiff(record.diff),
       content: (proposed as Record<string, string>).content,
     };
   });
+}
+
+function baselineContentFromFullFileDiff(diff: string): string | undefined {
+  const lines = diff.split("\n");
+  const hunkIndex = lines.findIndex((line) => line.startsWith("@@ "));
+  if (hunkIndex < 0) {
+    return undefined;
+  }
+  const beforeLines: string[] = [];
+  for (const line of lines.slice(hunkIndex + 1)) {
+    if (line.startsWith("-")) {
+      beforeLines.push(line.slice(1));
+    } else if (line.startsWith(" ")) {
+      beforeLines.push(line.slice(1));
+    }
+  }
+  return beforeLines.join("\n");
 }
 
 function indexStagedChanges(changes: StagedChange[]): Record<string, StagedChange> {

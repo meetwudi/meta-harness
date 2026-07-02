@@ -12,6 +12,7 @@ statements = [
   "A change set has a stable identity, format, producer actor, actor context, check results, lifecycle status, creation time, and update time.",
   "A proposed resource change belongs to a change set through an application-owned change-set identifier.",
   "A proposed resource change records the resource URI, Library URI, resource path, baseline evidence, proposed content evidence, and diff evidence needed to validate and apply the change.",
+  "Backend implementations scope change-set persistence next to the configured resource table in the same storage schema using the configured resource table name as the table prefix.",
   "Active proposed change-set listings are actor-scoped and context-scoped so organization workspaces restore the relevant proposal set.",
   "Producing a replacement change set can supersede older active proposals for the same actor and context.",
   "Abandoning or applying a change set updates lifecycle status without deleting audit evidence.",
