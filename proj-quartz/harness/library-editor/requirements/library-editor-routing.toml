@@ -1,0 +1,11 @@
+id = "proj-quartz.library-editor-routing"
+title = "Library Editor routing"
+source = "Human clarification on 2026-07-01: Library Editor needs real routing, with at least a `/libraries` route and preferably file-level routing later."
+text = "Quartz exposes the Library Editor through a durable route so users can navigate directly to the Libraries workspace and browser history reflects switching between chat and Libraries."
+
+criteria = [
+  "`/libraries` opens the Libraries workspace in the Quartz shell.",
+  "Clicking the Libraries sidebar item updates browser history to the Libraries route.",
+  "Chat navigation returns browser history to the chat route.",
+  "File-level Library Editor routing can be layered on top of the `/libraries` route without changing the workspace contract.",
+]

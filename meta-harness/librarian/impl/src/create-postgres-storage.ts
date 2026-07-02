@@ -7,11 +7,22 @@
 // Supports librarian.postgres-backed-library-interface: backs Libraries with Postgres resources.
 // Supports librarian.spec-governed-storage-bootstrap: consumes the generated Storage Spec bootstrap plan.
 // Harness-Requirement: storage.resource-actor-governance
+// Harness-Requirement: librarian.driver-change-set-application
+// Harness-Requirement: change-sets.persistent-change-sets
 
 import { posix } from "node:path";
 import { Pool } from "pg";
 import { runPostgresStorageMigrations } from "../../../storage/impl/dist/postgres-storage-migrations.js";
-import type { LibrarianStorage } from "./types.js";
+import { sha256Text } from "./storage-change-set-hooks.js";
+import type {
+  LibrarianStorage,
+  StorageChangeSetApplyResult,
+  StorageChangeSetConflict,
+  StorageChangeSetListInput,
+  StorageChangeSetPreview,
+  StorageChangeSetTextChange,
+  StoragePersistedChangeSet,
+} from "./types.js";
 
 export type PostgresQueryResult<Row extends Record<string, unknown>> = {
   rows: Row[];
@@ -65,6 +76,10 @@ type ResourceRow = {
   is_container: boolean;
 };
 
+type ChangeSetRow = {
+  change_set: StoragePersistedChangeSet;
+};
+
 const defaultTableName = "meta_harness_resources";
 
 /**
@@ -76,6 +91,11 @@ export function createPostgresStorage(
   const schemaName = input.schemaName?.trim();
   const tableName = input.tableName?.trim() || defaultTableName;
   const table = qualifiedIdentifier({ schemaName, tableName });
+  const changeSetTable = qualifiedIdentifier({ schemaName, tableName: `${tableName}_change_sets` });
+  const proposedResourceChangeTable = qualifiedIdentifier({
+    schemaName,
+    tableName: `${tableName}_proposed_resource_changes`,
+  });
   const actorUris = normalizedActors(input.actorUris, ["actor://knowledge-agent"]);
   const defaultReadActors = normalizedActors(input.defaultReadActors, actorUris);
   const defaultUpdateActors = normalizedActors(input.defaultUpdateActors, actorUris);
@@ -169,6 +189,44 @@ export function createPostgresStorage(
     }
   }
 
+  async function readTextInTransaction(
+    client: PostgresQueryClient,
+    path: string,
+  ): Promise<string> {
+    const normalized = normalizeResourcePath(path);
+    const result = await client.query<ResourceRow>(
+      `SELECT path, content, is_container FROM ${table} WHERE path = $1`,
+      [normalized],
+    );
+    const row = result.rows[0];
+    if (!row) {
+      throw new Error(`Postgres storage path does not exist: ${normalized}`);
+    }
+    if (row.is_container || typeof row.content !== "string") {
+      throw new Error(`Postgres storage path is not a text resource: ${normalized}`);
+    }
+    return row.content;
+  }
+
+  async function previewTextChangesInTransaction(
+    client: PostgresQueryClient,
+    changes: StorageChangeSetTextChange[],
+  ): Promise<StorageChangeSetPreview> {
+    const conflicts: StorageChangeSetConflict[] = [];
+    for (const change of changes) {
+      const content = await readTextInTransaction(client, change.path);
+      const currentSha256 = sha256Text(content);
+      if (currentSha256 !== change.baselineSha256) {
+        conflicts.push({
+          path: change.path,
+          baselineSha256: change.baselineSha256,
+          currentSha256,
+        });
+      }
+    }
+    return { clean: conflicts.length === 0, conflicts };
+  }
+
   return {
     async ensureSchema() {
       await ensureSchema();
@@ -179,19 +237,7 @@ export function createPostgresStorage(
     async readText(path: string) {
       await ensureSchema();
       return withActorTransaction(async (client) => {
-        const normalized = normalizeResourcePath(path);
-        const result = await client.query<ResourceRow>(
-          `SELECT path, content, is_container FROM ${table} WHERE path = $1`,
-          [normalized],
-        );
-        const row = result.rows[0];
-        if (!row) {
-          throw new Error(`Postgres storage path does not exist: ${normalized}`);
-        }
-        if (row.is_container || typeof row.content !== "string") {
-          throw new Error(`Postgres storage path is not a text resource: ${normalized}`);
-        }
-        return row.content;
+        return readTextInTransaction(client, path);
       });
     },
     async writeText(path: string, content: string) {
@@ -262,6 +308,165 @@ export function createPostgresStorage(
           [normalized, childLikePattern(normalized)],
         );
         return (result.rowCount ?? result.rows.length) > 0;
+      });
+    },
+    async readChangeSetBaseline(path: string) {
+      await ensureSchema();
+      return withActorTransaction(async (client) => {
+        const content = await readTextInTransaction(client, path);
+        return {
+          content,
+          sha256: sha256Text(content),
+          bytes: Buffer.byteLength(content, "utf8"),
+        };
+      });
+    },
+    async previewChangeSetApply(changes: StorageChangeSetTextChange[]) {
+      await ensureSchema();
+      return withActorTransaction((client) =>
+        previewTextChangesInTransaction(client, changes)
+      );
+    },
+    async applyChangeSet(changes: StorageChangeSetTextChange[]) {
+      await ensureSchema();
+      return withActorTransaction(async (client) => {
+        const preview = await previewTextChangesInTransaction(client, changes);
+        if (!preview.clean) {
+          throw new Error("Proposed changes conflict with current Postgres storage state.");
+        }
+        const applied: StorageChangeSetApplyResult[] = [];
+        for (const change of changes) {
+          const normalized = normalizeResourcePath(change.path);
+          const existing = await client.query<Pick<ResourceRow, "is_container">>(
+            `SELECT is_container FROM ${table} WHERE path = $1`,
+            [normalized],
+          );
+          if (!existing.rows[0]) {
+            throw new Error(`Postgres storage path does not exist: ${normalized}`);
+          }
+          if (existing.rows[0]?.is_container) {
+            throw new Error(`Postgres storage path is a container: ${normalized}`);
+          }
+          await client.query(
+            `UPDATE ${table}
+             SET is_container = false,
+                 content = $2,
+                 updated_at = now()
+             WHERE path = $1`,
+            [normalized, change.content],
+          );
+          applied.push({
+            path: normalized,
+            sha256: sha256Text(change.content),
+            bytesWritten: Buffer.byteLength(change.content, "utf8"),
+          });
+        }
+        return applied;
+      });
+    },
+    async persistChangeSet(_storePath: string, record: StoragePersistedChangeSet) {
+      await ensureSchema();
+      await withActorTransaction(async (client) => {
+        const readActors = record.actorUris.length > 0 ? record.actorUris : defaultReadActors;
+        const updateActors = record.actorUris.length > 0 ? record.actorUris : defaultUpdateActors;
+        await client.query(
+          `INSERT INTO ${changeSetTable}
+             (id, format, actor_uri, actor_uris, context_filters, status, checks, change_set, read_actors, update_actors, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7::jsonb, $8::jsonb, $9, $10, $11::timestamptz, $12::timestamptz)
+           ON CONFLICT (id) DO UPDATE SET
+             format = EXCLUDED.format,
+             actor_uri = EXCLUDED.actor_uri,
+             actor_uris = EXCLUDED.actor_uris,
+             context_filters = EXCLUDED.context_filters,
+             status = EXCLUDED.status,
+             checks = EXCLUDED.checks,
+             change_set = EXCLUDED.change_set,
+             read_actors = EXCLUDED.read_actors,
+             update_actors = EXCLUDED.update_actors,
+             updated_at = EXCLUDED.updated_at`,
+          [
+            record.id,
+            record.format,
+            record.actorUri,
+            record.actorUris,
+            JSON.stringify(record.contextFilters),
+            record.status,
+            JSON.stringify(record.checks),
+            JSON.stringify(record),
+            readActors,
+            updateActors,
+            record.createdAt,
+            record.updatedAt,
+          ],
+        );
+        await client.query(
+          `DELETE FROM ${proposedResourceChangeTable} WHERE change_set_id = $1`,
+          [record.id],
+        );
+        for (const [index, change] of record.changes.entries()) {
+          await client.query(
+            `INSERT INTO ${proposedResourceChangeTable}
+               (id, change_set_id, ordinal, uri, library_uri, resource_path, baseline_sha256, baseline_bytes, proposed_sha256, proposed_bytes, proposed_content, diff, read_actors, update_actors, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::timestamptz, $16::timestamptz)
+             ON CONFLICT (id) DO UPDATE SET
+               ordinal = EXCLUDED.ordinal,
+               uri = EXCLUDED.uri,
+               library_uri = EXCLUDED.library_uri,
+               resource_path = EXCLUDED.resource_path,
+               baseline_sha256 = EXCLUDED.baseline_sha256,
+               baseline_bytes = EXCLUDED.baseline_bytes,
+               proposed_sha256 = EXCLUDED.proposed_sha256,
+               proposed_bytes = EXCLUDED.proposed_bytes,
+               proposed_content = EXCLUDED.proposed_content,
+               diff = EXCLUDED.diff,
+               read_actors = EXCLUDED.read_actors,
+               update_actors = EXCLUDED.update_actors,
+               updated_at = EXCLUDED.updated_at`,
+            [
+              `${record.id}:${index}`,
+              record.id,
+              index,
+              change.uri,
+              change.libraryUri,
+              change.resourcePath,
+              change.baselineSha256,
+              change.baselineBytes,
+              change.proposedSha256,
+              change.proposedBytes,
+              change.proposedContent,
+              change.diff,
+              readActors,
+              updateActors,
+              record.createdAt,
+              record.updatedAt,
+            ],
+          );
+        }
+      });
+    },
+    async listChangeSets(_storePath: string, listInput: StorageChangeSetListInput = {}) {
+      await ensureSchema();
+      return withActorTransaction(async (client) => {
+        const result = await client.query<ChangeSetRow>(
+          `SELECT change_set
+           FROM ${changeSetTable}
+           WHERE ($1::text IS NULL OR status = $1)
+           ORDER BY updated_at DESC`,
+          [listInput.status ?? null],
+        );
+        return result.rows
+          .map((row) => row.change_set)
+          .filter((record) => persistedChangeSetMatches(record, listInput));
+      });
+    },
+    async readChangeSet(_storePath: string, changeSetId: string) {
+      await ensureSchema();
+      return withActorTransaction(async (client) => {
+        const result = await client.query<ChangeSetRow>(
+          `SELECT change_set FROM ${changeSetTable} WHERE id = $1`,
+          [changeSetId],
+        );
+        return result.rows[0]?.change_set ?? null;
       });
     },
   };
@@ -355,6 +560,24 @@ function directChildren(
     });
   }
   return [...children.values()].sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function persistedChangeSetMatches(
+  record: StoragePersistedChangeSet,
+  input: StorageChangeSetListInput,
+): boolean {
+  if (input.status && record.status !== input.status) {
+    return false;
+  }
+  if (input.actorUri && record.actorUri !== input.actorUri) {
+    return false;
+  }
+  if (input.contextActorUris?.length) {
+    return input.contextActorUris.every((actorUri) =>
+      record.contextFilters.actorUris.includes(actorUri)
+    );
+  }
+  return true;
 }
 
 function qualifiedIdentifier(input: {

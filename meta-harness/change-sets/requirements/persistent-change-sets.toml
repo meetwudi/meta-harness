@@ -1,0 +1,13 @@
+id = "change-sets.persistent-change-sets"
+title = "Persistent change sets"
+source = "Human clarification on 2026-07-01: proposed changes must persist beyond the browser state, change sets should be stored through the underlying storage model, and each proposed resource change should belong to a change set."
+text = "Change sets are durable proposed-change records persisted through Librarian storage drivers, with each changed resource represented as a proposed resource change that belongs to one change set."
+
+criteria = [
+  "Producing a change set persists the change set record through the active storage driver.",
+  "Each proposed resource edit is persisted as its own proposed resource change record with resource identity, baseline evidence, proposed content evidence, and diff evidence.",
+  "Persistent change-set storage is backend-neutral at the Librarian boundary and implemented by each storage driver.",
+  "Replacing or abandoning active proposed changes updates durable change-set status so stale proposals do not reappear as active proposed changes.",
+  "Applying a change set updates the persisted change set status so active proposed changes can be restored or cleared across navigation and reloads.",
+  "Persistent change-set storage does not use database-enforced foreign keys.",
+]

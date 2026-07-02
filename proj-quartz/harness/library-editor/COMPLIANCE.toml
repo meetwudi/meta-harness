@@ -1,0 +1,23 @@
+# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.
+# This is a Harness primitive.
+# See also: library://proj-quartz
+
+[[items]]
+id = "library-editor-uses-librarian"
+text = "Verify Library Editor implementation lists, reads, edits, validates, syncs, and deploys Library changes through governed Librarian APIs, with storage access mediated by Librarian."
+
+[[items]]
+id = "library-editor-filters-do-not-grant-access"
+text = "Verify Library Editor organization context filters narrow the visible and active Library context while read and update authority remains governed by actor-based Librarian checks."
+
+[[items]]
+id = "library-editor-syncs-change-sets"
+text = "Verify Library Editor draft, check, sync, deploy, and conflict flows operate on explicit governed change sets."
+
+[[items]]
+id = "library-editor-compact-purposeful-labels"
+text = "Verify Library Editor screens use distinct, purposeful visible labels, consolidate repeated heading clusters for the same concept, and present internal change-set workflow in user-facing copy as proposed changes."
+examples = [
+  "Label review: a selected sidebar row labeled `Libraries`, a page heading labeled `Libraries`, and a panel heading labeled `Libraries` in the same viewport should be consolidated into a clearer information hierarchy.",
+  "Workflow copy review: use actions such as `Add to proposed changes` and `Apply proposed changes` for the public UI while implementation and specs may still use change-set terminology for the governed model.",
+]

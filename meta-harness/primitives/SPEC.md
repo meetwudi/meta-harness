@@ -186,6 +186,22 @@ Each migration-intent file includes:
 Migration-intent files may include:
 
 - `statements`
+- `implementation_artifacts`
+
+`implementation_artifacts` lists generated or handwritten migration artifacts
+that implement the migration intent, as repository-relative paths.
+
+Executable migration artifacts cite their source migration intent with this
+parseable token:
+
+```text
+Harness-Migration-Intent: <migration-intent-id>
+```
+
+Do not keep one-off migration scripts outside Spec migration-intent knowledge.
+When a migration script is needed, record the semantic migration as a migration
+intent first, list the artifact from that intent, and cite the migration intent
+from the artifact.
 
 ## Implementation Citations
 

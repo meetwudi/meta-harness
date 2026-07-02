@@ -1,0 +1,10 @@
+id = "proj-quartz.library-editor-sidebar"
+title = "Libraries sidebar tab"
+source = "Human request on 2026-07-01: alongside chat and like ChatGPT.com, users should be able to open Library from the sidebar and browse/edit their Libraries in a cohesive native UI; human clarification on 2026-07-01: the sidebar label should be `Libraries`."
+text = "Quartz provides a first-class `Libraries` tab in the application sidebar alongside chat, using the same account and organization context as the rest of the signed-in application."
+
+criteria = [
+  "The Libraries workspace is reachable from a persistent sidebar row labeled `Libraries`.",
+  "The Library Editor surface feels cohesive with the chat experience while prioritizing dense browsing and editing workflows.",
+  "The sidebar entry preserves the current signed-in actor session and active organization context.",
+]

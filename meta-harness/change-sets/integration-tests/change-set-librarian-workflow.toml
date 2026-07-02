@@ -1,0 +1,32 @@
+id = "change-sets.integration.change-set-librarian-workflow"
+title = "Change set Librarian workflow"
+requirements = [
+  "change-sets.change-set-knowledge",
+  "change-sets.git-diff-change-set-format",
+  "change-sets.backend-neutral-change-sets",
+  "change-sets.produce-apply-reconcile",
+  "change-sets.persistent-change-sets",
+  "change-sets.baseline-conflict-detection",
+  "change-sets.librarian-driver-change-set-contract",
+  "librarian.change-set-operations",
+  "librarian.driver-change-set-application",
+  "librarian.tool-librarian-produce-change-set",
+  "librarian.tool-librarian-validate-change-set",
+  "librarian.tool-librarian-list-change-sets",
+  "librarian.tool-librarian-apply-change-set",
+]
+procedure = [
+  "Create a test Library resource through Librarian in one configured storage backend.",
+  "Produce a change set from an edit to the resource and verify the change set includes Git-compatible diff content plus baseline evidence.",
+  "Verify the produced change set is persisted through the storage driver and can be listed through Librarian before it is applied.",
+  "Run change set validation and apply the checked change set through Librarian.",
+  "Verify the persisted change set status reflects application and no longer appears as an active proposed change.",
+  "Produce a second change set from a stale baseline, mutate the same resource through another governed operation, and attempt to apply the stale change set.",
+  "Reconcile the stale change set against current state, validate the reconciled change set, and apply it through Librarian.",
+]
+expected = [
+  "change set production, validation, application, conflict detection, reconciliation, and reapplication all go through Librarian.",
+  "The storage driver supplies backend-specific baseline, conflict, apply, and reflection evidence while preserving the change set contract.",
+  "Produced change sets and their proposed resource changes are durable through the configured storage driver.",
+  "Conflicting stale change sets preserve current governed resource state and route to reconciliation.",
+]

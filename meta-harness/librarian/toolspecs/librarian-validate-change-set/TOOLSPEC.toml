@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_validate_change_set"
+description = "Validate a governed Library change set against actor governance, static checks, and current storage baselines."
+implementation = "../../impl/src/librarian-change-set.ts"
+allowed_actors = ["actor://*"]
+order = 100
+
+[input_schema]
+type = "object"
+required = ["changeSet"]
+additional_properties = false
+properties_json = "{\"changeSet\":{\"type\":\"object\"}}"
+
+[output_schema]
+type = "object"
+description = "Validation result with check results, clean status, and baseline conflicts."
+
+[[test_cases]]
+id = "validate-change-set"
+input_json = "{\"changeSet\":{\"kind\":\"librarian.change-set\",\"format\":\"git-unified-diff\",\"id\":\"change-set-example\",\"actorUri\":\"actor://example\",\"actorUris\":[\"actor://example\"],\"contextFilters\":{\"actorUris\":[]},\"changes\":[]}}"
+expected = "Returns check results and baseline conflict state for a governed change set."

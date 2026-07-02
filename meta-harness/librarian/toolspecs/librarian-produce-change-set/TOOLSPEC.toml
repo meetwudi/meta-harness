@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_produce_change_set"
+description = "Produce a governed Git-diff change set from proposed Library text resource edits."
+implementation = "../../impl/src/librarian-change-set.ts"
+allowed_actors = ["actor://*"]
+order = 90
+
+[input_schema]
+type = "object"
+required = ["changes"]
+additional_properties = false
+properties_json = "{\"changes\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}}}"
+
+[output_schema]
+type = "object"
+description = "Governed change set with Git-compatible diff text, baseline evidence, proposed content evidence, and initial checks."
+
+[[test_cases]]
+id = "produce-text-change-set"
+input_json = "{\"changes\":[{\"uri\":\"library://example/path.md\",\"baselineContent\":\"old\",\"content\":\"new\"}]}"
+expected = "Produces a governed change set for a writable Library resource when the supplied baseline matches current storage state."

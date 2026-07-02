@@ -1,0 +1,10 @@
+id = "proj-quartz.library-editor-conflict-rebase"
+title = "Reconcile conflicting change sets"
+source = "Human request on 2026-07-01: if underlying changes happen after a user's edit, detect that and rebase or reconcile before applying; later clarification made change sets the conflict model."
+text = "Library Editor detects when a change set no longer applies cleanly to the current governed Library state, then routes the user through change set reconciliation before retrying sync or deploy."
+
+criteria = [
+  "The editor tracks enough baseline state for Librarian and storage drivers to detect underlying changes before overwrite.",
+  "A conflicted change set applies only after reconciliation against the current Library state.",
+  "Reconciliation preserves the proposed changes and current underlying changes as explicit change set evidence.",
+]

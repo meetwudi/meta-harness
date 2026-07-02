@@ -1,0 +1,10 @@
+id = "librarian.library-editor-librarian-boundary"
+title = "Library Editor uses Librarian"
+source = "Human request on 2026-07-01: Library Editor should directly use the Librarian library as a hard requirement."
+text = "Library Editor implementations use Librarian as the direct boundary for Library listing, file listing, reading, editing, checking, change set sync, deploy, and reconciliation."
+
+criteria = [
+  "Library Editor storage reads and mutations are mediated by Librarian.",
+  "Library Editor receives read, update, context filter, and change set results from Librarian operations.",
+  "Any UI-specific service layer remains an adapter over Librarian.",
+]

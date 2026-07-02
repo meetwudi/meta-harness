@@ -1,0 +1,4 @@
+id = "librarian-list-change-sets.unit.list"
+tool = "librarian_list_change_sets"
+input_json = "{\"status\":\"proposed\"}"
+expected = "Lists persisted proposed change sets visible to the active actor context."

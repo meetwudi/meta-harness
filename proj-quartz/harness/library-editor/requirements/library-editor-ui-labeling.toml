@@ -1,0 +1,11 @@
+id = "proj-quartz.library-editor-ui-labeling"
+title = "Compact purposeful Library Editor labels"
+source = "Human feedback on 2026-07-01: the Libraries UI repeated the same label several times, and the front-end spec should include a UX principle against over-duplicated labels."
+text = "Library Editor visible labels form a compact hierarchy where each repeated concept has a clear purpose and repeated navigation, page, and panel labels are consolidated into distinct contextual labels in the same viewport."
+
+criteria = [
+  "The persistent sidebar entry remains labeled `Libraries`.",
+  "The main Libraries workspace consolidates visible heading clusters that repeat `Libraries` without adding context.",
+  "Navigation, explorer, editor, and review areas use distinct labels that describe their current purpose.",
+  "Reviewers can catch repeated labels through Library Editor compliance before accepting UI changes.",
+]

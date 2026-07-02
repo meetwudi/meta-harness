@@ -9,3 +9,11 @@ text = "Verify Meta Harness framework knowledge, shared prompts, and implementat
 [[items]]
 id = "meta-harness-examples-are-generic"
 text = "Verify shared Meta Harness primitive docs, examples, prompts, and tests use generic examples rather than concrete project, organization, domain-specific identifier, or product-specific scenarios unless the file is explicitly project-scoped."
+
+[[items]]
+id = "meta-harness-no-placeholder-attestation"
+text = "Verify generated specs, checks, tests, UI review results, and compliance attestations do not present placeholder checks or incomplete wiring as completed validation unless a human explicitly requests placeholder content."
+examples = [
+  "Do not show a Library Editor check as passed when it only confirms TOML syntax while the governed primitive validator that would reject the file is not run.",
+  "Do not add a future workflow note as if it already executes during apply; describe it as unsatisfied work or leave it out until implemented.",
+]

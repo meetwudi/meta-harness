@@ -12,6 +12,8 @@
 // Supports librarian.library-uri-verification: verifies malformed or unresolved exact Library URIs fail.
 // Harness-Requirement: storage.actor-granted-location-access
 // Harness-Requirement: storage.driver-capabilities
+// Harness-Requirement: librarian.change-set-operations
+// Harness-Requirement: librarian.driver-change-set-application
 
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -182,6 +184,13 @@ await writeFile(
     "",
   ].join("\n"),
 );
+await writeFile(
+  join(memoryRoot, "MEMORY.toml"),
+  [
+    'instructions = ["Preserve fixture memory provenance."]',
+    "",
+  ].join("\n"),
+);
 
 const context = createLibrarianContext({
   storage,
@@ -240,7 +249,12 @@ const expectedDescriptorNames = [
   "librarian_create_library",
   "librarian_delete",
   "librarian_delete_library",
+  "librarian_produce_change_set",
   "librarian_add_tags",
+  "librarian_validate_change_set",
+  "librarian_list_change_sets",
+  "librarian_abandon_change_set",
+  "librarian_apply_change_set",
   "librarian_remove_tags",
   "librarian_query_by_tags",
 ];
@@ -338,6 +352,152 @@ await executeLibrarianTool(context, "librarian_search", {
   query: "12345",
   limit: 1,
 });
+const producedChangeSet = asRecord(await executeLibrarianTool(context, "librarian_produce_change_set", {
+  changes: [{
+    uri: "library://fixture-memory/magic-number.md",
+    baselineContent: "12345",
+    content: "67890",
+  }],
+}));
+const changeSet = asRecord(producedChangeSet.changeSet);
+if (!JSON.stringify(changeSet).includes("diff --git a/magic-number.md b/magic-number.md")) {
+  throw new Error("Produced change set did not include Git diff text");
+}
+const proposedChangeSetsAfterProduce = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+  status: "proposed",
+}));
+if (!JSON.stringify(proposedChangeSetsAfterProduce).includes(String(changeSet.id))) {
+  throw new Error("Produced change set was not persisted as proposed");
+}
+const validatedChangeSet = asRecord(await executeLibrarianTool(context, "librarian_validate_change_set", {
+  changeSet,
+}));
+if (validatedChangeSet.clean !== true) {
+  throw new Error("Produced change set did not validate cleanly");
+}
+const appliedChangeSet = asRecord(await executeLibrarianTool(context, "librarian_apply_change_set", {
+  changeSet,
+}));
+if (appliedChangeSet.applied !== true) {
+  throw new Error("Produced change set was not applied");
+}
+const proposedChangeSetsAfterApply = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+  status: "proposed",
+}));
+if (JSON.stringify(proposedChangeSetsAfterApply).includes(String(changeSet.id))) {
+  throw new Error("Applied change set still appeared in proposed change sets");
+}
+const appliedChangeSetsAfterApply = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+  status: "applied",
+}));
+if (!JSON.stringify(appliedChangeSetsAfterApply).includes(String(changeSet.id))) {
+  throw new Error("Applied change set status was not persisted");
+}
+const abandonedCandidate = asRecord(await executeLibrarianTool(context, "librarian_produce_change_set", {
+  changes: [{
+    uri: "library://tmp-created-library/note.md",
+    baselineContent: "created in tmp locally",
+    content: "discard this proposed change",
+  }],
+}));
+const abandonedChangeSet = asRecord(abandonedCandidate.changeSet);
+const abandonedResult = asRecord(await executeLibrarianTool(context, "librarian_abandon_change_set", {
+  changeSet: abandonedChangeSet,
+}));
+if (abandonedResult.abandoned !== true) {
+  throw new Error("Abandoned change set did not report abandoned status");
+}
+const proposedChangeSetsAfterAbandon = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+  status: "proposed",
+}));
+if (JSON.stringify(proposedChangeSetsAfterAbandon).includes(String(abandonedChangeSet.id))) {
+  throw new Error("Abandoned change set still appeared in proposed change sets");
+}
+const invalidMemoryChangeSet = asRecord(asRecord(await executeLibrarianTool(context, "librarian_produce_change_set", {
+  changes: [{
+    uri: "library://fixture-memory/MEMORY.toml",
+    baselineContent: [
+      'instructions = ["Preserve fixture memory provenance."]',
+      "",
+    ].join("\n"),
+    content: [
+      'notes = ["This field is not part of the Memory primitive schema."]',
+      "",
+    ].join("\n"),
+  }],
+})).changeSet);
+const invalidMemoryValidation = asRecord(await executeLibrarianTool(context, "librarian_validate_change_set", {
+  changeSet: invalidMemoryChangeSet,
+}));
+if (invalidMemoryValidation.clean !== false) {
+  throw new Error("Invalid MEMORY.toml proposed changes validated cleanly");
+}
+if (!JSON.stringify(invalidMemoryValidation).includes("instructions must be a non-empty list")) {
+  throw new Error("Invalid MEMORY.toml validation did not run repository memory checks");
+}
+const invalidMemoryApply = asRecord(await executeLibrarianTool(context, "librarian_apply_change_set", {
+  changeSet: invalidMemoryChangeSet,
+}));
+if (invalidMemoryApply.applied !== false) {
+  throw new Error("Invalid MEMORY.toml proposed changes were applied");
+}
+const memoryTomlAfterRejectedApply = await readFile(join(memoryRoot, "MEMORY.toml"), "utf8");
+if (memoryTomlAfterRejectedApply !== [
+  'instructions = ["Preserve fixture memory provenance."]',
+  "",
+].join("\n")) {
+  throw new Error("Rejected invalid MEMORY.toml apply mutated storage");
+}
+await executeLibrarianTool(context, "librarian_update", {
+  uri: "library://tmp-created-library/COMPLIANCE.toml",
+  content: [
+    "# Harness-Compliance: Review applicable compliance with an independent subagent before attesting; if subagent use requires human approval, ask for approval.",
+    "# This is a Harness primitive.",
+    "# See also: library://meta-harness",
+    "",
+    "[[items]]",
+    'id = "tmp-created-review"',
+    'text = "Verify tmp-created Library changes carry compliance review evidence."',
+    "",
+  ].join("\n"),
+});
+const complianceGatedChangeSet = asRecord(asRecord(await executeLibrarianTool(context, "librarian_produce_change_set", {
+  changes: [{
+    uri: "library://tmp-created-library/note.md",
+    baselineContent: "created in tmp locally",
+    content: "created in tmp locally with compliance review",
+  }],
+})).changeSet);
+const complianceGatedValidation = asRecord(await executeLibrarianTool(context, "librarian_validate_change_set", {
+  changeSet: complianceGatedChangeSet,
+}));
+if (complianceGatedValidation.clean !== false) {
+  throw new Error("Change set with applicable compliance validated without review evidence");
+}
+if (!JSON.stringify(complianceGatedValidation).includes("Applicable compliance review is required before apply.")) {
+  throw new Error("Change set validation did not report missing compliance review evidence");
+}
+const reviewedChangeSet = {
+  ...complianceGatedChangeSet,
+  complianceReviews: [{
+    complianceUri: "library://tmp-created-library/COMPLIANCE.toml",
+    status: "pass",
+    reviewerActorUri: "actor://knowledge-agent",
+    reviewedAt: "2026-07-01T00:00:00.000Z",
+  }],
+};
+const reviewedValidation = asRecord(await executeLibrarianTool(context, "librarian_validate_change_set", {
+  changeSet: reviewedChangeSet,
+}));
+if (reviewedValidation.clean !== true) {
+  throw new Error("Change set with compliance review evidence did not validate cleanly");
+}
+const reviewedApply = asRecord(await executeLibrarianTool(context, "librarian_apply_change_set", {
+  changeSet: reviewedChangeSet,
+}));
+if (reviewedApply.applied !== true) {
+  throw new Error("Change set with compliance review evidence was not applied");
+}
 await executeLibrarianTool(context, "librarian_update", {
   uri: "library://fixture-memory/temp/delete-me.md",
   content: "delete this file",
@@ -611,11 +771,11 @@ if (await storage.exists(join(createdLibrariesRoot, "spaced library"))) {
   throw new Error("Invalid spaced Library folder was created");
 }
 const stored = await readFile(join(memoryRoot, "magic-number.md"), "utf8");
-if (stored !== "12345") {
-  throw new Error("Direct storage update did not write the expected value");
+if (stored !== "67890") {
+  throw new Error("Change set apply did not write the expected value");
 }
 const createdStored = await readFile(join(createdRoot, "note.md"), "utf8");
-if (createdStored !== "created in tmp locally") {
+if (createdStored !== "created in tmp locally with compliance review") {
   throw new Error("Created tmp Library update did not write the expected value");
 }
 let readOnlyDeleteRejected = false;
@@ -659,7 +819,7 @@ if (JSON.stringify(context.toolCallEvents).includes('"path"')) {
 }
 
 const callOrder = context.toolCallEvents.map((event) => event.toolName).join(",");
-if (callOrder !== "librarian_intro,librarian_list_libraries,librarian_read,librarian_list_files,librarian_list_files,librarian_create_library,librarian_update,librarian_update,librarian_read,librarian_read,librarian_search,librarian_update,librarian_update,librarian_delete,librarian_delete,librarian_add_tags,librarian_query_by_tags,librarian_query_by_tags,librarian_remove_tags,librarian_query_by_tags,librarian_list_libraries,librarian_delete_library,librarian_list_libraries") {
+if (callOrder !== "librarian_intro,librarian_list_libraries,librarian_read,librarian_list_files,librarian_list_files,librarian_create_library,librarian_update,librarian_update,librarian_read,librarian_read,librarian_search,librarian_produce_change_set,librarian_list_change_sets,librarian_validate_change_set,librarian_apply_change_set,librarian_list_change_sets,librarian_list_change_sets,librarian_produce_change_set,librarian_abandon_change_set,librarian_list_change_sets,librarian_produce_change_set,librarian_validate_change_set,librarian_apply_change_set,librarian_update,librarian_produce_change_set,librarian_validate_change_set,librarian_validate_change_set,librarian_apply_change_set,librarian_update,librarian_update,librarian_delete,librarian_delete,librarian_add_tags,librarian_query_by_tags,librarian_query_by_tags,librarian_remove_tags,librarian_query_by_tags,librarian_list_libraries,librarian_delete_library,librarian_list_libraries") {
   throw new Error(`Unexpected tool call order: ${callOrder}`);
 }
 if (!context.toolCallEvents.every((event) => event.input)) {
@@ -686,3 +846,10 @@ console.log(
     2,
   ),
 );
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Expected object output");
+  }
+  return value as Record<string, unknown>;
+}

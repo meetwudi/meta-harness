@@ -1,0 +1,10 @@
+id = "proj-quartz.library-editor-actor-context-filter"
+title = "Organization context filter"
+source = "Human request on 2026-07-01: governance actors and organization context are different; when a user is in an organization, the editor should filter by that organization actor through Librarian."
+text = "Library Editor applies an explicit organization actor context filter through Librarian so the active organization narrows the visible and editable Library context while preserving the underlying read or update governance decision."
+
+criteria = [
+  "The active organization context is represented as an actor URI filter passed to Librarian.",
+  "Changing the active organization refreshes Library Editor browse and edit context through Librarian.",
+  "The context filter never grants read or update access beyond the current actor session's governed authority.",
+]

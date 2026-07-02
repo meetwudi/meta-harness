@@ -7,6 +7,7 @@
 // Supports librarian.tool-librarian-delete: verifies file and folder resource deletion over Postgres.
 // Supports storage.resource-actor-governance: verifies row-level resource access with exact actors and actor globs.
 // Harness-Requirement: storage.resource-actor-governance
+// Harness-Requirement: change-sets.persistent-change-sets
 
 import assert from "node:assert/strict";
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from "node:child_process";
@@ -155,6 +156,60 @@ try {
     ),
   );
 
+  const changedContent = "Postgres-backed Library resource after change set apply.\n";
+  const producedChangeSet = asRecord(await executeLibrarianTool(context, "librarian_produce_change_set", {
+    changes: [{
+      uri: "library://pg-fixture/notes/information.md",
+      baselineContent: content,
+      content: changedContent,
+    }],
+  }));
+  const changeSet = asRecord(producedChangeSet.changeSet);
+  const proposedChangeSets = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+    status: "proposed",
+  }));
+  assert.ok(
+    JSON.stringify(proposedChangeSets).includes(String(changeSet.id)),
+    "Postgres proposed change set was not persisted",
+  );
+  const appliedChangeSet = asRecord(await executeLibrarianTool(context, "librarian_apply_change_set", {
+    changeSet,
+  }));
+  assert.equal(readPath(appliedChangeSet, ["applied"]), true);
+  const readAfterChangeSet = await executeLibrarianTool(context, "librarian_read", {
+    uri: "library://pg-fixture/notes/information.md",
+  });
+  assert.equal(readPath(readAfterChangeSet, ["content"]), changedContent);
+  const proposedAfterApply = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+    status: "proposed",
+  }));
+  assert.equal(JSON.stringify(proposedAfterApply).includes(String(changeSet.id)), false);
+  const appliedChangeSets = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+    status: "applied",
+  }));
+  assert.ok(JSON.stringify(appliedChangeSets).includes(String(changeSet.id)));
+
+  const abandonCandidate = asRecord(await executeLibrarianTool(context, "librarian_produce_change_set", {
+    changes: [{
+      uri: "library://pg-fixture/notes/information.md",
+      baselineContent: changedContent,
+      content: "discarded Postgres proposed content\n",
+    }],
+  }));
+  const abandonedChangeSet = asRecord(abandonCandidate.changeSet);
+  const abandoned = asRecord(await executeLibrarianTool(context, "librarian_abandon_change_set", {
+    changeSet: abandonedChangeSet,
+  }));
+  assert.equal(readPath(abandoned, ["abandoned"]), true);
+  const proposedAfterAbandon = asRecord(await executeLibrarianTool(context, "librarian_list_change_sets", {
+    status: "proposed",
+  }));
+  assert.equal(JSON.stringify(proposedAfterAbandon).includes(String(abandonedChangeSet.id)), false);
+  const readAfterAbandon = await executeLibrarianTool(context, "librarian_read", {
+    uri: "library://pg-fixture/notes/information.md",
+  });
+  assert.equal(readPath(readAfterAbandon, ["content"]), changedContent);
+
   await executeLibrarianTool(context, "librarian_update", {
     uri: "library://pg-fixture/temp-folder/a.md",
     content: "temporary folder file\n",
@@ -248,6 +303,16 @@ async function assertStorageMigrationLedger(connectionString: string): Promise<v
         id: "202607010002_resource_actor_governance",
         storage_model_ids: [postgresResourceBootstrapPlan.storageModelId],
         migration_intent_id: "storage.migration-intent.resource-actor-governance",
+      },
+      {
+        id: "202607010003_resource_actor_governance_fail_closed",
+        storage_model_ids: [postgresResourceBootstrapPlan.storageModelId],
+        migration_intent_id: "storage.migration-intent.resource-actor-governance",
+      },
+      {
+        id: "202607010004_persistent_change_sets",
+        storage_model_ids: ["storage.model.change-sets"],
+        migration_intent_id: "storage.migration-intent.persistent-change-sets",
       },
     ]);
   } finally {
@@ -462,4 +527,9 @@ function arrayAt(value: unknown, path: (string | number)[]): unknown[] {
   const array = path.length === 0 ? value : readPath(value, path);
   assert.ok(Array.isArray(array));
   return array;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  assert.ok(value && typeof value === "object" && !Array.isArray(value));
+  return value as Record<string, unknown>;
 }

@@ -1,0 +1,12 @@
+id = "proj-quartz.library-editor-responsive-explorer"
+title = "Responsive nested Library explorer"
+source = "Human feedback on 2026-07-01: four vertical panels are too heavy, especially on mobile, and Libraries plus files should be browsed in a nested explorer-style column."
+text = "Library Editor uses a responsive explorer-oriented layout where Libraries and their files can be browsed from a compact nested column, the editor remains the main workspace, and proposed changes are opened on demand."
+
+criteria = [
+  "The first-pass desktop layout uses a nested Library/file explorer column and an editor area rather than separate Libraries, Files, Editor, and change panels all visible by default.",
+  "Selecting a Library reveals its files in the explorer column.",
+  "The editor selects a default readable file when one is available.",
+  "Proposed changes are available through a toggle or affordance with a changed-file count.",
+  "The layout adapts to narrow viewports without preserving four simultaneous vertical panels.",
+]

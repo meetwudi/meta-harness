@@ -1,0 +1,10 @@
+id = "change-sets.backend-neutral-change-sets"
+title = "Backend-neutral change sets"
+source = "Human request on 2026-07-01: underlying storage should be backend-neutral; a diff is applied to underlying knowledge and retried after reconciliation if needed."
+text = "change sets describe proposed knowledge changes independently from the configured storage backend responsible for holding the affected resources."
+
+criteria = [
+  "change set semantics are defined first in terms of Library resources and governed knowledge.",
+  "The same change set workflow can apply to filesystem-backed, Postgres-backed, or future storage-backed Libraries.",
+  "Backend-specific state is treated as driver evidence used to apply or reflect the change set.",
+]

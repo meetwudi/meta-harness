@@ -7,8 +7,17 @@
 // Supports librarian.tool-librarian-remove-tags: routes the remove Tags tool.
 // Supports librarian.tool-librarian-query-by-tags: routes the query by Tags tool.
 // Supports librarian.tool-librarian-delete: routes the file/folder delete tool.
+// Harness-Requirement: librarian.change-set-operations
+// Harness-Requirement: librarian.driver-change-set-application
 
 import { addTags } from "./add-tags.js";
+import {
+  abandonChangeSet,
+  applyChangeSet,
+  listChangeSets,
+  produceChangeSet,
+  validateChangeSet,
+} from "./librarian-change-set.js";
 import { createLibraryInStorageLocation } from "./create-library-in-storage-location.js";
 import { deleteLibrary } from "./delete-library.js";
 import { deleteLibraryResource } from "./delete-library-resource.js";
@@ -106,6 +115,26 @@ export async function executeLibrarianTool(
       tags: input.tags,
       match: input.match === "any" ? "any" : "all",
       limit: typeof input.limit === "number" ? input.limit : undefined,
+    });
+  } else if (toolName === "librarian_produce_change_set") {
+    output = await produceChangeSet(context, {
+      changes: input.changes,
+    });
+  } else if (toolName === "librarian_validate_change_set") {
+    output = await validateChangeSet(context, {
+      changeSet: input.changeSet,
+    });
+  } else if (toolName === "librarian_apply_change_set") {
+    output = await applyChangeSet(context, {
+      changeSet: input.changeSet,
+    });
+  } else if (toolName === "librarian_abandon_change_set") {
+    output = await abandonChangeSet(context, {
+      changeSet: input.changeSet,
+    });
+  } else if (toolName === "librarian_list_change_sets") {
+    output = await listChangeSets(context, {
+      status: input.status,
     });
   } else {
     throw new Error(`No Librarian implementation routed for ToolSpec tool: ${toolName}`);

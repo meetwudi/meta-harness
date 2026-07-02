@@ -1,0 +1,10 @@
+id = "librarian.actor-context-filters"
+title = "Actor context filters"
+source = "Human request on 2026-07-01: Librarian supports filtering by organization actor, and actors support organization boundaries."
+text = "Librarian context filters can target actor URIs, including organization actor URIs, so callers can operate within a selected actor context while preserving actor-based governance."
+
+criteria = [
+  "A caller can request Library and resource operations filtered to an organization actor URI.",
+  "Actor context filters can use the actor URI matching rules supported by governed storage where applicable.",
+  "Actor context filtering is represented as request context alongside the active actor identity list.",
+]

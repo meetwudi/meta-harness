@@ -10,6 +10,9 @@ requirements = [
   "storage.no-database-foreign-keys",
 ]
 text = "Introduce generated application storage migrations for Quartz users, external sign-in identities, browser sessions, organizations, organization profiles, organization invites, active organization context, and organization actor identifiers."
+implementation_artifacts = [
+  "proj-quartz/app/app/lib/quartz-auth-db.ts",
+]
 statements = [
   "The generated migration artifacts create the durable app tables needed for sign-in, logout, organization creation, invite sending, invite acceptance, and active organization switching.",
   "The generated migration artifacts preserve provider token handling as an exchange-only sign-in concern while storing Quartz session token hashes.",

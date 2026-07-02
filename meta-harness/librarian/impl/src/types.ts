@@ -6,6 +6,11 @@
 // Supports librarian.toolspec-backed-agent-tools: defines ToolSpec runtime records.
 // Supports knowledge-agent.local-filesystem-storage-compatibility: keeps storage callers behind the backend-neutral boundary.
 // Supports storage.postgres-driver: allows resource-backed discovery modes alongside filesystem modes.
+// Harness-Requirement: librarian.context-filters
+// Harness-Requirement: librarian.actor-context-filters
+// Harness-Requirement: librarian.change-set-operations
+// Harness-Requirement: librarian.driver-change-set-application
+// Harness-Requirement: change-sets.persistent-change-sets
 
 export type TomlRecord = Record<string, unknown>;
 
@@ -16,6 +21,83 @@ export type LibrarianStorage = {
   makeDirectory(path: string): Promise<void>;
   listDirectory(path: string): Promise<{ name: string; isDirectory: boolean }[]>;
   exists(path: string): Promise<boolean>;
+  readChangeSetBaseline?(path: string): Promise<StorageChangeSetBaseline>;
+  previewChangeSetApply?(changes: StorageChangeSetTextChange[]): Promise<StorageChangeSetPreview>;
+  applyChangeSet?(changes: StorageChangeSetTextChange[]): Promise<StorageChangeSetApplyResult[]>;
+  persistChangeSet?(storePath: string, record: StoragePersistedChangeSet): Promise<void>;
+  listChangeSets?(storePath: string, input?: StorageChangeSetListInput): Promise<StoragePersistedChangeSet[]>;
+  readChangeSet?(storePath: string, changeSetId: string): Promise<StoragePersistedChangeSet | null>;
+};
+
+export type StorageChangeSetBaseline = {
+  content: string;
+  sha256: string;
+  bytes: number;
+};
+
+export type StorageChangeSetTextChange = {
+  path: string;
+  baselineSha256: string;
+  content: string;
+};
+
+export type StorageChangeSetPreview = {
+  clean: boolean;
+  conflicts: StorageChangeSetConflict[];
+};
+
+export type StorageChangeSetConflict = {
+  path: string;
+  baselineSha256: string;
+  currentSha256: string;
+};
+
+export type StorageChangeSetApplyResult = {
+  path: string;
+  sha256: string;
+  bytesWritten: number;
+};
+
+export type StoragePersistedChangeSetStatus = "proposed" | "applied" | "superseded" | "abandoned";
+
+export type StoragePersistedChangeSetCheck = {
+  id: string;
+  status: "pass" | "fail";
+  message: string;
+  uri?: string;
+};
+
+export type StoragePersistedProposedResourceChange = {
+  uri: string;
+  libraryUri: string;
+  resourcePath: string;
+  baselineSha256: string;
+  baselineBytes: number;
+  proposedSha256: string;
+  proposedBytes: number;
+  proposedContent: string;
+  diff: string;
+};
+
+export type StoragePersistedChangeSet = {
+  id: string;
+  format: "git-unified-diff";
+  actorUri: string;
+  actorUris: string[];
+  contextFilters: {
+    actorUris: string[];
+  };
+  status: StoragePersistedChangeSetStatus;
+  checks: StoragePersistedChangeSetCheck[];
+  changes: StoragePersistedProposedResourceChange[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type StorageChangeSetListInput = {
+  status?: StoragePersistedChangeSetStatus;
+  actorUri?: string;
+  contextActorUris?: string[];
 };
 
 export type StorageDriverCapabilities = {
@@ -55,7 +137,12 @@ export type LibrarianContext = {
   actorUri: string;
   actorUris: string[];
   sessionId: string;
+  contextFilters: LibrarianContextFilters;
   toolCallEvents: LibrarianToolCallEvent[];
+};
+
+export type LibrarianContextFilters = {
+  actorUris: string[];
 };
 
 export type ResolvedLibrary = {
@@ -70,6 +157,7 @@ export type ResolvedLibrary = {
   agentExcludes: string[];
   storage: LibrarianStorage;
   storageLocationName: string;
+  storageLocationRootPath: string;
 };
 
 export type LibraryListing = {

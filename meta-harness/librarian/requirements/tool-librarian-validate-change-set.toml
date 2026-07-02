@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-validate-change-set"
+title = "`librarian_validate_change_set` tool contract"
+source = "Human request on 2026-07-01: applying change sets should include shared validation and checks through Librarian."
+text = "`librarian_validate_change_set` validates a governed change set against static checks, actor governance, and current storage baselines."
+
+criteria = [
+  "The tool resolves change set resources through Librarian under the active actor context.",
+  "The tool reports static check results for change set shape and supported deterministic format checks.",
+  "The tool reports baseline conflicts without mutating governed resources.",
+]

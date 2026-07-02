@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_list_change_sets"
+description = "List persisted governed Library change sets visible to the active actor context."
+implementation = "../../impl/src/librarian-change-set.ts"
+allowed_actors = ["actor://*"]
+order = 105
+
+[input_schema]
+type = "object"
+required = []
+additional_properties = false
+properties_json = "{\"status\":{\"type\":\"string\",\"enum\":[\"proposed\",\"applied\"]}}"
+
+[output_schema]
+type = "object"
+description = "Visible persisted change sets with status, checks, timestamps, and governed change set payloads."
+
+[[test_cases]]
+id = "list-proposed-change-sets"
+input_json = "{\"status\":\"proposed\"}"
+expected = "Lists persisted proposed change sets visible to the active actor context."

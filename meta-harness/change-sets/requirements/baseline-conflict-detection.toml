@@ -1,0 +1,10 @@
+id = "change-sets.baseline-conflict-detection"
+title = "Baseline conflict detection"
+source = "Human request on 2026-07-01: if a conflict exists, back off, reconcile, adjust, and apply again."
+text = "change sets carry baseline evidence sufficient for Librarian and storage drivers to detect when the underlying governed resource state changed before application."
+
+criteria = [
+  "A change set records a baseline identifier, version, content digest, or equivalent driver evidence for affected resources.",
+  "Application compares change set baseline evidence with current governed resource state before mutating resources.",
+  "A baseline mismatch routes to reconciliation while preserving current governed resource state.",
+]

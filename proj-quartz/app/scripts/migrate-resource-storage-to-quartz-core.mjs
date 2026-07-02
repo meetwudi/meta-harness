@@ -3,6 +3,7 @@
 // Harness-Requirement: proj-quartz.postgres-backed-libraries
 // Harness-Requirement: storage.spec-governed-migration-intents
 // Harness-Requirement: storage.no-database-foreign-keys
+// Harness-Migration-Intent: proj-quartz.migration-intent.resource-storage-to-quartz-core
 
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";

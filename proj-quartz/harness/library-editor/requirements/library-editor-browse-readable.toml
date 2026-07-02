@@ -1,0 +1,11 @@
+id = "proj-quartz.library-editor-browse-readable"
+title = "Browse readable Libraries"
+source = "Human request on 2026-07-01: people should be able to browse all Libraries they can see, with read-only access for readable Libraries outside their update authority; human clarification on 2026-07-01: read-only Libraries should show a light lock indicator."
+text = "Library Editor lists and opens Libraries that the current actor session is allowed to read through Librarian governance."
+
+criteria = [
+  "Readable Libraries appear in the Library Editor browse surface when they match the active context filter.",
+  "Opening a readable Library shows its governed files and resources through Librarian.",
+  "Read-only Libraries are viewable with controls appropriate to read authority.",
+  "Read-only Libraries show a subtle lock indicator in the Libraries workspace.",
+]

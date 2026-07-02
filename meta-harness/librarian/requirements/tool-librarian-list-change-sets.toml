@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-list-change-sets"
+title = "`librarian_list_change_sets` tool contract"
+source = "Human clarification on 2026-07-01: Librarian should persist change sets and support restoring proposed changes."
+text = "`librarian_list_change_sets` lists persisted governed change sets visible to the active actor context."
+
+criteria = [
+  "The tool lists persisted change sets through storage driver persistence hooks.",
+  "The tool can filter proposed and applied change sets.",
+  "The tool respects active actor and context filters when returning persisted change sets.",
+]

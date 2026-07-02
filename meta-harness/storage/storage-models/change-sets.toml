@@ -1,0 +1,19 @@
+id = "storage.model.change-sets"
+title = "Harness change-set storage model"
+source = "Human clarification on 2026-07-01: change sets, proposed resource changes, and their durable lifecycle should be part of the backend-neutral storage model rather than browser-only or project-specific state."
+requirements = [
+  "change-sets.persistent-change-sets",
+  "change-sets.librarian-driver-change-set-contract",
+  "storage.spec-governed-storage-models",
+  "storage.no-database-foreign-keys",
+]
+text = "Harness storage persists governed change sets and their proposed resource changes through a backend-neutral model that supports active proposals, replacement, abandonment, application status, actor-scoped visibility, and restoration across clients."
+statements = [
+  "A change set has a stable identity, format, producer actor, actor context, check results, lifecycle status, creation time, and update time.",
+  "A proposed resource change belongs to a change set through an application-owned change-set identifier.",
+  "A proposed resource change records the resource URI, Library URI, resource path, baseline evidence, proposed content evidence, and diff evidence needed to validate and apply the change.",
+  "Active proposed change-set listings are actor-scoped and context-scoped so organization workspaces restore the relevant proposal set.",
+  "Producing a replacement change set can supersede older active proposals for the same actor and context.",
+  "Abandoning or applying a change set updates lifecycle status without deleting audit evidence.",
+  "Change-set storage keeps relationships as ordinary identifiers and application-owned references rather than database-enforced foreign keys.",
+]

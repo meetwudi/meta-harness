@@ -1,0 +1,12 @@
+id = "proj-quartz.library-editor-public-proposed-changes"
+title = "Public proposed changes wording"
+source = "Human feedback on 2026-07-01: public-facing Library Editor UI should call staged change-set work `proposed changes`, with actions such as `Add to proposed changes`."
+text = "Library Editor presents the public review and apply workflow as proposed changes while preserving change sets as the governed internal model."
+
+criteria = [
+  "Editable file changes remain local until the user adds them to proposed changes.",
+  "The primary action for adding a draft to the governed review unit is labeled `Add to proposed changes`.",
+  "The review surface is labeled `Proposed changes` and displays the number of changed files.",
+  "The apply action is labeled `Apply proposed changes`.",
+  "Implementation may use change-set APIs internally when visible copy uses proposed-change language.",
+]

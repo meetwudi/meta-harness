@@ -26,6 +26,13 @@ export { listLibraries } from "./list-libraries.js";
 export { introLibraries } from "./intro-libraries.js";
 export { libraryResourceUri } from "./library-resource-uri.js";
 export {
+  abandonChangeSet,
+  applyChangeSet,
+  listChangeSets,
+  produceChangeSet,
+  validateChangeSet,
+} from "./librarian-change-set.js";
+export {
   discoverLibraryToolSpecs,
   librarianToolSpecByName,
   librarianToolSpecs,
@@ -58,6 +65,11 @@ export type {
   ToolSpecDefinition,
   ToolSpecSchema,
   ToolSpecTestCase,
+  StorageChangeSetApplyResult,
+  StorageChangeSetBaseline,
+  StorageChangeSetConflict,
+  StorageChangeSetPreview,
+  StorageChangeSetTextChange,
 } from "./types.js";
 export type {
   PostgresResourceBootstrapIndex,

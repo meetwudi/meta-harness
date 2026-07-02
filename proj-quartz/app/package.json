@@ -4,8 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "npm --prefix ../../meta-harness/librarian/impl run build",
     "dev": "next dev",
+    "prebuild": "npm --prefix ../../meta-harness/librarian/impl run build",
     "build": "next build",
+    "migrate:library-manifest-actors": "node scripts/migrate-library-manifest-actors-to-owner.mjs",
     "migrate:legacy-conversations": "node scripts/migrate-legacy-conversations-to-owner.mjs",
     "migrate:resource-schema": "node scripts/migrate-resource-storage-to-quartz-core.mjs",
     "start": "next start",
@@ -33,9 +36,11 @@
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@copilotkit/typescript-config": "file:vendor/@copilotkit/typescript-config",
     "@types/node": "^26.0.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "tsconfig": "file:vendor/tsconfig",
     "typescript": "^6.0.3"
   }
 }

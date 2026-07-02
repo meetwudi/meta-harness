@@ -200,7 +200,7 @@ try {
       delete process.env.QUARTZ_RESEND_API_KEY;
       delete process.env.QUARTZ_RESEND_FROM;
       delete process.env.QUARTZ_INVITE_LINK_DEV_MODE;
-      process.env.QUARTZ_PUBLIC_BASE_URL = "http://127.0.0.1:3000";
+      process.env.QUARTZ_PUBLIC_BASE_URL = "http://localhost:3000";
 
       await cleanupTestRows(client, [ownerEmail, inviteeEmail]);
       try {
@@ -296,7 +296,7 @@ try {
   delete process.env.QUARTZ_INVITE_EMAIL_WEBHOOK_URL;
   delete process.env.QUARTZ_INVITE_EMAIL_WEBHOOK_BEARER;
   delete process.env.QUARTZ_INVITE_LINK_DEV_MODE;
-  process.env.QUARTZ_PUBLIC_BASE_URL = "http://127.0.0.1:3000";
+  process.env.QUARTZ_PUBLIC_BASE_URL = "http://localhost:3000";
 
   await withQuartzAuthDb(async (client) => {
     await cleanupTestRows(client, [resendOwnerEmail, resendInviteeEmail]);

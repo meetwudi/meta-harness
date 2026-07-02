@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import {
   createOrUpdateGoogleSession,
+  loadQuartzProjectEnv,
   quartzGoogleRedirectUri,
   quartzPublicBaseUrl,
   withQuartzAuthDb,
@@ -30,6 +31,7 @@ type GoogleTokenInfo = {
 
 // Harness-Requirement: proj-quartz.google-sign-in
 export async function GET(request: NextRequest) {
+  loadQuartzProjectEnv();
   const cookieStore = await cookies();
   const expectedState = cookieStore.get(stateCookieName)?.value ?? "";
   const nextPath = cookieStore.get(nextCookieName)?.value ?? "/";

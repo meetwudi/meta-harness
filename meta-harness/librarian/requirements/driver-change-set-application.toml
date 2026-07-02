@@ -1,0 +1,11 @@
+id = "librarian.driver-change-set-application"
+title = "Driver change set application"
+source = "Human request on 2026-07-01: change sets need to work with drivers because drivers are responsible for applying and reflecting changes."
+text = "Librarian storage drivers expose backend-specific change set hooks for baseline reads, patch previews, application, conflict detection, and post-apply reflection."
+
+criteria = [
+  "Drivers can return baseline evidence needed by change sets.",
+  "Drivers can preview whether a change set applies cleanly to the current backend state.",
+  "Drivers can apply a checked change set atomically within the backend capability available to the storage location.",
+  "Drivers can reflect the resulting governed resource state back to Librarian after application.",
+]

@@ -1,0 +1,15 @@
+id = "librarian.change-set-operations"
+title = "Librarian change set operations"
+source = "Human request on 2026-07-01: producing, applying, and reconciling change sets should go through the Librarian library. Human clarification on 2026-07-01: static checks must be real shared repository checks, including Memory definition validation, and failed checks must block apply. Durable Library Editor persistence clarified that active proposed changes must be replaceable or abandoned through Librarian state instead of browser-only state."
+text = "Librarian provides governed operations for producing, validating, listing, abandoning, applying, reflecting, and reconciling change sets over Libraries and resources."
+
+criteria = [
+  "change set operations evaluate active actor identities and resource governance before reading or mutating governed resources.",
+  "change set operations accept context filters that narrow the active Library or organization context.",
+  "Validating and applying a change set run shared repository static checks for changed primitive definition files, including `MEMORY.toml` definition validation.",
+  "Applying a change set uses shared validation and compliance checks before mutating governed resources.",
+  "Failed shared static checks block storage mutation.",
+  "Producing a replacement proposed change set supersedes older active proposed change sets for the same actor and context.",
+  "Abandoning a change set updates durable change-set state without mutating target resources.",
+  "Reconciling a change set preserves source evidence for the proposed changes and the current resource state.",
+]

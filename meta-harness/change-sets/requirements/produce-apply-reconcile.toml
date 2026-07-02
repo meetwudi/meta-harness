@@ -1,0 +1,11 @@
+id = "change-sets.produce-apply-reconcile"
+title = "Produce, apply, and reconcile change sets"
+source = "Human request on 2026-07-01: everything about change sets includes producing, applying, and reconciling change sets through Librarian."
+text = "The change set workflow supports producing a proposed diff from edits, applying it to governed resources, backing off when it conflicts, reconciling against current state, and applying the reconciled change set."
+
+criteria = [
+  "A change set can be produced from editor, agent, or repository workflow edits.",
+  "Applying a change set is an explicit operation with check and governance preconditions.",
+  "When application detects a conflict, the workflow preserves the proposed change set and current state evidence for reconciliation.",
+  "A reconciled change set can be checked and applied as a new proposed state.",
+]

@@ -4,9 +4,12 @@
 // Supports storage.all-known-storage-locations: associates resolved Libraries with storage locations.
 // Supports librarian.storage-discovery-tool-context: discovers Libraries from storage locations.
 // Harness-Requirement: storage.actor-granted-location-access
+// Harness-Requirement: librarian.context-filters
+// Harness-Requirement: librarian.actor-context-filters
 
 import { join, relative, sep } from "node:path";
 import { computeLibraryAccess } from "./compute-library-access.js";
+import { libraryMatchesContextFilters } from "./library-matches-context-filters.js";
 import { validateLibraryName } from "./library-name.js";
 import { libraryUriFromName } from "./library-uri-from-name.js";
 import { readTomlFile } from "./read-toml-file.js";
@@ -38,7 +41,7 @@ export async function loadResolvedLibraries(
       libraries,
       location,
       await discoverLibraryRoots(location.storage, location.libraryRootPath, location),
-      context.actorUris,
+      context,
     );
   }
   return [...libraries.values()];
@@ -48,12 +51,15 @@ async function loadDiscoveredLibraries(
   libraries: Map<string, ResolvedLibrary>,
   location: StorageLocation,
   roots: string[],
-  actorUris: string[],
+  context: LibrarianContext,
 ): Promise<void> {
   for (const rootPath of roots) {
     const manifestPath = join(rootPath, "LIBRARY.toml");
     const manifest = await readTomlFile(location.storage, manifestPath);
-    const access = computeLibraryAccess(manifest, actorUris);
+    if (!libraryMatchesContextFilters(context, manifest)) {
+      continue;
+    }
+    const access = computeLibraryAccess(manifest, context.actorUris);
     if (typeof manifest.name !== "string" || !manifest.name.trim()) {
       throw new Error(`${manifestPath}: name must be a non-empty string`);
     }
@@ -71,6 +77,7 @@ async function loadDiscoveredLibraries(
       agentExcludes: stringArray(manifest.agent_excludes),
       storage: location.storage,
       storageLocationName: location.name,
+      storageLocationRootPath: location.libraryRootPath,
     });
   }
 }

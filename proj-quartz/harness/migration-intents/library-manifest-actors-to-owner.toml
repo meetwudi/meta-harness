@@ -1,0 +1,20 @@
+id = "proj-quartz.migration-intent.library-manifest-actors-to-owner"
+title = "Library manifest actor governance to owner context"
+source = "Human clarification on 2026-07-01 that data repair scripts must be scoped to migration intent knowledge and linked to their implementation artifacts."
+requirements = [
+  "proj-quartz.organization-resource-actors",
+  "proj-quartz.library-editor-actor-context-filter",
+  "proj-quartz.library-editor-browse-readable",
+  "storage.resource-actor-governance",
+]
+text = "Repair existing Postgres-backed Quartz Library manifests whose stored resource actor allow-lists were migrated to user and organization actors while the `LIBRARY.toml` governance content still named legacy project actors."
+implementation_artifacts = [
+  "proj-quartz/app/scripts/migrate-library-manifest-actors-to-owner.mjs",
+]
+statements = [
+  "The migration targets an explicitly selected owner account and organization.",
+  "The migration scans existing Library manifest resources visible to the selected user and organization actors.",
+  "The migration rewrites only supported `LIBRARY.toml` manifest governance fields so `read_actors` and `update_actors` match the stored resource row actor allow-lists.",
+  "The migration fails instead of rewriting manifests with unsupported fields.",
+  "The migration supports dry-run inspection before mutating durable Library manifest content.",
+]

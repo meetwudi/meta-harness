@@ -1,0 +1,10 @@
+id = "change-sets.librarian-driver-change-set-contract"
+title = "Librarian and driver change set contract"
+source = "Human request on 2026-07-01: change sets need to work with Librarian and drivers because drivers ultimately apply changes and reflect changes. Human clarification on 2026-07-01: Librarian drivers must also persist produced change sets."
+text = "Librarian owns governed change set operations while storage drivers expose backend-specific capabilities to read baselines, preview changes, apply patches, detect conflicts, and reflect applied resource state."
+
+criteria = [
+  "Librarian is the public boundary for producing, validating, applying, and reconciling change sets.",
+  "Storage drivers implement the backend-specific pieces needed for change set persistence, listing, application, and reflection.",
+  "Drivers return enough structured evidence for Librarian to report applied state or reconciliation needs.",
+]

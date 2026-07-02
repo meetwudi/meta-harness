@@ -1,0 +1,12 @@
+id = "proj-quartz.library-editor-shared-change-checks"
+title = "Shared Library change checks"
+source = "Human request on 2026-07-01: online editing and Git workflow should share requirements for compliance checks and format validation before sync or deploy. Human clarification on 2026-07-01: the web editor must not show placeholder checks as passed; static checks can come first, must use the shared repository check contract, and must block apply when they fail."
+text = "Library Editor runs the same deterministic and agentic checks over change sets that apply to governed Library changes in repository workflows."
+
+criteria = [
+  "Change checks include primitive format validation for changed Library files.",
+  "Changed Memory primitives run the same Memory definition validation used by repository checks.",
+  "Change checks include applicable compliance review for the changed knowledge scope.",
+  "The check contract is shared by repository-oriented workflows and the web editor.",
+  "Failed static checks keep proposed changes unapplied.",
+]

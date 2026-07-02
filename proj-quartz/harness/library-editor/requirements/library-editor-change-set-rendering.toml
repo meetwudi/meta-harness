@@ -1,0 +1,10 @@
+id = "proj-quartz.library-editor-change-set-rendering"
+title = "Render active change set"
+source = "Human request on 2026-07-01: when there is an active change, the UI should say this is the change set being worked on and deploy that change set; human clarification on 2026-07-01: change sets are staging-like and separate from raw editing; human feedback on 2026-07-01: public-facing UI should call this proposed changes."
+text = "Library Editor represents proposed changes as explicit governed change sets and renders proposed changes as the unit that can be checked, synced, deployed, reconciled, applied, or abandoned."
+
+criteria = [
+  "The editor can show the files and resources included in the active proposed changes.",
+  "Check, sync, deploy, and apply actions operate on the active proposed changes backed by the governed change set.",
+  "The user can distinguish unchanged Library state from draft changes held in proposed changes.",
+]

@@ -10,6 +10,7 @@ import {
 } from "@copilotkit/react-core/v2";
 import type { Message } from "@ag-ui/core";
 import {
+  BookOpen,
   Building2,
   Check,
   ChevronDown,
@@ -46,6 +47,7 @@ import {
   type ReasoningEffort,
 } from "./providers";
 import { Dialog } from "./components/ui/dialog";
+import { LibrariesWorkspace } from "./components/libraries/libraries-workspace";
 import { TabPanel, Tabs, type TabItem } from "./components/ui/tabs";
 
 type QuartzChatInputProps = Parameters<
@@ -102,6 +104,8 @@ type QuartzThreadChatContextValue = {
   onHydratedThread: (threadId: string) => void;
 };
 
+type QuartzWorkspace = "chat" | "libraries";
+
 const untitledThreadTitle = "New chat";
 const quartzConversationApiPath = "/api/knowledge-agent/conversations";
 const quartzApiKeysApiPath = "/api/settings/api-keys";
@@ -112,6 +116,7 @@ const maxConversationRefreshDelayMs = 5_000;
 const chatScrollBottomThresholdPx = 80;
 const QuartzComposerDisabledContext = createContext(false);
 const QuartzThreadChatContext = createContext<QuartzThreadChatContextValue | null>(null);
+const librariesRoutePath = "/libraries";
 
 function nowIso() {
   return new Date().toISOString();
@@ -149,6 +154,19 @@ function currentUrlThreadId() {
   return threadIdFromPath(window.location.pathname);
 }
 
+function workspaceFromPath(pathname: string): QuartzWorkspace {
+  return pathname === librariesRoutePath || pathname.startsWith(`${librariesRoutePath}/`)
+    ? "libraries"
+    : "chat";
+}
+
+function currentUrlWorkspace(): QuartzWorkspace {
+  if (typeof window === "undefined") {
+    return "chat";
+  }
+  return workspaceFromPath(window.location.pathname);
+}
+
 function updateChatUrl(threadId: string | null, mode: "push" | "replace" = "push") {
   if (typeof window === "undefined") {
     return;
@@ -166,6 +184,24 @@ function updateChatUrl(threadId: string | null, mode: "push" | "replace" = "push
   }
 
   window.history.pushState({ threadId }, "", nextPath);
+}
+
+function updateLibrariesUrl(mode: "push" | "replace" = "push") {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const currentPath = `${window.location.pathname}${window.location.search}`;
+  if (currentPath === librariesRoutePath) {
+    return;
+  }
+
+  if (mode === "replace") {
+    window.history.replaceState({ workspace: "libraries" }, "", librariesRoutePath);
+    return;
+  }
+
+  window.history.pushState({ workspace: "libraries" }, "", librariesRoutePath);
 }
 
 function safeThreadIdPart(value: string) {
@@ -1943,6 +1979,7 @@ function QuartzAccountMenu({
 }
 
 function QuartzConversationSidebar({
+  activeWorkspace,
   activeThreadId,
   threads,
   search,
@@ -1955,6 +1992,7 @@ function QuartzConversationSidebar({
   onSearchChange,
   onToggleCollapsed,
   onNewThread,
+  onOpenLibraries,
   onSelectThread,
   onSignIn,
   onLogout,
@@ -1962,6 +2000,7 @@ function QuartzConversationSidebar({
   onSwitchOrganization,
   onInvite,
 }: {
+  activeWorkspace: QuartzWorkspace;
   activeThreadId: string;
   threads: QuartzConversationThread[];
   search: string;
@@ -1974,6 +2013,7 @@ function QuartzConversationSidebar({
   onSearchChange: (value: string) => void;
   onToggleCollapsed: () => void;
   onNewThread: () => void;
+  onOpenLibraries: () => void;
   onSelectThread: (threadId: string) => void;
   onSignIn: () => void;
   onLogout: () => Promise<void>;
@@ -1993,7 +2033,7 @@ function QuartzConversationSidebar({
   return (
     <aside
       className={collapsed ? "quartz-history-sidebar is-collapsed" : "quartz-history-sidebar"}
-      aria-label="Conversation history"
+      aria-label="Quartz navigation"
     >
       <div className="quartz-sidebar-header">
         <div className="quartz-sidebar-brand" aria-label="Quartz">
@@ -2038,10 +2078,19 @@ function QuartzConversationSidebar({
           >
             <PenLine aria-hidden="true" size={18} strokeWidth={1.9} />
           </button>
+          <button
+            type="button"
+            className="quartz-sidebar-icon-button"
+            aria-label="Libraries"
+            title="Libraries"
+            onClick={onOpenLibraries}
+          >
+            <BookOpen aria-hidden="true" size={18} strokeWidth={1.9} />
+          </button>
         </div>
       ) : null}
 
-      <nav className="quartz-sidebar-scroll" aria-label="Quartz conversations">
+      <nav className="quartz-sidebar-scroll" aria-label="Quartz navigation">
         <div className="quartz-sidebar-actions">
           <button
             type="button"
@@ -2051,6 +2100,19 @@ function QuartzConversationSidebar({
           >
             <PenLine aria-hidden="true" size={17} strokeWidth={1.9} />
             <span>New chat</span>
+          </button>
+          <button
+            type="button"
+            className={
+              activeWorkspace === "libraries"
+                ? "quartz-sidebar-row is-active"
+                : "quartz-sidebar-row"
+            }
+            aria-current={activeWorkspace === "libraries" ? "page" : undefined}
+            onClick={onOpenLibraries}
+          >
+            <BookOpen aria-hidden="true" size={17} strokeWidth={1.9} />
+            <span>Libraries</span>
           </button>
           <label className="quartz-sidebar-row quartz-sidebar-search">
             <Search aria-hidden="true" size={17} strokeWidth={1.9} />
@@ -2073,13 +2135,13 @@ function QuartzConversationSidebar({
                   key={thread.id}
                   type="button"
                   className={
-                    active
+                    active && activeWorkspace === "chat"
                       ? "quartz-sidebar-row quartz-thread-row is-active"
                       : "quartz-sidebar-row quartz-thread-row"
                   }
                   data-thread-id={thread.id}
                   data-updated-at={thread.updatedAt}
-                  aria-current={active ? "page" : undefined}
+                  aria-current={active && activeWorkspace === "chat" ? "page" : undefined}
                   onClick={() => onSelectThread(thread.id)}
                 >
                   <MessageSquare
@@ -2122,8 +2184,12 @@ function QuartzConversationSidebar({
 // Harness-Requirement: proj-quartz.vendored-chat-surface
 // Harness-Requirement: proj-quartz.quartz-agent-actor
 // Harness-Requirement: proj-quartz.memory-curator-actor
-// Harness-Requirement: proj-quartz.information-trading-domain
 // Harness-Requirement: proj-quartz.chatgpt-style-conversation-sidebar
+// Harness-Requirement: proj-quartz.library-editor-sidebar
+// Harness-Requirement: proj-quartz.library-editor-browse-readable
+// Harness-Requirement: proj-quartz.library-editor-writable-editing
+// Harness-Requirement: proj-quartz.library-editor-change-set-rendering
+// Harness-Requirement: proj-quartz.library-editor-routing
 export default function Page() {
   const { agent: pageAgent } = useAgent({
     agentId: "knowledge-agent",
@@ -2134,6 +2200,7 @@ export default function Page() {
   const [activeThreadId, setActiveThreadId] = useState("");
   const [activeThreadIsHomeDraft, setActiveThreadIsHomeDraft] = useState(true);
   const [threadSearch, setThreadSearch] = useState("");
+  const [activeWorkspace, setActiveWorkspace] = useState<QuartzWorkspace>("chat");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [historyError, setHistoryError] = useState("");
   const [hydratedThreadId, setHydratedThreadId] = useState("");
@@ -2147,7 +2214,12 @@ export default function Page() {
     threadsRef.current = threads;
   }, [threads]);
 
-  const resetConversationState = useCallback(() => {
+  useLayoutEffect(() => {
+    setActiveWorkspace(currentUrlWorkspace());
+  }, []);
+
+  const resetConversationState = useCallback((options?: { preserveWorkspaceRoute?: boolean }) => {
+    setActiveWorkspace(options?.preserveWorkspaceRoute ? currentUrlWorkspace() : "chat");
     pageAgent.setMessages([]);
     setThreads([]);
     setActiveThreadId("");
@@ -2155,7 +2227,9 @@ export default function Page() {
     setHydratedThreadId("");
     setHistoryError("");
     setThreadStoreReady(false);
-    updateChatUrl(null, "replace");
+    if (!options?.preserveWorkspaceRoute) {
+      updateChatUrl(null, "replace");
+    }
   }, [pageAgent]);
 
   const refreshAuthSession = useCallback(async () => {
@@ -2205,7 +2279,7 @@ export default function Page() {
         return;
       }
       if (!authSession?.activeOrganization) {
-        resetConversationState();
+        resetConversationState({ preserveWorkspaceRoute: true });
         setThreadStoreReady(true);
         return;
       }
@@ -2216,9 +2290,11 @@ export default function Page() {
           return;
         }
         const routeThreadId = currentUrlThreadId();
+        const routeWorkspace = currentUrlWorkspace();
         setThreads(loadedThreads);
         setActiveThreadId(routeThreadId ?? createThreadId());
         setActiveThreadIsHomeDraft(!routeThreadId);
+        setActiveWorkspace(routeWorkspace);
         setHistoryError("");
       } catch (error) {
         if (!cancelled) {
@@ -2243,6 +2319,11 @@ export default function Page() {
 
   useEffect(() => {
     function handlePopState() {
+      const routeWorkspace = currentUrlWorkspace();
+      setActiveWorkspace(routeWorkspace);
+      if (routeWorkspace === "libraries") {
+        return;
+      }
       const routeThreadId = currentUrlThreadId();
       setHydratedThreadId("");
       setHistoryError("");
@@ -2349,6 +2430,7 @@ export default function Page() {
   }, [activeThreadId]);
 
   const handleNewThread = useCallback(() => {
+    setActiveWorkspace("chat");
     setHydratedThreadId("");
     pageAgent.setMessages([]);
     setActiveThreadId(createThreadId());
@@ -2358,6 +2440,7 @@ export default function Page() {
   }, [pageAgent]);
 
   const handleSelectThread = useCallback((threadId: string) => {
+    setActiveWorkspace("chat");
     const selectedThread = threads.find((thread) => thread.id === threadId);
     setHydratedThreadId("");
     pageAgent.setMessages(cloneMessages(selectedThread?.messages ?? []));
@@ -2373,6 +2456,11 @@ export default function Page() {
       ),
     );
   }, [pageAgent, threads]);
+
+  const handleOpenLibraries = useCallback(() => {
+    setActiveWorkspace("libraries");
+    updateLibrariesUrl();
+  }, []);
 
   const refreshThreadFromLibrary = useCallback(
     async (threadId: string, visibleMessages: Message[]) => {
@@ -2615,6 +2703,7 @@ export default function Page() {
   return (
     <main className="quartz-shell">
       <QuartzConversationSidebar
+        activeWorkspace={activeWorkspace}
         activeThreadId={activeThreadId}
         threads={threads}
         search={threadSearch}
@@ -2627,6 +2716,7 @@ export default function Page() {
         onSearchChange={setThreadSearch}
         onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
         onNewThread={handleNewThread}
+        onOpenLibraries={handleOpenLibraries}
         onSelectThread={handleSelectThread}
         onSignIn={handleSignIn}
         onLogout={handleLogout}
@@ -2635,17 +2725,37 @@ export default function Page() {
         onInvite={handleInvite}
       />
 
-      <div className="quartz-main">
+      <div className={activeWorkspace === "libraries" ? "quartz-main is-libraries" : "quartz-main"}>
         <header className="quartz-topbar">
           <div>
             <h1>Quartz</h1>
           </div>
-          <div className="quartz-status" aria-label="Agent status">
-            <span />
-            Knowledge Agent
-          </div>
         </header>
-        <section className="quartz-chat-panel" aria-label="Knowledge Agent chat">
+        {activeWorkspace === "libraries" ? (
+          <section className="quartz-chat-panel quartz-libraries-panel" aria-label="Libraries">
+            <div className="quartz-chat-frame quartz-libraries-frame">
+              {!authLoading && !authSession ? (
+                <div className="quartz-access-state">
+                  <UserRound aria-hidden="true" size={22} strokeWidth={1.9} />
+                  <h2>Sign in to Quartz</h2>
+                  <p>Use your Google account to open your organizations and libraries.</p>
+                  <button type="button" onClick={handleSignIn}>
+                    Continue with Google
+                  </button>
+                </div>
+              ) : !authLoading && authSession && !authSession.activeOrganization ? (
+                <div className="quartz-access-state">
+                  <Building2 aria-hidden="true" size={22} strokeWidth={1.9} />
+                  <h2>Create or join an organization</h2>
+                  <p>Open Settings from the sidebar account menu to create an organization, or accept an invite link.</p>
+                </div>
+              ) : authSession?.activeOrganization ? (
+                <LibrariesWorkspace key={authSession.activeOrganization.id} />
+              ) : null}
+            </div>
+          </section>
+        ) : (
+          <section className="quartz-chat-panel" aria-label="Knowledge Agent chat">
           <div className="quartz-chat-frame">
             <div className={chatBodyClassName}>
               {!authLoading && !authSession ? (
@@ -2685,7 +2795,8 @@ export default function Page() {
               ) : null}
             </div>
           </div>
-        </section>
+          </section>
+        )}
       </div>
     </main>
   );

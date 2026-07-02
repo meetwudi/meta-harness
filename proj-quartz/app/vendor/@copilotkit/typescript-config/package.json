@@ -1,0 +1,13 @@
+{
+  "name": "@copilotkit/typescript-config",
+  "version": "1.55.0-next.8",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base.json": "./base.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "base.json"
+  ]
+}

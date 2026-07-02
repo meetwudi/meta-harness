@@ -1,0 +1,22 @@
+id = "librarian.integration.library-editor-filtered-changesets"
+title = "Library Editor filtered change set workflow"
+requirements = [
+  "librarian.context-filters",
+  "librarian.actor-context-filters",
+  "librarian.change-set-operations",
+  "librarian.driver-change-set-application",
+  "librarian.library-editor-librarian-boundary",
+  "change-sets.produce-apply-reconcile",
+]
+procedure = [
+  "Start a Librarian session with a user actor and at least one organization actor available in the active actor identity list.",
+  "List Libraries with an organization actor context filter and verify results are narrowed by the filter while still respecting read governance.",
+  "Produce a change set for a writable resource through Librarian under the same context filter.",
+  "Validate and apply the change set through Librarian, then verify the storage driver reflects the updated governed resource state.",
+  "Attempt the same flow for a resource outside the actor's update authority and verify Librarian rejects mutation before driver application.",
+]
+expected = [
+  "Organization context filters narrow visible and active resources while preserving governed authority.",
+  "The Library Editor-facing flow can use Librarian for listing, reading, producing change sets, validating, applying, and reflecting results.",
+  "Unauthorized updates are blocked by Librarian governance before storage driver mutation.",
+]

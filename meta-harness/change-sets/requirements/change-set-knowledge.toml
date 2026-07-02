@@ -1,0 +1,11 @@
+id = "change-sets.change-set-knowledge"
+title = "Change sets are governed knowledge"
+source = "Human request on 2026-07-01: change set itself should be a spec and is also knowledge; human clarification on 2026-07-01: change sets follow the same Spec requirement pattern. Human clarification on 2026-07-01: proposed changes must persist as durable knowledge."
+text = "A change set is governed knowledge that records a proposed set of Library or resource edits, the baseline those edits were produced from, and the check state required before application."
+
+criteria = [
+  "Change sets are represented as durable knowledge through ordinary Spec requirements.",
+  "Durable change-set records can survive browser navigation, reloads, and app process restarts.",
+  "A change set can reference the Libraries, resources, actors, and context involved in the proposed edit.",
+  "A change set can record check results needed by sync or deploy workflows.",
+]

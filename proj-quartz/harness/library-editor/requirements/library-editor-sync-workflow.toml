@@ -1,0 +1,11 @@
+id = "proj-quartz.library-editor-sync-workflow"
+title = "Library edit sync workflow"
+source = "Human request on 2026-07-01: people can make Library changes and then deploy or sync them after deterministic and agentic workflows check the changes; later clarification made change sets the workflow unit; human clarification on 2026-07-01: users submit or stage a change set and then apply it; human feedback on 2026-07-01: public-facing UI should call this proposed changes."
+text = "Quartz supports a Library edit workflow where users make local edits, add them to proposed changes backed by a governed change set, run deterministic and agentic checks, review results, and apply, sync, or deploy the checked changes through Librarian."
+
+criteria = [
+  "Users can distinguish saved drafts from synced or deployed Library changes.",
+  "Editing content and adding it to proposed changes are separate user actions.",
+  "Sync or deploy is gated on completion of the configured deterministic and agentic checks.",
+  "Failed checks keep the proposed changes editable and visible with enough context to revise the affected resources.",
+]

@@ -1,0 +1,12 @@
+id = "proj-quartz.library-editor-persistent-proposed-changes"
+title = "Persistent proposed changes"
+source = "Human clarification on 2026-07-01: proposed changes must persist instead of living only in browser state, and they should be stored through the underlying change-set model."
+text = "Library Editor persists proposed changes through Librarian change-set storage and restores active proposed changes across navigation and reloads."
+
+criteria = [
+  "Adding edits to proposed changes persists the produced change set through Librarian.",
+  "Reloading or navigating back to the Libraries workspace restores active proposed changes for the current actor context.",
+  "Replacing or removing active proposed changes calls Librarian change-set lifecycle operations instead of clearing browser-only state.",
+  "Applying proposed changes updates the durable change-set state so the applied proposal is cleared from the active proposed list.",
+  "Quartz does not store proposed changes only in React state or browser-local storage.",
+]

@@ -1,0 +1,10 @@
+id = "proj-quartz.library-editor-vendored-libraries"
+title = "Vendor editor-specific libraries"
+source = "Human clarification on 2026-07-01: if the Libraries workflow uses a library, vendor it rather than depending on it."
+text = "Libraries workspace implementation uses project-local code or vendored editor-specific libraries for dependencies introduced by the Libraries workflow."
+
+criteria = [
+  "The first-pass Libraries workspace uses project code when an additional dependency is unnecessary.",
+  "New editor-specific runtime or UI libraries introduced for the Libraries workflow are vendored under the project before app runtime code depends on them.",
+  "Package dependency changes for Libraries workflow code cite the vendored source in project knowledge or implementation notes.",
+]

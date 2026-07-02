@@ -11,5 +11,6 @@ statements = [
   "Generated migration artifacts add read and update actor allow-lists to resource records.",
   "Generated Postgres artifacts include actor matching helpers that support exact actor URIs and glob-style actor URI patterns.",
   "Generated Postgres artifacts enable row-level security policies for resource reads and writes based on the active actor URI set.",
+  "Generated Postgres artifacts grant no row-level access when the active actor URI set is missing or empty.",
   "Organization actors can appear in resource allow-lists so organization membership can become a storage access boundary.",
 ]

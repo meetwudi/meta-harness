@@ -1,0 +1,10 @@
+id = "change-sets.git-diff-change-set-format"
+title = "Git diff change set format"
+source = "Human request on 2026-07-01: really make sure we use the Git format as the interface between DB-based and Postgres-based approaches."
+text = "change sets use a Git-compatible diff or patch representation as the portable interface for proposed content changes across storage backends."
+
+criteria = [
+  "A change set can express added, updated, renamed, and removed text resources in Git-compatible diff terms.",
+  "The diff representation is independent of whether the underlying resource is stored in a filesystem, Postgres, or another configured storage backend.",
+  "Storage-specific metadata may accompany the Git-compatible proposed-change representation.",
+]

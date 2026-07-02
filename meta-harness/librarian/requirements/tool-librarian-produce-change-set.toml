@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-produce-change-set"
+title = "`librarian_produce_change_set` tool contract"
+source = "Human request on 2026-07-01: producing change sets should go through Librarian and use Git diff format."
+text = "`librarian_produce_change_set` produces a governed change set from proposed Library text resource edits."
+
+criteria = [
+  "The tool resolves each resource URI through Librarian and checks active read and update governance.",
+  "The tool records baseline evidence from the storage driver before staging the proposed edit.",
+  "The produced change set includes Git-compatible diff text for each proposed text resource update.",
+]

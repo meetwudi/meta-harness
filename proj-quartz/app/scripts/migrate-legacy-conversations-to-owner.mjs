@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Harness-Requirement: proj-quartz.legacy-conversation-owner-migration
 // Harness-Requirement: proj-quartz.organization-resource-actors
+// Harness-Migration-Intent: proj-quartz.migration-intent.legacy-conversations-to-owner
 
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -70,8 +71,13 @@ async function migrateLegacyConversations(pool, input) {
     const owner = await loadOwner(client, input.email, input.organizationId);
     const targetRoot = `/libraries/organizations/${owner.organizationId}/knowledge-agent-conversations`;
     const actorUris = [owner.organizationActorUri];
+    const migrationActorUris = [
+      owner.organizationActorUri,
+      "actor://knowledge-agent",
+      "actor://proj-quartz/agent",
+    ];
     await client.query("SELECT set_config('meta_harness.actor_uris', $1, true)", [
-      actorUris.join("\n"),
+      migrationActorUris.join("\n"),
     ]);
 
     await assertTargetRootExists(client, targetRoot);

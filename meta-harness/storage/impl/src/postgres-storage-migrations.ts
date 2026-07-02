@@ -26,6 +26,7 @@ export type PostgresStorageMigration = {
   id: string;
   storageModelIds: readonly string[];
   migrationIntentId: string;
+  previousChecksums?: readonly string[];
   statements(input: PostgresStorageMigrationContext): readonly string[];
 };
 
@@ -42,6 +43,8 @@ type AppliedMigrationRow = {
 type PostgresStorageMigrationContext = {
   schemaName?: string;
   resourceTable: string;
+  changeSetTable: string;
+  proposedResourceChangeTable: string;
   indexPrefix: string;
 };
 
@@ -66,6 +69,9 @@ export const postgresStorageMigrations: readonly PostgresStorageMigration[] = [
     id: "202607010002_resource_actor_governance",
     storageModelIds: [postgresResourceBootstrapPlan.storageModelId],
     migrationIntentId: "storage.migration-intent.resource-actor-governance",
+    previousChecksums: [
+      "231b78370c883697ec352d8210660082f90b5346404abd572f14b559c1c0283e",
+    ],
     statements(input) {
       const currentActorsFunction = qualifiedIdentifier({
         schemaName: input.schemaName,
@@ -88,7 +94,7 @@ export const postgresStorageMigrations: readonly PostgresStorageMigration[] = [
            SELECT CASE
              WHEN current_setting('meta_harness.actor_uris', true) IS NULL
                OR current_setting('meta_harness.actor_uris', true) = ''
-             THEN ARRAY['actor://knowledge-agent']::text[]
+             THEN ARRAY[]::text[]
              ELSE string_to_array(current_setting('meta_harness.actor_uris', true), E'\\n')
            END
          $$`,
@@ -153,6 +159,128 @@ export const postgresStorageMigrations: readonly PostgresStorageMigration[] = [
       ];
     },
   },
+  {
+    id: "202607010003_resource_actor_governance_fail_closed",
+    storageModelIds: [postgresResourceBootstrapPlan.storageModelId],
+    migrationIntentId: "storage.migration-intent.resource-actor-governance",
+    statements(input) {
+      const currentActorsFunction = qualifiedIdentifier({
+        schemaName: input.schemaName,
+        tableName: "meta_harness_current_actor_uris",
+      });
+      return [
+        `CREATE OR REPLACE FUNCTION ${currentActorsFunction}()
+         RETURNS text[]
+         LANGUAGE sql
+         STABLE
+         AS $$
+           SELECT CASE
+             WHEN current_setting('meta_harness.actor_uris', true) IS NULL
+               OR current_setting('meta_harness.actor_uris', true) = ''
+             THEN ARRAY[]::text[]
+             ELSE string_to_array(current_setting('meta_harness.actor_uris', true), E'\\n')
+           END
+         $$`,
+      ];
+    },
+  },
+  {
+    id: "202607010004_persistent_change_sets",
+    storageModelIds: ["storage.model.change-sets"],
+    migrationIntentId: "storage.migration-intent.persistent-change-sets",
+    statements(input) {
+      const actorAllowedFunction = qualifiedIdentifier({
+        schemaName: input.schemaName,
+        tableName: "meta_harness_actor_allowed",
+      });
+      return [
+        `CREATE TABLE IF NOT EXISTS ${input.changeSetTable} (
+           id text PRIMARY KEY,
+           format text NOT NULL,
+           actor_uri text NOT NULL,
+           actor_uris text[] NOT NULL,
+           context_filters jsonb NOT NULL DEFAULT '{}'::jsonb,
+           status text NOT NULL,
+           checks jsonb NOT NULL DEFAULT '[]'::jsonb,
+           change_set jsonb NOT NULL,
+           read_actors text[] NOT NULL,
+           update_actors text[] NOT NULL,
+           created_at timestamptz NOT NULL DEFAULT now(),
+           updated_at timestamptz NOT NULL DEFAULT now()
+         )`,
+        `CREATE TABLE IF NOT EXISTS ${input.proposedResourceChangeTable} (
+           id text PRIMARY KEY,
+           change_set_id text NOT NULL,
+           ordinal integer NOT NULL,
+           uri text NOT NULL,
+           library_uri text NOT NULL,
+           resource_path text NOT NULL,
+           baseline_sha256 text NOT NULL,
+           baseline_bytes integer NOT NULL,
+           proposed_sha256 text NOT NULL,
+           proposed_bytes integer NOT NULL,
+           proposed_content text NOT NULL,
+           diff text NOT NULL,
+           read_actors text[] NOT NULL,
+           update_actors text[] NOT NULL,
+           created_at timestamptz NOT NULL DEFAULT now(),
+           updated_at timestamptz NOT NULL DEFAULT now()
+         )`,
+        `CREATE INDEX IF NOT EXISTS ${quoteIdentifier(`${input.indexPrefix}_change_sets_status_idx`)}
+         ON ${input.changeSetTable} (status)`,
+        `CREATE INDEX IF NOT EXISTS ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_change_set_idx`)}
+         ON ${input.proposedResourceChangeTable} (change_set_id, ordinal)`,
+        `ALTER TABLE ${input.changeSetTable} ENABLE ROW LEVEL SECURITY`,
+        `ALTER TABLE ${input.changeSetTable} FORCE ROW LEVEL SECURITY`,
+        `ALTER TABLE ${input.proposedResourceChangeTable} ENABLE ROW LEVEL SECURITY`,
+        `ALTER TABLE ${input.proposedResourceChangeTable} FORCE ROW LEVEL SECURITY`,
+        `DROP POLICY IF EXISTS ${quoteIdentifier(`${input.indexPrefix}_change_sets_read_actor_policy`)}
+         ON ${input.changeSetTable}`,
+        `CREATE POLICY ${quoteIdentifier(`${input.indexPrefix}_change_sets_read_actor_policy`)}
+         ON ${input.changeSetTable}
+         FOR SELECT
+         USING (${actorAllowedFunction}(read_actors))`,
+        `DROP POLICY IF EXISTS ${quoteIdentifier(`${input.indexPrefix}_change_sets_insert_actor_policy`)}
+         ON ${input.changeSetTable}`,
+        `CREATE POLICY ${quoteIdentifier(`${input.indexPrefix}_change_sets_insert_actor_policy`)}
+         ON ${input.changeSetTable}
+         FOR INSERT
+         WITH CHECK (${actorAllowedFunction}(update_actors))`,
+        `DROP POLICY IF EXISTS ${quoteIdentifier(`${input.indexPrefix}_change_sets_update_actor_policy`)}
+         ON ${input.changeSetTable}`,
+        `CREATE POLICY ${quoteIdentifier(`${input.indexPrefix}_change_sets_update_actor_policy`)}
+         ON ${input.changeSetTable}
+         FOR UPDATE
+         USING (${actorAllowedFunction}(update_actors))
+         WITH CHECK (${actorAllowedFunction}(update_actors))`,
+        `DROP POLICY IF EXISTS ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_read_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}`,
+        `CREATE POLICY ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_read_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}
+         FOR SELECT
+         USING (${actorAllowedFunction}(read_actors))`,
+        `DROP POLICY IF EXISTS ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_insert_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}`,
+        `CREATE POLICY ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_insert_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}
+         FOR INSERT
+         WITH CHECK (${actorAllowedFunction}(update_actors))`,
+        `DROP POLICY IF EXISTS ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_update_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}`,
+        `CREATE POLICY ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_update_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}
+         FOR UPDATE
+         USING (${actorAllowedFunction}(update_actors))
+         WITH CHECK (${actorAllowedFunction}(update_actors))`,
+        `DROP POLICY IF EXISTS ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_delete_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}`,
+        `CREATE POLICY ${quoteIdentifier(`${input.indexPrefix}_proposed_changes_delete_actor_policy`)}
+         ON ${input.proposedResourceChangeTable}
+         FOR DELETE
+         USING (${actorAllowedFunction}(update_actors))`,
+      ];
+    },
+  },
 ];
 
 /**
@@ -171,6 +299,8 @@ export async function runPostgresStorageMigrations(
   const context: PostgresStorageMigrationContext = {
     schemaName,
     resourceTable: qualifiedIdentifier({ schemaName, tableName }),
+    changeSetTable: qualifiedIdentifier({ schemaName, tableName: `${tableName}_change_sets` }),
+    proposedResourceChangeTable: qualifiedIdentifier({ schemaName, tableName: `${tableName}_proposed_resource_changes` }),
     indexPrefix: tableName,
   };
 
@@ -194,7 +324,10 @@ export async function runPostgresStorageMigrations(
     const checksum = migrationChecksum(migration, statements);
     const appliedChecksum = applied.get(migration.id);
     if (appliedChecksum) {
-      if (appliedChecksum !== checksum) {
+      if (
+        appliedChecksum !== checksum &&
+        !migration.previousChecksums?.includes(appliedChecksum)
+      ) {
         throw new Error(`Postgres storage migration checksum mismatch: ${migration.id}`);
       }
       continue;

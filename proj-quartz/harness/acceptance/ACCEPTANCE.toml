@@ -3,7 +3,7 @@
 
 name = "proj-quartz-acceptance"
 version = "v0.0.0"
-source = "Migrated on 2026-06-28 from Spec-owned Quartz acceptance-test files after human direction to make Acceptance a separate primitive; Google sign-in/sign-out acceptance scenario captured from human request on 2026-06-30 and wording clarification on 2026-06-30; organization creation, invite email, invite acceptance, organization switching, and organization actor resource boundaries captured from human request on 2026-07-01; organization settings dialog clarification captured from human request on 2026-07-01; role-based two-Chrome-profile replay clarification for organization invite acceptance captured from human request on 2026-07-01."
+source = "Migrated on 2026-06-28 from Spec-owned Quartz acceptance-test files after human direction to make Acceptance a separate primitive; Google sign-in/sign-out acceptance scenario captured from human request on 2026-06-30 and wording clarification on 2026-06-30; organization creation, invite email, invite acceptance, organization switching, and organization actor resource boundaries captured from human request on 2026-07-01; organization settings dialog clarification captured from human request on 2026-07-01; role-based two-Chrome-profile replay clarification for organization invite acceptance captured from human request on 2026-07-01; Libraries tab browse, lock, proposed-change, and apply workflow captured from human request on 2026-07-01; production Cloud Run Google sign-in and Library listing captured from human-run deployment acceptance on 2026-07-01."
 scope = [
   "proj-quartz/**",
 ]
@@ -40,6 +40,54 @@ expected = [
   "Quartz creates or resumes the signed-in account and active organization context needed for chat.",
   "The chat request returns a real assistant answer rather than a deployment, configuration, storage, or tool-access error.",
   "The answer lists the expected system Libraries `library://meta-harness` and `library://proj-quartz`.",
+]
+
+[[tests]]
+id = "proj-quartz.acceptance.libraries-tab-change-set"
+title = "Libraries tab browse and apply proposed changes"
+requirements = [
+  "proj-quartz.library-editor-sidebar",
+  "proj-quartz.library-editor-browse-readable",
+  "proj-quartz.library-editor-actor-context-filter",
+  "proj-quartz.library-editor-writable-editing",
+  "proj-quartz.library-editor-change-set-rendering",
+  "proj-quartz.library-editor-sync-workflow",
+  "proj-quartz.library-editor-conflict-rebase",
+  "proj-quartz.library-editor-ui-labeling",
+  "proj-quartz.library-editor-responsive-explorer",
+  "proj-quartz.library-editor-public-proposed-changes",
+  "librarian.library-editor-librarian-boundary",
+]
+circumstances = [
+  "Quartz is running at the tested origin.",
+  "`QUARTZ_POSTGRES_URL` is configured.",
+  "The browser can complete Google sign-in for the test user.",
+  "The signed-in account has an active organization with at least one readable non-writable Library and at least one writable Library, or the acceptance runner creates those fixture Libraries through governed setup before replay.",
+]
+execution = "ai-browser"
+procedure = [
+  "Open the Quartz app and sign in through Google.",
+  "Click the sidebar tab labeled `Libraries`.",
+  "Verify the Libraries workspace opens with compact labels and no repeated visible `Libraries` heading cluster.",
+  "Verify the workspace lists readable Libraries for the active account and organization context in an explorer-style column.",
+  "Select a readable Library and verify its files appear nested under the selected Library in the same explorer column.",
+  "Select a read-only Library and verify it is viewable with a subtle lock indicator.",
+  "Select a writable Library and open one visible file.",
+  "Edit the file content in the Libraries workspace.",
+  "Verify the edit remains local until the user adds it to proposed changes.",
+  "Click `Add to proposed changes` and verify the proposed changes affordance shows the changed file count.",
+  "Open `Proposed changes` and verify the governed change set appears in the proposed changes panel.",
+  "Click `Apply proposed changes`.",
+  "Reopen the same file through the Libraries workspace and verify the applied content is visible.",
+]
+expected = [
+  "The sidebar tab is labeled `Libraries`.",
+  "Readable Libraries can be browsed and opened through the Libraries workspace.",
+  "Read-only Libraries show a light lock indicator and expose read-appropriate controls.",
+  "Writable Libraries expose editing controls.",
+  "Raw editing is separate from proposed change creation.",
+  "Applying proposed changes updates the governed Library through Librarian.",
+  "Baseline conflict detection routes stale proposed changes to reconciliation behavior before apply.",
 ]
 
 [[tests]]
@@ -168,7 +216,7 @@ requirements = [
   "knowledge-agent.library-scoped-memory-curator",
 ]
 circumstances = [
-  "This is a browser acceptance test for the Quartz app at `http://127.0.0.1:3000/`.",
+  "This is a browser acceptance test for the Quartz app at `http://localhost:3000/`.",
   "Use the in-app browser tool so the replay exercises the real SPA, chat service, API route, Knowledge Agent CLI, Librarian tools, Postgres-backed Library storage, and post-turn Memory Curator path together.",
   "Use three separate Quartz conversations. In the current UI, a separate conversation can be simulated by reloading the page or opening a fresh app session between messages; the important property is that the later turn is not relying on React component state from the earlier turn.",
   "Capture browser-visible assistant replies and backend evidence after each conversation. Backend evidence should come from Librarian/Postgres Library state and from the recorded `memory-curator-trace.json` turn artifact when available.",
@@ -178,7 +226,7 @@ circumstances = [
 ]
 execution = "ai-browser"
 procedure = [
-  "Open the Quartz SPA in the in-app browser at `http://127.0.0.1:3000/` with `QUARTZ_POSTGRES_URL` configured.",
+  "Open the Quartz SPA in the in-app browser at `http://localhost:3000/` with `QUARTZ_POSTGRES_URL` configured.",
   "In a first Quartz conversation, the user says in ordinary language: `I want to start loading everything I know about stocks and have Quartz remember useful stock observations as we talk about them.`",
   "If the agent asks for a Library description, answer in ordinary language: `Use it for stock observation memory for public companies I am watching.`",
   "The agent creates or updates `library://stocks` through Librarian without asking for or exposing the storage location because Quartz project knowledge designates the default target.",

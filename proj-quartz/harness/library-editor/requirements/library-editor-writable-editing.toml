@@ -1,0 +1,11 @@
+id = "proj-quartz.library-editor-writable-editing"
+title = "Edit writable Libraries"
+source = "Human request on 2026-07-01: if a Library is writable, users can edit and save it natively while respecting read/write governance; human clarification on 2026-07-01: editing remains local until the user stages a change set; human feedback on 2026-07-01: public-facing UI should call this proposed changes."
+text = "Library Editor supports native editing of Library files and resources when Librarian determines that the current actor session has update authority, with local edits added to proposed changes separately before apply."
+
+criteria = [
+  "Writable resources expose editing and save actions in the Library Editor.",
+  "Editing a file changes local draft state before creating proposed changes.",
+  "Adding an edit to proposed changes produces or updates a governed change set through Librarian-facing workflow.",
+  "A resource that becomes non-writable during an edit is protected from overwrite by the sync conflict and authority checks.",
+]

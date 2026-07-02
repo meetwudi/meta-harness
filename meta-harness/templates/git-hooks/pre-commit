@@ -12,6 +12,24 @@ python3 "$repo_root/meta-harness/tools/check-harness-file-metadata" \
   --repo-root "$repo_root" \
   --changed-files "$changed_files"
 
+python3 "$repo_root/meta-harness/tools/check-library-definitions" \
+  --repo-root "$repo_root"
+
+python3 "$repo_root/meta-harness/tools/check-routine-definitions" \
+  --repo-root "$repo_root"
+
+python3 "$repo_root/meta-harness/tools/check-memory-definitions" \
+  --repo-root "$repo_root"
+
+python3 "$repo_root/meta-harness/tools/check-compliance-definitions" \
+  --repo-root "$repo_root"
+
 python3 "$repo_root/meta-harness/tools/check-deployment-definitions" \
   --repo-root "$repo_root" \
   --changed-files "$changed_files"
+
+python3 "$repo_root/meta-harness/tools/check-skill-definitions" \
+  --repo-root "$repo_root"
+
+python3 "$repo_root/meta-harness/tools/check-toolspec-definitions" \
+  --repo-root "$repo_root"

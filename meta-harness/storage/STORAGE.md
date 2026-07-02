@@ -45,6 +45,9 @@ migration scripts, bootstrap plans, data migration scripts, and tests from that
 Spec knowledge. Storage drivers execute the generated artifacts that match their
 capabilities and deployment target.
 
+Executable storage migration artifacts are scoped to Spec migration-intent
+records and cite those records with `Harness-Migration-Intent`.
+
 The shared Harness resource model lives in:
 
 ```text
@@ -57,6 +60,12 @@ The shared storage configuration model lives in:
 library://meta-harness/storage/storage-models/storage-configurations.toml
 ```
 
+The shared change-set storage model lives in:
+
+```text
+library://meta-harness/storage/storage-models/change-sets.toml
+```
+
 The initial resource storage bootstrap migration intent lives in:
 
 ```text
@@ -67,6 +76,12 @@ Resource actor governance migration intent lives in:
 
 ```text
 library://meta-harness/storage/migration-intents/resource-actor-governance.toml
+```
+
+Persistent change-set storage migration intent lives in:
+
+```text
+library://meta-harness/storage/migration-intents/persistent-change-sets.toml
 ```
 
 ## Project Storage Locations

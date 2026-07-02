@@ -1,0 +1,11 @@
+id = "librarian.tool-librarian-abandon-change-set"
+title = "`librarian_abandon_change_set` tool contract"
+source = "Implementation requirement derived from durable Library Editor proposed-change persistence on 2026-07-01: clearing the active proposal must update Librarian change-set storage instead of only clearing browser state."
+text = "`librarian_abandon_change_set` marks a persisted governed change set as abandoned without mutating target resources."
+
+criteria = [
+  "The tool accepts a governed Librarian change-set payload.",
+  "The tool verifies the change set through Librarian resource resolution before changing durable status.",
+  "The tool persists an abandoned status through the active storage driver's change-set persistence hooks.",
+  "Abandoned change sets no longer appear in active proposed change-set listings.",
+]

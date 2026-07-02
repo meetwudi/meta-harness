@@ -1,0 +1,4 @@
+id = "librarian-produce-change-set.unit.produce"
+tool = "librarian_produce_change_set"
+input_json = "{\"changes\":[{\"uri\":\"library://example/path.md\",\"baselineContent\":\"old\",\"content\":\"new\"}]}"
+expected = "The tool produces a governed Git-diff change set for a writable Library resource."

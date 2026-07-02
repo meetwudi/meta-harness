@@ -18,17 +18,21 @@ const storageRoot = resolve(currentDir, "../..");
 
 const spec = await readToml("SPEC.toml");
 const model = await readToml("storage-models/resources.toml");
+const changeSetModel = await readToml("storage-models/change-sets.toml");
 const configurationModel = await readToml("storage-models/storage-configurations.toml");
 const migrationIntent = await readToml("migration-intents/resource-storage-bootstrap.toml");
 const actorGovernanceIntent = await readToml("migration-intents/resource-actor-governance.toml");
+const persistentChangeSetsIntent = await readToml("migration-intents/persistent-change-sets.toml");
 const noForeignKeysRequirement = await readToml("requirements/no-database-foreign-keys.toml");
 
 assertCollection(spec, "storage_model_collections", "storage-models", "storage-models");
 assertCollection(spec, "migration_intent_collections", "migration-intents", "migration-intents");
 
 assert.equal(model.id, postgresResourceBootstrapPlan.storageModelId);
+assert.equal(changeSetModel.id, "storage.model.change-sets");
 assert.equal(migrationIntent.id, postgresResourceBootstrapPlan.migrationIntentId);
 assert.equal(configurationModel.id, "storage.model.storage-configurations");
+assert.equal(persistentChangeSetsIntent.id, "storage.migration-intent.persistent-change-sets");
 assert.equal(noForeignKeysRequirement.id, "storage.no-database-foreign-keys");
 
 assertRequirements(model, [
@@ -40,6 +44,12 @@ assertRequirements(configurationModel, [
   "storage.multiple-configured-storage-locations",
   "storage.spec-governed-storage-models",
 ]);
+assertRequirements(changeSetModel, [
+  "change-sets.persistent-change-sets",
+  "change-sets.librarian-driver-change-set-contract",
+  "storage.spec-governed-storage-models",
+  "storage.no-database-foreign-keys",
+]);
 assertRequirements(migrationIntent, [
   "storage.postgres-schema-bootstrap",
   "storage.spec-governed-migration-intents",
@@ -48,6 +58,13 @@ assertRequirements(migrationIntent, [
 assertRequirements(actorGovernanceIntent, [
   "storage.resource-actor-governance",
   "storage.spec-governed-migration-intents",
+]);
+assertRequirements(persistentChangeSetsIntent, [
+  "change-sets.persistent-change-sets",
+  "change-sets.librarian-driver-change-set-contract",
+  "storage.spec-governed-storage-models",
+  "storage.spec-governed-migration-intents",
+  "storage.no-database-foreign-keys",
 ]);
 
 assert.ok(
@@ -59,12 +76,20 @@ assert.ok(
   "storage configuration model should cover multiple storage locations",
 );
 assert.ok(
+  String(changeSetModel.text).includes("backend-neutral model"),
+  "change-set model should remain semantic Storage Spec knowledge",
+);
+assert.ok(
   String(migrationIntent.text).includes("backend artifacts"),
   "migration intent should describe generated backend artifacts",
 );
 assert.ok(
   String(actorGovernanceIntent.text).includes("row-level security"),
   "actor governance intent should describe row-level security",
+);
+assert.ok(
+  String(persistentChangeSetsIntent.text).includes("durable change-set records"),
+  "persistent change-set intent should describe generated durable records",
 );
 
 assert.deepEqual(postgresStorageMigrations.map((migration) => ({
@@ -81,6 +106,16 @@ assert.deepEqual(postgresStorageMigrations.map((migration) => ({
     id: "202607010002_resource_actor_governance",
     storageModelIds: [postgresResourceBootstrapPlan.storageModelId],
     migrationIntentId: "storage.migration-intent.resource-actor-governance",
+  },
+  {
+    id: "202607010003_resource_actor_governance_fail_closed",
+    storageModelIds: [postgresResourceBootstrapPlan.storageModelId],
+    migrationIntentId: "storage.migration-intent.resource-actor-governance",
+  },
+  {
+    id: "202607010004_persistent_change_sets",
+    storageModelIds: ["storage.model.change-sets"],
+    migrationIntentId: "storage.migration-intent.persistent-change-sets",
   },
 ]);
 
@@ -108,6 +143,8 @@ for (const migration of postgresStorageMigrations) {
   const statements = migration.statements({
     schemaName: "quartz_core",
     resourceTable: '"quartz_core"."resources"',
+    changeSetTable: '"quartz_core"."resources_change_sets"',
+    proposedResourceChangeTable: '"quartz_core"."resources_proposed_resource_changes"',
     indexPrefix: "resources",
   });
   assert.equal(

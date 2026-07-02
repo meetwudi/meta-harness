@@ -1,0 +1,23 @@
+# This is a Harness primitive.
+# See also: library://meta-harness
+
+name = "librarian_apply_change_set"
+description = "Apply a validated governed Library change set through storage driver change-set hooks."
+implementation = "../../impl/src/librarian-change-set.ts"
+allowed_actors = ["actor://*"]
+order = 110
+
+[input_schema]
+type = "object"
+required = ["changeSet"]
+additional_properties = false
+properties_json = "{\"changeSet\":{\"type\":\"object\"}}"
+
+[output_schema]
+type = "object"
+description = "Apply result with check results, conflicts when stale, and applied resource reflection when successful."
+
+[[test_cases]]
+id = "apply-change-set"
+input_json = "{\"changeSet\":{\"kind\":\"librarian.change-set\",\"format\":\"git-unified-diff\",\"id\":\"change-set-example\",\"actorUri\":\"actor://example\",\"actorUris\":[\"actor://example\"],\"contextFilters\":{\"actorUris\":[]},\"changes\":[]}}"
+expected = "Applies a clean governed change set through the storage driver and returns reflected resource state."

@@ -8,6 +8,9 @@ requirements = [
   "storage.no-database-foreign-keys",
 ]
 text = "Move Quartz resource storage from the legacy shared resource schema into `quartz_core.resources` while preserving resource paths, content, metadata, timestamps, and actor allow-lists."
+implementation_artifacts = [
+  "proj-quartz/app/scripts/migrate-resource-storage-to-quartz-core.mjs",
+]
 statements = [
   "The generated migration artifacts ensure the target `quartz_core.resources` storage table and resource migration ledger exist through the Storage Spec generated Postgres migration runner.",
   "The data migration copies missing rows from `meta_harness.resources` into `quartz_core.resources` and fails on target rows whose resource payload conflicts.",

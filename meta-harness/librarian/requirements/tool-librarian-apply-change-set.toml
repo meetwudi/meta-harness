@@ -1,0 +1,10 @@
+id = "librarian.tool-librarian-apply-change-set"
+title = "`librarian_apply_change_set` tool contract"
+source = "Human request on 2026-07-01: applying change sets should go through Librarian and drivers."
+text = "`librarian_apply_change_set` applies a validated governed change set through storage driver change-set hooks."
+
+criteria = [
+  "The tool reruns validation before mutating governed resources.",
+  "The tool backs off and reports conflicts when current storage baseline evidence differs from the change set baseline.",
+  "The tool applies clean changes through storage driver change-set hooks and returns reflected applied resource evidence.",
+]

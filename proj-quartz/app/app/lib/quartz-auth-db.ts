@@ -10,6 +10,7 @@
 // Harness-Requirement: proj-quartz.api.project-storage
 // Harness-Requirement: proj-quartz.storage.api-key-project-storage
 // Harness-Requirement: proj-quartz.user-account-organizations
+// Harness-Migration-Intent: proj-quartz.migration-intent.identity-organizations-v1
 
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -258,11 +259,12 @@ export function loadQuartzProjectEnv(): void {
 
 export function quartzPublicBaseUrl(): string {
   loadQuartzProjectEnv();
-  return (
-    process.env.QUARTZ_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_QUARTZ_BASE_URL ||
-    "http://127.0.0.1:3000"
-  ).replace(/\/+$/, "");
+  const baseUrl = process.env.QUARTZ_PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_QUARTZ_BASE_URL;
+  if (!baseUrl?.trim()) {
+    throw new Error("QUARTZ_PUBLIC_BASE_URL is required for Quartz public URLs.");
+  }
+  return baseUrl.replace(/\/+$/, "");
 }
 
 export function quartzGoogleRedirectUri(): string {

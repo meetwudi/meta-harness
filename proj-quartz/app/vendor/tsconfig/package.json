@@ -1,0 +1,13 @@
+{
+  "name": "tsconfig",
+  "version": "1.4.12",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base.json": "./base.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "base.json"
+  ]
+}

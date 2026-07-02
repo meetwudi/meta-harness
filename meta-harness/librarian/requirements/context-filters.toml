@@ -1,0 +1,10 @@
+id = "librarian.context-filters"
+title = "Librarian context filters"
+source = "Human request on 2026-07-01: filtering is different from governance; organization context should filter what the user is editing while actor governance remains the boundary."
+text = "Librarian supports explicit context filters that narrow Library and resource listing, reading, editing, and change set operations while preserving actor-based read and update authority."
+
+criteria = [
+  "Context filters can be passed to Librarian operations that list or operate on Libraries and resources.",
+  "Filters reduce the active result set or edit context while preserving the actor identities used for governance.",
+  "Filtered operations still evaluate read and update authority against the active actor session.",
+]
